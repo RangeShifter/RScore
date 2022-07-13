@@ -27,7 +27,7 @@ Last updated: 13 February 2020 by Steve Palmer
 #include <vector>
 #endif
 
-#include "Version.h"
+#include "../Version.h"
 #include "Parameters.h"
 
 #if SEASONAL

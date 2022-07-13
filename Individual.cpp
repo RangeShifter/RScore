@@ -2862,13 +2862,13 @@ double i2 = base * base;
 double i3 = i2 * base;
 double i4 = i3 * base;		// opposite to theta - highest cost bias
 
-if (fabs(theta) > 7.0*M_PI/8.0) { dx = 0; dy = -1; }
+if (fabs(theta) > 7.0*PI/8.0) { dx = 0; dy = -1; }
 else {
-  if (fabs(theta) > 5.0*M_PI/8.0) { dy = -1; if (theta > 0) dx = 1; else dx = -1; }
+  if (fabs(theta) > 5.0*PI/8.0) { dy = -1; if (theta > 0) dx = 1; else dx = -1; }
   else {
-    if (fabs(theta) > 3.0*M_PI/8.0) { dy = 0; if (theta > 0) dx = 1; else dx = -1; }
+    if (fabs(theta) > 3.0*PI/8.0) { dy = 0; if (theta > 0) dx = 1; else dx = -1; }
     else {
-      if (fabs(theta) > M_PI/8.0) { dy = 1; if (theta > 0) dx = 1; else dx = -1; }
+      if (fabs(theta) > PI/8.0) { dy = 1; if (theta > 0) dx = 1; else dx = -1; }
       else { dy = 1; dx = 0; }
     }
   }
@@ -3162,7 +3162,8 @@ double rcauchy(double location, double scale) {
 //if (scale < 0) ML_ERR_return_NAN;
 if (scale < 0) return location;
 //return location + scale * tan(M_PI * unif_rand());
-return location + scale * tan(M_PI * pRandom->Random());
+//return location + scale * tan(M_PI * pRandom->Random());
+return location + scale * tan(PI * pRandom->Random());
 }
 #endif
 //#endif

@@ -6,7 +6,7 @@
 #include <fstream>
 using namespace std;
 
-#include "Version.h"
+#include "../Version.h"
 #include "Parameters.h"
 #include "RSrandom.h"
 

@@ -32,7 +32,7 @@ Last updated: 31 December 2019 by Steve Palmer
 #include <algorithm>
 using namespace std;
 
-#include "Version.h"
+#include "../Version.h"
 #include "Parameters.h"
 #include "Landscape.h"
 #include "Population.h"

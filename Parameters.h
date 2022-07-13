@@ -39,7 +39,7 @@ Last updated: 6 January 2020 by Steve Palmer
 #include <vector>
 using namespace std;
 
-#include "Version.h"
+#include "../Version.h"
 #include "RSrandom.h"
 
 #define NSTAGES 10		// maximum number of stages permitted

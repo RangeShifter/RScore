@@ -28,7 +28,7 @@ Last updated: 3 February 2020 by Steve Palmer
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "Version.h"
+#include "../Version.h"
 #include "Parameters.h"
 #include "Landscape.h"
 #include "Community.h"
