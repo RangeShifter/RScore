@@ -1,56 +1,56 @@
 /*----------------------------------------------------------------------------
- *	
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell 
- *	
+ *
+ *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *
  *	This file is part of RangeShifter.
- *	
+ *
  *	RangeShifter is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation, either version 3 of the License, or
  *	(at your option) any later version.
- *	
+ *
  *	RangeShifter is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *	GNU General Public License for more details.
- *	
+ *
  *	You should have received a copy of the GNU General Public License
  *	along with RangeShifter. If not, see <https://www.gnu.org/licenses/>.
- *	
+ *
  --------------------------------------------------------------------------*/
- 
- 
-/*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Community
 
-Implements the Community class
+ /*------------------------------------------------------------------------------
 
-There is ONLY ONE instance of a Community in an individual replicate simulation.
-It holds a SubCommunity for each Patch in the Landscape (including the matrix),
-and is thus the highest-level entity accessed for most processing concerned with
-simulated populations.
+ RangeShifter v2.0 Community
 
-Optionally, the Community maintains a record of the occupancy of suitable cells
-or patches during the course of simulation of multiple replicates.
+ Implements the Community class
 
-For full details of RangeShifter, please see:
-Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
-and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
-eco-evolutionary dynamics and species’ responses to environmental changes.
-Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
+ There is ONLY ONE instance of a Community in an individual replicate simulation.
+ It holds a SubCommunity for each Patch in the Landscape (including the matrix),
+ and is thus the highest-level entity accessed for most processing concerned with
+ simulated populations.
 
-Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+ Optionally, the Community maintains a record of the occupancy of suitable cells
+ or patches during the course of simulation of multiple replicates.
 
-Last updated: 25 June 2021 by Anne-Kathleen Malchow
+ For full details of RangeShifter, please see:
+ Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+ eco-evolutionary dynamics and species’ responses to environmental changes.
+ Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
-------------------------------------------------------------------------------*/
+ Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+
+ Last updated: 25 June 2021 by Anne-Kathleen Malchow
+
+ ------------------------------------------------------------------------------*/
 
 #ifndef CommunityH
 #define CommunityH
 
 #if VCL
-//#include <System.Classes.hpp>
+ //#include <System.Classes.hpp>
 #include <VCLTee.Chart.hpp>
 #endif
 
@@ -82,11 +82,11 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 struct commStats {
-int ninds,nnonjuvs,suitable,occupied;
+	int ninds, nnonjuvs, suitable, occupied;
 #if GOBYMODEL
-int nsocial,nasocial;
+	int nsocial, nasocial;
 #endif
-int minX,maxX,minY,maxY;
+	int minX, maxX, minY, maxY;
 };
 
 class Community {
@@ -94,7 +94,7 @@ class Community {
 public:
 	Community(Landscape*);
 	~Community(void);
-	SubCommunity* addSubComm(Patch*,int);
+	SubCommunity* addSubComm(Patch*, int);
 #if RS_CONTAIN
 	void setHabIndex(
 		Species*,	// pointer to Species
@@ -191,7 +191,7 @@ public:
 #if SPATIALMORT
 	void survival(
 		short,	// part:		0 = determine survival & development,
-						//		 			1 = apply survival changes to the population
+		//		 			1 = apply survival changes to the population
 		short,	// spatial mortality period (0 or 1)
 		short		// option:	0 = stage 0 (juveniles) only         )
 						//					1 = all stages                       ) used by part 0 only
@@ -202,10 +202,10 @@ public:
 	void survival(
 		short,	// season
 		short,	// part:		0 = determine survival & development,
-						//		 			1 = apply survival changes to the population
+		//		 			1 = apply survival changes to the population
 		short,	// option0:	0 = stage 0 (juveniles) only         )
-						//					1 = all stages                       ) used by part 0 only
-						//					2 = stage 1 and above (all non-juvs) )
+		//					1 = all stages                       ) used by part 0 only
+		//					2 = stage 1 and above (all non-juvs) )
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 	);
@@ -214,20 +214,20 @@ public:
 	void survival(
 		Pedigree*,	// pointer to Pedigree
 		short,			// part:		0 = determine survival & development,
-								//		 			1 = apply survival changes to the population
+		//		 			1 = apply survival changes to the population
 		short,			// option0:	0 = stage 0 (juveniles) only         )
-								//					1 = all stages                       ) used by part 0 only
-								//					2 = stage 1 and above (all non-juvs) )
+		//					1 = all stages                       ) used by part 0 only
+		//					2 = stage 1 and above (all non-juvs) )
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 	);
 #else
 	void survival(
 		short,	// part:		0 = determine survival & development,
-						//		 			1 = apply survival changes to the population
+		//		 			1 = apply survival changes to the population
 		short,	// option0:	0 = stage 0 (juveniles) only         )
-						//					1 = all stages                       ) used by part 0 only
-						//					2 = stage 1 and above (all non-juvs) )
+		//					1 = all stages                       ) used by part 0 only
+		//					2 = stage 1 and above (all non-juvs) )
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 	);
@@ -235,14 +235,14 @@ public:
 #endif // SEASONAL 
 #endif // SPATIALMORT
 #if RS_CONTAIN
-	int findCullTargets(Cull*,int,int);
+	int findCullTargets(Cull*, int, int);
 	void cullAllTargets(Cull*);
-	void cullRandomTargets(Cull*,int);
+	void cullRandomTargets(Cull*, int);
 	void cullTargets(Cull*);
-//	void cullClosestTargets(Cull*,int);
+	//	void cullClosestTargets(Cull*,int);
 	void resetCullTargets(void);
-	void resetCull(void); 
-	void updateDamage(Species*,Cull*);
+	void resetCull(void);
+	void updateDamage(Species*, Cull*);
 #endif // RS_CONTAIN 
 	void ageIncrement(void);
 	int totalInds(void);
@@ -355,7 +355,7 @@ public:
 		bool	// TRUE if occupancy graph is to be viewed on screen
 	);
 	void viewOccSuit( // Update the occupancy graph on the screen
-										// NULL for the batch version
+		// NULL for the batch version
 		int,		// year
 		double,	// mean occupancy
 		double	// standard error of occupancy
@@ -370,10 +370,10 @@ public:
 	);
 	void outTraits( // Write records to traits file
 		traitCanvas,// pointers to canvases for drawing variable traits 
-//		emigCanvas,	// pointers to canvases for drawing emigration traits
-//		trfrCanvas, // pointers to canvases for drawing emigration traits
-								// see SubCommunity.h
-								// in the batch version, these are replaced by integers set to zero
+		//		emigCanvas,	// pointers to canvases for drawing emigration traits
+		//		trfrCanvas, // pointers to canvases for drawing emigration traits
+										// see SubCommunity.h
+										// in the batch version, these are replaced by integers set to zero
 		Species*,		// pointer to Species
 		int,				// replicate
 		int,				// year
@@ -388,7 +388,7 @@ public:
 		traitsums	// structure holding sums of trait genes for dispersal (see Population.h)
 	);
 	void draw(	// Draw the Community on the landscape map and optionally save the map
-							// NULL for the batch version
+		// NULL for the batch version
 		int,	// replicate
 		int,	// year
 		int,	// generation
@@ -396,10 +396,10 @@ public:
 	);
 #if RS_ABC
 	void outABCpreds( // Write predictions for ABC
-//		Species*, 	// pointer to Species
+		//		Species*, 	// pointer to Species
 		int,				// replicate
 		int,				// year
-//		int,				// generation
+		//		int,				// generation
 		ABCmaster*,	// pointer to ABC master object
 		float				// landscape resolution
 	);
@@ -410,19 +410,19 @@ public:
 	);
 #endif
 #if RS_RCPP && !R_CMD
-    Rcpp::IntegerMatrix addYearToPopList(int,int);
+	Rcpp::IntegerMatrix addYearToPopList(int, int);
 #endif
 
 private:
-	Landscape *pLandscape;
+	Landscape* pLandscape;
 	int indIx;				// index used to apply initial individuals
-	float **occSuit;	// occupancy of suitable cells / patches
+	float** occSuit;	// occupancy of suitable cells / patches
 	std::vector <SubCommunity*> subComms;
 
 };
 
-extern paramSim *paramsSim;
-extern paramInit *paramsInit;
+extern paramSim* paramsSim;
+extern paramInit* paramsInit;
 
 #if VCL
 extern bool stopRun;

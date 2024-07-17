@@ -1,46 +1,46 @@
 /*----------------------------------------------------------------------------
- *	
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell 
- *	
+ *
+ *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *
  *	This file is part of RangeShifter.
- *	
+ *
  *	RangeShifter is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation, either version 3 of the License, or
  *	(at your option) any later version.
- *	
+ *
  *	RangeShifter is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *	GNU General Public License for more details.
- *	
+ *
  *	You should have received a copy of the GNU General Public License
  *	along with RangeShifter. If not, see <https://www.gnu.org/licenses/>.
- *	
+ *
  --------------------------------------------------------------------------*/
- 
- 
-/*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Species
 
-Implements the Species class
+ /*------------------------------------------------------------------------------
 
-There is ONE instance of a Species for each species within the Community
-AND THIS IS CURRENTLY LIMITED TO A SINGLE SPECIES.
-The class holds all the demographic and dispersal parameters of the species.
+ RangeShifter v2.0 Species
 
-For full details of RangeShifter, please see:
-Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
-and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
-eco-evolutionary dynamics and species’ responses to environmental changes.
-Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
+ Implements the Species class
 
-Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+ There is ONE instance of a Species for each species within the Community
+ AND THIS IS CURRENTLY LIMITED TO A SINGLE SPECIES.
+ The class holds all the demographic and dispersal parameters of the species.
 
-Last updated: 28 July 2021 by Greta Bocedi
+ For full details of RangeShifter, please see:
+ Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+ eco-evolutionary dynamics and species’ responses to environmental changes.
+ Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
-------------------------------------------------------------------------------*/
+ Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+
+ Last updated: 28 July 2021 by Greta Bocedi
+
+ ------------------------------------------------------------------------------*/
 
 #ifndef SpeciesH
 #define SpeciesH
@@ -49,7 +49,7 @@ Last updated: 28 July 2021 by Greta Bocedi
 #include <vector>
 #endif
 
-//#if RS_RCPP && !R_CMD
+ //#if RS_RCPP && !R_CMD
 #include "../Version.h"
 //#endif
 
@@ -68,7 +68,7 @@ struct extrmevent {
 // structures for demographic parameters
 
 struct demogrParams {
-	short repType; 
+	short repType;
 #if SEASONAL
 	short nSeasons;
 #else
@@ -109,8 +109,8 @@ struct socialParams {
 struct socialParams {
 	double socMean; double socSD; double socScale;
 	float asocK; float asocRmax; float asocBc;
-//	float rs; float ra; float Ts; float Ta; float dK; float alpha;
-//	float Ts; float Ta; float Cs; float Ca; float dK; float alpha;
+	//	float rs; float ra; float Ts; float Ta; float dK; float alpha;
+	//	float Ts; float Ta; float Cs; float Ca; float dK; float alpha;
 	float Ts; float Ta; float cs; float ca; float bs; float ba; float dK; float alpha;
 };
 #endif
@@ -120,23 +120,23 @@ struct socialParams {
 struct genomeData {
 	int nLoci;
 	bool diploid; bool neutralMarkers; bool pleiotropic; bool trait1Chromosome;
-	double probMutn,probCrossover,alleleSD,mutationSD;
-} ;
+	double probMutn, probCrossover, alleleSD, mutationSD;
+};
 
 struct traitAllele {
 	short chromo; short locus;
-} ;
+};
 
 struct traitMap {
 	short nAlleles;
-	traitAllele **traitalleles;
-} ;
+	traitAllele** traitalleles;
+};
 
 struct traitData {
 	short nTraitMaps;
-	traitMap **traitmaps;
-	traitMap *neutralloci;
-} ;
+	traitMap** traitmaps;
+	traitMap* neutralloci;
+};
 
 // structures for emigration parameters
 
@@ -166,17 +166,17 @@ struct emigScales {
 // structures for transfer parameters
 
 struct trfrRules {
-	bool moveModel; bool stgDep; bool sexDep; 
+	bool moveModel; bool stgDep; bool sexDep;
 	bool distMort; bool indVar;
 #if RS_CONTAIN
-	short kernType;		
+	short kernType;
 #else
-	bool twinKern; 
+	bool twinKern;
 #endif // RS_CONTAIN 
 #if TEMPMORT
-	short smType;		
+	short smType;
 #else
-	bool habMort;		
+	bool habMort;
 #endif // TEMPMORT 
 	short moveType; bool costMap;
 	short movtTrait[2];
@@ -227,12 +227,12 @@ struct trfrScales {
 };
 #if RS_CONTAIN
 struct trfr2Dt {
-	float u0Kernel1,p0Kernel1,u0Kernel2,p0Kernel2,propKernel1; 
+	float u0Kernel1, p0Kernel1, u0Kernel2, p0Kernel2, propKernel1;
 };
 struct trfrWald {
-//	float mu,gamma; 
-	float meanU,sigma_w,hc,vt,kappa;
-	float meanDirn,sdDirn;	
+	//	float mu,gamma; 
+	float meanU, sigma_w, hc, vt, kappa;
+	float meanDirn, sdDirn;
 };
 #endif // RS_CONTAIN 
 
@@ -246,7 +246,7 @@ struct settleType {
 #endif
 };
 struct settleRules {
-	 bool densDep; bool wait; bool go2nbrLocn; bool findMate;
+	bool densDep; bool wait; bool go2nbrLocn; bool findMate;
 };
 struct settleSteps {
 	int minSteps; int maxSteps; int maxStepsYr;
@@ -274,23 +274,23 @@ public:
 	short getSpNum(void);
 
 #if SEASONAL
-	void setBreeding(short,bool);	// set seasonal breeding indicator
+	void setBreeding(short, bool);	// set seasonal breeding indicator
 	bool getBreeding(short);			// get seasonal breeding indicator
-	void setExtreme(short,extrmevent);		// set seasonal extreme event
+	void setExtreme(short, extrmevent);		// set seasonal extreme event
 	extrmevent getExtreme(short);					// get seasonal extreme event
 #if PARTMIGRN
 	void setPropDispMigrn(				// set probability of dispersal/migration strategy
 		short,		// migration status        
 		float			// probability
-	); 
+	);
 	float getPropDispMigrn(				// get probability of dispersal/migration strategy
 		short			// migration status        
-	); 
+	);
 	void setResetMigrn(bool);			// set reset dispersal/migration strategy indicator
 	bool getResetMigrn(void);			// get reset dispersal/migration strategy indicator
 #endif // PARTMIGRN 
 #endif // SEASONAL
-	
+
 	// demographic parameter functions
 
 #if SEASONAL
@@ -309,7 +309,7 @@ public:
 	);
 	float getMaxK( // return highest carrying capacity over all habitats
 		short		// no. of seasons
-	); 
+	);
 #else
 	void createHabK( // Create habitat carrying capacity table
 		short	// no. of habitats
@@ -339,7 +339,7 @@ public:
 		float		// survival coefficient
 	);
 	densDepParams getDensDep(void); // Get development and survival coefficients
-	
+
 #if RS_CONTAIN
 
 	void resetDem( // Reset demographic rates to zero for a specified habitat
@@ -420,7 +420,7 @@ public:
 		short		// sex
 	);
 #endif // SEASONAL 
-	
+
 #else
 
 #if SEASONAL
@@ -457,7 +457,7 @@ public:
 		short,	// stage
 		short		// sex
 	);
-	
+
 #else
 
 	void setFec( // Set fecundity
@@ -487,7 +487,7 @@ public:
 		short,	// stage
 		short		// sex
 	);
-	
+
 #endif // SEASONAL 
 
 #endif // RS_CONTAIN 
@@ -551,26 +551,26 @@ public:
 	);
 #if GOBYMODEL
 	void setSocialParams( // Set social phenotype initialisation parameters
-//		const short,			// stage (NB implemented for stage 0 only)
-//		const short,			// sex
+		//		const short,			// stage (NB implemented for stage 0 only)
+		//		const short,			// sex
 		const socialParams	// structure holding parameters
 	);
 	socialParams getSocialParams( // Get social phenotype initialisation parameters
-//		short,	// stage (NB implemented for stage 0 only)
-//		short		// sex
+		//		short,	// stage (NB implemented for stage 0 only)
+		//		short		// sex
 		void
 	);
 #endif
 #if SOCIALMODEL
 	// ADDITIONAL FUNCTIONS FOR PROBIS SOCIAL POLYMORPHISM MODEL
 	void setSocialParams( // Set social phenotype initialisation parameters
-//		const short,			// stage (NB implemented for stage 0 only)
-//		const short,			// sex
+		//		const short,			// stage (NB implemented for stage 0 only)
+		//		const short,			// sex
 		const socialParams	// structure holding parameters
 	);
 	socialParams getSocialParams( // Get social phenotype initialisation parameters
-//		short,	// stage (NB implemented for stage 0 only)
-//		short		// sex
+		//		short,	// stage (NB implemented for stage 0 only)
+		//		short		// sex
 		void
 	);
 #endif
@@ -772,12 +772,12 @@ public:
 	);
 	void deleteHabCostMort(void); // Delete habitat-dependent costs and mortality matrices
 #if RS_CONTAIN
-	void setTrfr2Dt(trfr2Dt); 
-	trfr2Dt getTrfr2Dt(void); 
-	void setTrfrWald(trfrWald); 
-	trfrWald getTrfrWald(void); 
-	void setTrfrHr(float,unsigned short); 
-	float getTrfrHr(unsigned short); 
+	void setTrfr2Dt(trfr2Dt);
+	trfr2Dt getTrfr2Dt(void);
+	void setTrfrWald(trfrWald);
+	trfrWald getTrfrWald(void);
+	void setTrfrHr(float, unsigned short);
+	float getTrfrHr(unsigned short);
 #endif // RS_CONTAIN 
 
 	// settlement parameter functions
@@ -836,11 +836,11 @@ private:
 
 	short repType;			// 0 = asexual, 1 = simple two sex, 2 = complex two sex
 #if GROUPDISP
-											// 3 = hermaphrodite
+	// 3 = hermaphrodite
 #endif
 #if BUTTERFLYDISP
 	short dispersal; 		// dispersal timing: 0 = during reprodn (i.e. prior to parturition),
-											// 1 = after reprodn
+	// 1 = after reprodn
 #endif
 	short nStages;      // no. of stages (incl. juveniles) in structured population
 	float propMales;    // proportion of males at birth in sexual model
@@ -867,25 +867,25 @@ private:
 	bool survDens;
 	bool survStageDens;
 	bool disperseOnLoss;	// individuals disperse on complete loss of patch
-												// (otherwise they die)
+	// (otherwise they die)
 #if GROUPDISP
 	bool selfing;       // self-fertilisation possible
 	short paternity;		// 0 = fixed (one father per breeding attempt), 1 = assigned at random
-											// 2 = pollen ratio - local : neighbour : global
+	// 2 = pollen ratio - local : neighbour : global
 	float propLocal;    // proportion of local pollen (from same population)
 	float propNghbr;    // proportion of pollen from neighbouring populations
 #endif
 	short habDimK;			// dimension of carrying capacities matrix
 #if SEASONAL
-	float **habK;				// seasonal habitat-specific carrying capacities (inds/cell)
+	float** habK;				// seasonal habitat-specific carrying capacities (inds/cell)
 #else
-	float *habK;				// habitat-specific carrying capacities (inds/cell)
+	float* habK;				// habitat-specific carrying capacities (inds/cell)
 #endif // SEASONAL 
 	float devCoeff; 		// density-dependent development coefficient
 	float survCoeff; 		// density-dependent survival coefficient
-	float **ddwtFec;    // density-dependent weights matrix for fecundity
-	float **ddwtDev;    // density-dependent weights matrix for development
-	float **ddwtSurv;   // density-dependent weights matrix for survival
+	float** ddwtFec;    // density-dependent weights matrix for fecundity
+	float** ddwtDev;    // density-dependent weights matrix for development
+	float** ddwtSurv;   // density-dependent weights matrix for survival
 	// NB for the following arrays, sex 0 is females, sex 1 is males
 #if RS_CONTAIN
 #if SEASONAL
@@ -945,10 +945,10 @@ private:
 	double alleleSD;					// s.d. of initial allelic values around phenotypic value
 	double mutationSD;				// s.d. of mutation magnitude
 	short nNLoci;							// no. of nLoci set
-	short *nLoci;							// no. of loci per chromosome
+	short* nLoci;							// no. of loci per chromosome
 	short nTraitNames;				// no. of trait names set
-	traitData *traitdata;			// for mapping of chromosome loci to traits
-	string *traitnames;				// trait names for parameter output
+	traitData* traitdata;			// for mapping of chromosome loci to traits
+	string* traitnames;				// trait names for parameter output
 #if VIRTUALECOLOGIST
 	// parameters for sampling genome
 	bool sampleAll;
@@ -962,8 +962,8 @@ private:
 	bool	sexDepEmig;   // sex-dependent emigration
 	bool	indVarEmig;   // individual variation in emigration
 	short emigStage;		// stage which emigrates (used for stage-strucutred population
-											// having individual variability in emigration probability)
-	// NB for the following arrays, sex 0 is females, sex 1 is males
+	// having individual variability in emigration probability)
+// NB for the following arrays, sex 0 is females, sex 1 is males
 	float	d0[NSTAGES][NSEXES];				 // maximum emigration probability
 	float	alphaEmig[NSTAGES][NSEXES];	 // slope of density-dependent reaction norm
 	float	betaEmig[NSTAGES][NSEXES];	 // inflection point of reaction norm (in terms of N/K)
@@ -974,7 +974,7 @@ private:
 	float groupmean;    // mean group size (> 1)
 	bool groupdisp;     // group dispersal occurs
 	short grouptype;    // 0 = population-level grouping, 1 = sibling-level grouping
-											// NB OPTION 1 IS NOT CURRENTLY IMPLEMENTED
+	// NB OPTION 1 IS NOT CURRENTLY IMPLEMENTED
 #endif // GROUPDISP 
 	// NB Initialisation parameters are made double to avoid conversion errors (reason unclear)
 	// on traits maps using FloatToStr()
@@ -999,13 +999,13 @@ private:
 	bool indVarTrfr;
 #if RS_CONTAIN
 	short kernType;	// 0 = single negative exponential, 1 = double negative exponential
-									// 2 = 2Dt, 3 = WALD (inverse Gaussian)
+	// 2 = 2Dt, 3 = WALD (inverse Gaussian)
 #else
 	bool twinKern;
 #endif // RS_CONTAIN 
 #if TEMPMORT
 	short smType;		// per-step mortality type: 0 = constant, 1 = habitat-dependent
-									// 2 = temporally variable
+	// 2 = temporally variable
 #else
 	bool habMort;		// habitat-dependent mortality
 #endif // TEMPMORT 
@@ -1051,7 +1051,7 @@ private:
 	short moveType; 		// 1 = SMS, 2 = CRW
 	short pr;						// SMS perceptual range (cells)
 	short prMethod;			// SMS perceptual range evaluation method:
-											// 1 = arith. mean, 2 = harmonic mean, 3 = inverse weighted arith. mean
+	// 1 = arith. mean, 2 = harmonic mean, 3 = inverse weighted arith. mean
 	short memSize;			// SMS memory size (1-14 steps)
 	short goalType;			// SMS goal bias type: 0 = none, 1 = towards goal, 2 = dispersal bias
 	float dp;						// SMS directional persistence
@@ -1059,7 +1059,7 @@ private:
 	float alphaDB; 			// SMS dispersal bias decay rate
 	int betaDB; 				// SMS dispersal bias decay inflection point (no. of steps)
 	float stepMort;			// constant per-step mortality probability for movement models
-	double *habStepMort;	// habitat-dependent per-step mortality probability
+	double* habStepMort;	// habitat-dependent per-step mortality probability
 	float stepLength;		// CRW step length (m)
 	float rho;					// CRW correlation coefficient
 	double dpMean[1][NSEXES];				// mean of initial SMS directional persistence
@@ -1077,8 +1077,8 @@ private:
 #if TEMPMORT
 	// list of dynamic per-step mortality changes
 	std::vector <mortChange> mortchanges;
-	int nextChange,nextYear;
-	double currentMortality,currentGradient,nextGradient;
+	int nextChange, nextYear;
+	double currentMortality, currentGradient, nextGradient;
 #endif // TEMPMORT 
 	double stepLgthMean[1][NSEXES];	// mean of initial step length (m)
 	double stepLgthSD[1][NSEXES];		// s.d. of initial step length (m)
@@ -1087,14 +1087,14 @@ private:
 	float stepLScale;								// scaling factor for step length (m)
 	float rhoScale;									// scaling factor for correlation coefficient
 	short habDimTrfr;		// dimension of habitat-dependent step mortality and costs matrices
-	int *habCost;				// habitat costs
+	int* habCost;				// habitat costs
 	bool costMap;				// import cost map from file?
 	bool straigtenPath;	// straighten path after decision not to settle
 	bool fullKernel;		// used to indicate special case when density-independent emigration
-											// is 1.0, and kernel-based movement within the natal cell is used
-											// to determine philopatry
+	// is 1.0, and kernel-based movement within the natal cell is used
+	// to determine philopatry
 
-	// settlement parameters
+// settlement parameters
 
 	bool stgDepSett;
 	bool sexDepSett;
@@ -1135,7 +1135,7 @@ private:
 	bool resetMigrn;									// reset dispersal/migration strategies every year
 #endif // PARTMIGRN 
 #endif // SEASONAL 
-	
+
 #if SOCIALMODEL
 	// ADDITIONAL PARAMETERS FOR PROBIS SOCIAL POLYMORPHISM MODEL
 	// see also Fogarty et al. (2011), Am. Nat., 177, 273-287
@@ -1143,10 +1143,10 @@ private:
 	float asocK;			// ratio of K for asocial morph to K for social morph
 	float asocRmax;		// ratio of Rmax for asocial morph to Rmax for social morph
 	float asocBc;			// ratio of bc for asocial morph to bc for social morph
-//	float rs,ra; 			// Fogarty's r for social and asocial morphs
-	float Ts,Ta; 			// Allee effect thresholds (relative to K) for social and asocial morphs
-	float cs,ca; 			// Parameters of Allee effect below Ts,Ta
-	float bs,ba; 			// Parameters of Allee effect below Ts,Ta
+	//	float rs,ra; 			// Fogarty's r for social and asocial morphs
+	float Ts, Ta; 			// Allee effect thresholds (relative to K) for social and asocial morphs
+	float cs, ca; 			// Parameters of Allee effect below Ts,Ta
+	float bs, ba; 			// Parameters of Allee effect below Ts,Ta
 	float dK;					// dispersal rate independent of reproduction expectation
 	float alpha;			// change in dispersal rate with reproduction expectation
 #endif

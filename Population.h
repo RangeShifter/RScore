@@ -1,58 +1,58 @@
 /*----------------------------------------------------------------------------
- *	
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell 
- *	
+ *
+ *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *
  *	This file is part of RangeShifter.
- *	
+ *
  *	RangeShifter is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation, either version 3 of the License, or
  *	(at your option) any later version.
- *	
+ *
  *	RangeShifter is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *	GNU General Public License for more details.
- *	
+ *
  *	You should have received a copy of the GNU General Public License
  *	along with RangeShifter. If not, see <https://www.gnu.org/licenses/>.
- *	
+ *
  --------------------------------------------------------------------------*/
- 
- 
-/*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Population
 
-Implements the Population class
+ /*------------------------------------------------------------------------------
 
-There is ONE instance of a Population for each Species within each SubCommunity
-(including the matrix). The Population holds a list of all the Individuals in
-the Population.
+ RangeShifter v2.0 Population
 
-The matrix Population(s) hold(s) Individuals which are currently in the process
-of transfer through the matrix.
+ Implements the Population class
 
-For full details of RangeShifter, please see:
-Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
-and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
-eco-evolutionary dynamics and species’ responses to environmental changes.
-Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
+ There is ONE instance of a Population for each Species within each SubCommunity
+ (including the matrix). The Population holds a list of all the Individuals in
+ the Population.
 
-Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+ The matrix Population(s) hold(s) Individuals which are currently in the process
+ of transfer through the matrix.
 
-Last updated: 22 January 2022 by Steve Palmer
+ For full details of RangeShifter, please see:
+ Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+ eco-evolutionary dynamics and species’ responses to environmental changes.
+ Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
-------------------------------------------------------------------------------*/
+ Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+
+ Last updated: 22 January 2022 by Steve Palmer
+
+ ------------------------------------------------------------------------------*/
 
 #ifndef PopulationH
 #define PopulationH
 
 #include <vector>
 #include <algorithm>
-//#include <Math.hpp>
-//#include <math.h>
-//#include <stdlib.h>
+ //#include <Math.hpp>
+ //#include <math.h>
+ //#include <stdlib.h>
 using namespace std;
 
 #include "Parameters.h"
@@ -77,26 +77,26 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 struct popStats {
-	Species *pSpecies; Patch *pPatch; int spNum,nInds,nNonJuvs,nAdults; bool breeding;
+	Species* pSpecies; Patch* pPatch; int spNum, nInds, nNonJuvs, nAdults; bool breeding;
 #if GOBYMODEL
-	int nSocial,nAsocial;
+	int nSocial, nAsocial;
 #endif
 #if SOCIALMODEL
-	int nSocial,nAsocial;
+	int nSocial, nAsocial;
 #endif
 };
 #if GROUPDISP
 struct dispgroup {
-	Group *pGroup; Cell *pCell; int groupsize; bool yes;
+	Group* pGroup; Cell* pCell; int groupsize; bool yes;
 };
 #endif
 #if RS_ABC
 struct dispstats {
-	int nPhilo,nDisp,nSuccess; double sumDist,sumDist2;
+	int nPhilo, nDisp, nSuccess; double sumDist, sumDist2;
 };
 #endif
 struct disperser {
-	Individual *pInd; Cell *pCell; bool yes;
+	Individual* pInd; Cell* pCell; bool yes;
 };
 struct traitsums { // sums of trait genes for dispersal
 	int ninds[NSEXES];				// no. of individuals
@@ -184,8 +184,8 @@ public:
 #endif // RS_ABC
 	void extirpate(void); // Remove all individuals
 #if RS_CONTAIN
-	void cull(Cull*,double); // Remove individuals according to cull rate
-	void resetCull(void); 
+	void cull(Cull*, double); // Remove individuals according to cull rate
+	void resetCull(void);
 #endif // RS_CONTAIN 
 #if RS_CONTAIN
 #if SEASONAL
@@ -214,11 +214,11 @@ public:
 	);
 #else
 #if GROUPDISP
-	Individual* getFather(int,int);
+	Individual* getFather(int, int);
 	void reproduction(
-		const std::vector <Individual*> *, // pointer to list of global 'fathers'
+		const std::vector <Individual*>*, // pointer to list of global 'fathers'
 		const int,		// length of global 'fathers' vector
-		const std::vector <Individual*> *, // pointer to list of neighbourhood 'fathers'
+		const std::vector <Individual*>*, // pointer to list of neighbourhood 'fathers'
 		const int,		// length of neighbourhood 'fathers' vector
 		const float,	// local carrying capacity
 		const float,	// effect of environmental gradient and/or stochasticty
@@ -231,8 +231,8 @@ public:
 		const float,	// effect of environmental gradient and/or stochasticty
 		const int,		// Landscape resolution
 		const short		// option: 0 = default (all reproduction before dispersal),
-									// 1 = mating only (before dispersal),
-									// 2 = parturition only (after dispersal)
+		// 1 = mating only (before dispersal),
+		// 2 = parturition only (after dispersal)
 	);
 #else
 	void reproduction(
@@ -268,7 +268,7 @@ public:
 	dispgroup extractGroupSettler(
 		int   // index no. to the Group in the group vector
 	);
-//	void setGroupStatus(int,short);
+	//	void setGroupStatus(int,short);
 	void deleteGroup(int);
 #endif
 	// For an individual identified as being in the matrix population:
@@ -296,7 +296,7 @@ public:
 	);
 	void deleteGroups(void); // Delete dispersal groups once dispersal has finished
 #if PEDIGREE
-	void outGroups(Pedigree*,int,int,int,bool);
+	void outGroups(Pedigree*, int, int, int, bool);
 #endif
 #endif // GROUPDISP 
 #if SEASONAL
@@ -347,8 +347,8 @@ public:
 		short,	// habitat index 
 		short,	// season
 		short,	// option0:	0 - stage 0 (juveniles) only
-						//	  			1 - all stages
-						//					2 - stage 1 and above (all non-juveniles)
+		//	  			1 - all stages
+		//					2 - stage 1 and above (all non-juveniles)
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 						//	  	 		2 - survival only (when survival is annual)
@@ -358,8 +358,8 @@ public:
 		float,	// local carrying capacity
 		short,	// habitat index 
 		short,	// option0:	0 - stage 0 (juveniles) only
-						//	  			1 - all stages
-						//					2 - stage 1 and above (all non-juveniles)
+		//	  			1 - all stages
+		//					2 - stage 1 and above (all non-juveniles)
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 						//	  	 		2 - survival only (when survival is annual)
@@ -371,8 +371,8 @@ public:
 		float,	// local carrying capacity
 		short,	// season
 		short,	// option0:	0 - stage 0 (juveniles) only
-						//	  			1 - all stages
-						//					2 - stage 1 and above (all non-juveniles)
+		//	  			1 - all stages
+		//					2 - stage 1 and above (all non-juveniles)
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 						//	  	 		2 - survival only (when survival is annual)
@@ -383,8 +383,8 @@ public:
 		float,	// local carrying capacity
 		float,	// spatially varying mortality
 		short,	// option0:	0 - stage 0 (juveniles) only
-						//	  			1 - all stages
-						//					2 - stage 1 and above (all non-juveniles)
+		//	  			1 - all stages
+		//					2 - stage 1 and above (all non-juveniles)
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 						//	  	 		2 - survival only (when survival is annual)
@@ -395,8 +395,8 @@ public:
 		Pedigree*,	// pointyer to Pedigree
 		float,			// local carrying capacity
 		short,			// option0:	0 - stage 0 (juveniles) only
-								//	  			1 - all stages
-								//					2 - stage 1 and above (all non-juveniles)
+		//	  			1 - all stages
+		//					2 - stage 1 and above (all non-juveniles)
 		short 			// option1:	0 - development only (when survival is annual)
 								//	  	 		1 - development and survival
 								//	  	 		2 - survival only (when survival is annual)
@@ -405,8 +405,8 @@ public:
 	void survival0(
 		float,	// local carrying capacity
 		short,	// option0:	0 - stage 0 (juveniles) only
-						//	  			1 - all stages
-						//					2 - stage 1 and above (all non-juveniles)
+		//	  			1 - all stages
+		//					2 - stage 1 and above (all non-juveniles)
 		short 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 						//	  	 		2 - survival only (when survival is annual)
@@ -484,7 +484,7 @@ public:
 		int					// Patch number
 	);
 #if RS_ABC
-dispstats getDispStats(float);
+	dispstats getDispStats(float);
 #endif
 #if GROUPDISP || ROBFITT
 	void outGenetics( // Write records to genetics file
@@ -506,32 +506,32 @@ dispstats getDispStats(float);
 private:
 	short nStages;
 	short nSexes;
-	Species *pSpecies;	// pointer to the species
-	Patch *pPatch;			// pointer to the patch
+	Species* pSpecies;	// pointer to the species
+	Patch* pPatch;			// pointer to the patch
 	int nInds[NSTAGES][NSEXES];		// no. of individuals in each stage/sex
 
 	std::vector <Individual*> inds; // all individuals in population except ...
 	std::vector <Individual*> juvs; // ... juveniles until reproduction of ALL species
-																	// has been completed
+	// has been completed
 #if GROUPDISP
 	std::vector <Group*> groups;		// dispersal groups (matrix only)
-	Group *pGroup;			// pointer to the current group
+	Group* pGroup;			// pointer to the current group
 #endif
 
 #if RS_CONTAIN
 	int nCulled;				// no. of individuals culled
-	bool selectedForCull;				
+	bool selectedForCull;
 #endif // RS_CONTAIN 
 
 };
 
 //---------------------------------------------------------------------------
 
-extern paramGrad *paramsGrad;
-extern paramStoch *paramsStoch;
-extern paramInit *paramsInit;
-extern paramSim *paramsSim;
-extern RSrandom *pRandom;
+extern paramGrad* paramsGrad;
+extern paramStoch* paramsStoch;
+extern paramInit* paramsInit;
+extern paramSim* paramsSim;
+extern RSrandom* pRandom;
 
 #if RSDEBUG
 extern ofstream DEBUGLOG;

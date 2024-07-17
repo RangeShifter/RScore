@@ -1,45 +1,45 @@
 /*----------------------------------------------------------------------------
- *	
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell 
- *	
+ *
+ *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *
  *	This file is part of RangeShifter.
- *	
+ *
  *	RangeShifter is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation, either version 3 of the License, or
  *	(at your option) any later version.
- *	
+ *
  *	RangeShifter is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *	GNU General Public License for more details.
- *	
+ *
  *	You should have received a copy of the GNU General Public License
  *	along with RangeShifter. If not, see <https://www.gnu.org/licenses/>.
- *	
+ *
  --------------------------------------------------------------------------*/
- 
- 
-/*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Individual
 
-Implements the Individual class
+ /*------------------------------------------------------------------------------
 
-Various optional attributes (genes for traits, movement parameters, etc.) are
-allocated dynamically and accessed by pointers if required.
+ RangeShifter v2.0 Individual
 
-For full details of RangeShifter, please see:
-Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
-and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
-eco-evolutionary dynamics and species’ responses to environmental changes.
-Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
+ Implements the Individual class
 
-Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+ Various optional attributes (genes for traits, movement parameters, etc.) are
+ allocated dynamically and accessed by pointers if required.
 
-Last updated: 26 October 2021 by Steve Palmer
+ For full details of RangeShifter, please see:
+ Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+ eco-evolutionary dynamics and species’ responses to environmental changes.
+ Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
-------------------------------------------------------------------------------*/
+ Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+
+ Last updated: 26 October 2021 by Steve Palmer
+
+ ------------------------------------------------------------------------------*/
 
 #ifndef IndividualH
 #define IndividualH
@@ -89,8 +89,8 @@ struct pathData { // to hold path data common to SMS and CRW models
 #endif
 	Patch* pSettPatch;		// pointer to most recent patch tested for settlement
 	short settleStatus; 	// whether ind may settle in current patch
-												// 0 = not set, 1 = debarred through density dependence rule
-												// 2 = OK to settle subject to finding a mate
+	// 0 = not set, 1 = debarred through density dependence rule
+	// 2 = OK to settle subject to finding a mate
 //	bool leftNatalPatch;	// individual has moved out of its natal patch
 #if RS_RCPP
 	short pathoutput;
@@ -107,7 +107,7 @@ struct settlePatch {
 };
 struct crwParams { // to hold data for CRW movement model
 	float prevdrn;	// direction of previous step (UNITS)
-	float xc,yc;		// continuous cell co-ordinates
+	float xc, yc;		// continuous cell co-ordinates
 	float stepL;		// phenotypic step length (m)
 	float rho;			// phenotypic step correlation coefficient
 };
@@ -126,7 +126,7 @@ struct smsdata {
 };
 
 #if SEASONAL
-struct patchlist { Patch *pPatch; short season; bool breeding; bool fixed; };
+struct patchlist { Patch* pPatch; short season; bool breeding; bool fixed; };
 #endif
 
 class Individual {
@@ -176,10 +176,10 @@ public:
 #endif // RS_CONTAIN 
 	~Individual(void);
 #if BUTTERFLYDISP
-void setMate(Individual*);
-//void setMated(short,Individual*);
-//int getNJuvs(void);
-Individual* getMate(void);
+	void setMate(Individual*);
+	//void setMated(short,Individual*);
+	//int getNJuvs(void);
+	Individual* getMate(void);
 #endif
 	void setGenes( // Set genes for individual variation from species initialisation parameters
 		Species*,			// pointer to Species
@@ -282,9 +282,9 @@ Individual* getMate(void);
 #endif // PARTMIGRN 
 	void setPrevPatch(Patch*);
 #if PARTMIGRN
-//	void setNpatches( // set max. no. of patches to be held in memory
-//		const short		// no. of patches
-//	);
+	//	void setNpatches( // set max. no. of patches to be held in memory
+	//		const short		// no. of patches
+	//	);
 	void addPatch( // add patch to memory
 		patchlist				// patch data
 	);
@@ -351,7 +351,7 @@ Individual* getMate(void);
 	);
 #endif // SEASONAL 
 	void drawMove(	// Visualise paths resulting from movement simulation model
-									// NULL for the batch version
+		// NULL for the batch version
 		const float,	// initial x co-ordinate
 		const float,	// initial y co-ordinate
 		const float,	// final x co-ordinate
@@ -419,34 +419,34 @@ Individual* getMate(void);
 protected:
 	short stage;
 	short sex;
-	Cell *pPrevCell;						// pointer to previous Cell
-	Cell *pCurrCell;						// pointer to current Cell
-	Patch *pNatalPatch;					// pointer to natal Patch
+	Cell* pPrevCell;						// pointer to previous Cell
+	Cell* pCurrCell;						// pointer to current Cell
+	Patch* pNatalPatch;					// pointer to natal Patch
 	short status;	// 0 = initial status in natal patch / philopatric recruit
-								// 1 = disperser
-								// 2 = disperser awaiting settlement in possible suitable patch
-								// 3 = waiting between dispersal events
-								// 4 = completed settlement
-								// 5 = completed settlement in a suitable neighbouring cell
-								// 6 = died during transfer by failing to find a suitable patch
-								//     (includes exceeding maximum number of steps or crossing
-								//			absorbing boundary)
-								// 7 = died during transfer by constant, step-dependent,
-								//     habitat-dependent or distance-dependent mortality
-								// 8 = failed to survive annual (demographic) mortality
-								// 9 = exceeded maximum age
-	pathData *path; 						// pointer to path data for movement model
-	crwParams *crw;     				// pointer to CRW traits and data
-	smsdata *smsData;						// pointer to variables required for SMS
-	emigTraits *emigtraits;			// pointer to emigration traits
-	trfrKernTraits *kerntraits;	// pointers to transfer by kernel traits
-	settleTraits *setttraits;		// pointer to settlement traits
-	Genome *pGenome;
+	// 1 = disperser
+	// 2 = disperser awaiting settlement in possible suitable patch
+	// 3 = waiting between dispersal events
+	// 4 = completed settlement
+	// 5 = completed settlement in a suitable neighbouring cell
+	// 6 = died during transfer by failing to find a suitable patch
+	//     (includes exceeding maximum number of steps or crossing
+	//			absorbing boundary)
+	// 7 = died during transfer by constant, step-dependent,
+	//     habitat-dependent or distance-dependent mortality
+	// 8 = failed to survive annual (demographic) mortality
+	// 9 = exceeded maximum age
+	pathData* path; 						// pointer to path data for movement model
+	crwParams* crw;     				// pointer to CRW traits and data
+	smsdata* smsData;						// pointer to variables required for SMS
+	emigTraits* emigtraits;			// pointer to emigration traits
+	trfrKernTraits* kerntraits;	// pointers to transfer by kernel traits
+	settleTraits* setttraits;		// pointer to settlement traits
+	Genome* pGenome;
 
 private:
 	int indId;
 #if PEDIGREE
-	Individual *pParent[2];
+	Individual* pParent[2];
 #endif
 	int parentId[2];
 	int groupId;
@@ -472,37 +472,37 @@ private:
 	short sex;
 	short age;
 	short status;	// 0 = initial status in natal patch / philopatric recruit
-								// 1 = disperser
-								// 2 = disperser awaiting settlement in possible suitable patch
-								// 3 = waiting between dispersal events
-								// 4 = completed settlement
-								// 5 = completed settlement in a suitable neighbouring cell
-								// 6 = died during transfer by failing to find a suitable patch
-								//     (includes exceeding maximum number of steps or crossing
-								//			absorbing boundary)
-								// 7 = died during transfer by constant, step-dependent,
-								//     habitat-dependent or distance-dependent mortality
-								// 8 = failed to survive annual (demographic) mortality
-								// 9 = exceeded maximum age
+	// 1 = disperser
+	// 2 = disperser awaiting settlement in possible suitable patch
+	// 3 = waiting between dispersal events
+	// 4 = completed settlement
+	// 5 = completed settlement in a suitable neighbouring cell
+	// 6 = died during transfer by failing to find a suitable patch
+	//     (includes exceeding maximum number of steps or crossing
+	//			absorbing boundary)
+	// 7 = died during transfer by constant, step-dependent,
+	//     habitat-dependent or distance-dependent mortality
+	// 8 = failed to survive annual (demographic) mortality
+	// 9 = exceeded maximum age
 #if RS_CONTAIN
 	short motherstage;	// mother's stage for purpose of implementing WALD kernel
 #endif // RS_CONTAIN 
 #if SEASONAL
 #if PARTMIGRN
 	short migrnstatus;	// 0 = not yet determined
-											// 1 = philopatric resident, breeding and non-breeding fixed
-											// 2 = philopatric migrant, non-breeding site fixed
-											// 3 = philopatric migrant, non-breeding site not fixed
-											// 4 = dispersed resident, breeding and non-breeding fixed
-											// 5 = dispersed migrant, breeding fixed, non-breeding fixed
-											// 6 = dispersed migrant, breeding fixed, non-breeding not fixed
+	// 1 = philopatric resident, breeding and non-breeding fixed
+	// 2 = philopatric migrant, non-breeding site fixed
+	// 3 = philopatric migrant, non-breeding site not fixed
+	// 4 = dispersed resident, breeding and non-breeding fixed
+	// 5 = dispersed migrant, breeding fixed, non-breeding fixed
+	// 6 = dispersed migrant, breeding fixed, non-breeding not fixed
 #endif // PARTMIGRN 
 	short npatches; 		// no. of patches held in memory
 #endif // SEASONAL 
 	short fallow; // reproductive seasons since last reproduction
 #if BUTTERFLYDISP
-//	short nJuvs;
-	Individual *pMate;
+	//	short nJuvs;
+	Individual* pMate;
 #endif
 	bool isDeveloping;
 #if GOBYMODEL
@@ -511,24 +511,24 @@ private:
 #if SOCIALMODEL
 	bool asocial;
 #endif
-	Cell *pPrevCell;						// pointer to previous Cell
-	Cell *pCurrCell;						// pointer to current Cell
-	Patch *pNatalPatch;					// pointer to natal Patch
+	Cell* pPrevCell;						// pointer to previous Cell
+	Cell* pCurrCell;						// pointer to current Cell
+	Patch* pNatalPatch;					// pointer to natal Patch
 #if SEASONAL
-	Patch *pPrevPatch;						// pointer to previous Patch
+	Patch* pPrevPatch;						// pointer to previous Patch
 #endif
-	emigTraits *emigtraits;			// pointer to emigration traits
-	trfrKernTraits *kerntraits;	// pointers to transfer by kernel traits
-	pathData *path; 						// pointer to path data for movement model
-	crwParams *crw;     				// pointer to CRW traits and data
-	smsdata *smsData;						// pointer to variables required for SMS
-	settleTraits *setttraits;		// pointer to settlement traits
+	emigTraits* emigtraits;			// pointer to emigration traits
+	trfrKernTraits* kerntraits;	// pointers to transfer by kernel traits
+	pathData* path; 						// pointer to path data for movement model
+	crwParams* crw;     				// pointer to CRW traits and data
+	smsdata* smsData;						// pointer to variables required for SMS
+	settleTraits* setttraits;		// pointer to settlement traits
 	std::queue <locn> memory;		// memory of last N squares visited for SMS
 #if SEASONAL
 	std::vector <patchlist> patches;		// memory of patches used
 #endif
 
-	Genome *pGenome;
+	Genome* pGenome;
 
 #endif // GROUPDISP
 
@@ -537,10 +537,10 @@ private:
 
 //---------------------------------------------------------------------------
 
-double cauchy(double location, double scale) ;
-double wrpcauchy (double location, double rho = exp(double(-1)));
+double cauchy(double location, double scale);
+double wrpcauchy(double location, double rho = exp(double(-1)));
 
-extern RSrandom *pRandom;
+extern RSrandom* pRandom;
 
 #if RSDEBUG
 extern ofstream DEBUGLOG;
