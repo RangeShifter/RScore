@@ -49,7 +49,6 @@
 #include <algorithm>
 using namespace std;
 
-//#include "mathlib.h"
 #include "Parameters.h"
 #include "Species.h"
 #include "Landscape.h"
@@ -89,9 +88,8 @@ struct pathData { // to hold path data common to SMS and CRW models
 #endif
 	Patch* pSettPatch;		// pointer to most recent patch tested for settlement
 	short settleStatus; 	// whether ind may settle in current patch
-	// 0 = not set, 1 = debarred through density dependence rule
-	// 2 = OK to settle subject to finding a mate
-//	bool leftNatalPatch;	// individual has moved out of its natal patch
+												// 0 = not set, 1 = debarred through density dependence rule
+												// 2 = OK to settle subject to finding a mate
 #if RS_RCPP
 	short pathoutput;
 #endif
@@ -350,13 +348,6 @@ public:
 		const bool    // absorbing boundaries?
 	);
 #endif // SEASONAL 
-	void drawMove(	// Visualise paths resulting from movement simulation model
-		// NULL for the batch version
-		const float,	// initial x co-ordinate
-		const float,	// initial y co-ordinate
-		const float,	// final x co-ordinate
-		const float		// final y co-ordinate
-	);
 	movedata smsMove( // Move to a neighbouring cell according to the SMS algorithm
 		Landscape*,		// pointer to Landscape
 		Species*,			// pointer to Species
@@ -550,5 +541,9 @@ extern ofstream DEBUGLOG;
 extern ofstream outMovePaths;
 #endif
 
-//---------------------------------------------------------------------------
+#if RSDEBUG
+void testIndividual();
 #endif
+
+//---------------------------------------------------------------------------
+#endif // IndividualH

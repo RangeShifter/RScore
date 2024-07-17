@@ -19,25 +19,11 @@
  *
  --------------------------------------------------------------------------*/
 
-
- /*------------------------------------------------------------------------------
-
- RangeShifter v2.0 Genome
-
- Implements the Genome class
-
- Author: Steve Palmer & Roslyn Henry, University of Aberdeen
-
- Last updated: 28 July 2021 by Greta Bocedi
-
- ------------------------------------------------------------------------------*/
-
 #ifndef GenomeH
 #define GenomeH
 
 #include <vector>
 #include <algorithm>
- //#include "maths.h"
 
 #include "Parameters.h"
 #include "Species.h"
@@ -65,7 +51,6 @@ public:
 		const short,	// locus
 		const bool		// diploid
 	);
-	//	double probval(const bool);
 	locus alleles(	// Return allele values at a specified locus
 		const int			// position of locus on chromosome
 	);
@@ -102,12 +87,6 @@ private:
 class Genome {
 
 public:
-	//
-	//	static float delPMutation, delEffectSize, delDominance, delBackMutation ,genomeMeanRecombination;
-	//	static int delMaxSize, delNMutations;
-	//	static bool genomeCanRecombine, genomeCompletelyUnlinked;
-	//
-
 	Genome();
 	Genome(int, int, bool);
 	Genome(Species*);
@@ -129,23 +108,17 @@ public:
 		Species*,			// pointer to Species
 		const double		// s.d. of allelic variance
 	);
-	//	double copy(int,int);
 	double express(
 		// Return the expressed value of a gene when species has one chromosome per trait
 		short,	// chromosome number
 		short,	// expression type (NOT CURRENTLY USED)
 		short		// individual's sex (NOT CURRENTLY USED)
 	);
-	//	double express(
-	//		short,	// chromosome number
-	//		short		// locus on chromosome
-	//	);
 	double express(
 		// Return the expressed value of a trait when genetic architecture is defined
 		Species*,	// pointer to Species
 		short			// trait number
-//		bool			// true if trait is sex-dependent
-);
+	);
 	locusOK getAlleles( // Get allele values at a specified locus
 		short,	// chromosome number
 		short		// locus position on chromosome
@@ -161,8 +134,6 @@ public:
 		const double,		// crossover probability
 		const double			// s.d. of mutation magnitude (genetic scale)
 	);
-	//	void setStaticData(genomeData);
-	//	genomeData getStaticData(void);
 	short getNChromosomes(void);
 #if VIRTUALECOLOGIST
 	int getChromosomeNloci(short);
@@ -210,62 +181,12 @@ private:
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-/*
-
-struct gene {
-	short expression;	// used to control how gene is expressed:
-		// 0 = haploid
-		// 1 = sex-linked
-		// 2 = dominance of greater value
-		// 3 = co-dominance (mean value)
-		// 4 = sex-expressed (but not sex-linked)
-	short mutntype;		// mutation type:
-		// 0 = random in [0,1]
-		// 1 = normal
-		// 2 = logit scale
-		// 3 = log-normal (gene must be positive)
-		// 4 = RS method - random in specified range
-		// 5 = RS method - random in specified range and constrained to [0,1]
-	float Pmutn;			// mutation probability
-	float mutnSize;		// mutation size (s.d. of normal distribution)
-	double allele[2]; // allele pair: [0] from mother, [1] from father
-};
-;
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-class Genome
-{
-public:
-	Genome(int);
-	Genome(Genome*,Genome*);
-	~Genome(void);
-	void setGene(int);
-	void setGene(int,short,short,float,float,double,double);  // new gene
-	double copy(int,int);
-	double express(int,int);
-	locus getAlleles( // Get allele values at a specified locus
-		int	// locus position within genome
-	);
-
-private:
-	int genomesize;
-	gene **genome;
-
-};
-
-*/
-
-//---------------------------------------------------------------------------
-
 extern paramSim* paramsSim;
 extern RSrandom* pRandom;
 
 #if RSDEBUG
 extern ofstream DEBUGLOG;
 extern ofstream MUTNLOG;
-extern void DebugGUI(string);
 #endif
 
 //---------------------------------------------------------------------------

@@ -32,9 +32,9 @@
  CURRENTLY the number of Populations withn a SubCommunity is LIMITED TO ONE.
 
  For full details of RangeShifter, please see:
- Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ Bocedi G., Palmer S.C.F., Peâ€™er G., Heikkinen R.K., Matsinos Y.G., Watts K.
  and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
- eco-evolutionary dynamics and species’ responses to environmental changes.
+ eco-evolutionary dynamics and speciesâ€™ responses to environmental changes.
  Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
  Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
@@ -54,14 +54,6 @@
 #include <algorithm>
 using namespace std;
 
-//#if RS_RCPP && !R_CMD
-#include "../Version.h"
-//#endif
-
-//#if !RS_RCPP && R_CMD
-//#include "../../Batch/Version.h"
-//#endif
-
 #include "Parameters.h"
 #include "Landscape.h"
 #include "Population.h"
@@ -76,14 +68,6 @@ using namespace std;
 #endif // RS_CONTAIN 
 
 //---------------------------------------------------------------------------
-
-struct traitCanvas { // canvases for drawing variable traits
-#if VCL
-	TCanvas* pcanvas[NTRAITS];
-#else
-	int* pcanvas[NTRAITS]; // dummy variables for batch version
-#endif
-};
 
 class SubCommunity {
 
@@ -224,7 +208,7 @@ public:
 		Landscape*,	// pointer to Landscape
 		short				// landscape change index
 	);
-#endif // SEASONAL || RS_RCPP
+#endif // RS_RCPP
 	// Remove emigrants from patch 0 (matrix) and transfer to SubCommunity in which
 	// their destination co-ordinates fall (executed for the matrix patch only)
 #if PEDIGREE
@@ -389,8 +373,6 @@ public:
 		int					// Landscape number (-999 to close the file)
 	);
 	traitsums outTraits( // Write records to traits file and return aggregated sums
-		traitCanvas,	// pointers to canvases for drawing variable traits		
-		// in the batch version, these are replaced by integers set to zero
 		Landscape*, 	// pointer to Landscape
 		int,					// replicate
 		int,					// year
@@ -413,10 +395,9 @@ public:
 
 private:
 	intptr subCommNum;	// SubCommunity number
-	// 0 is reserved for the SubCommunity in the inter-patch matrix
-//	intptr *occupancy;	// pointer to occupancy array
-	Patch* pPatch;
-	int* occupancy;	// pointer to occupancy array
+		// 0 is reserved for the SubCommunity in the inter-patch matrix
+	Patch *pPatch;
+	int *occupancy;	// pointer to occupancy array
 	std::vector <Population*> popns;
 	bool initial; 	// WILL NEED TO BE CHANGED FOR MULTIPLE SPECIES ...
 #if RS_CONTAIN

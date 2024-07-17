@@ -31,9 +31,9 @@
  The class holds all the demographic and dispersal parameters of the species.
 
  For full details of RangeShifter, please see:
- Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ Bocedi G., Palmer S.C.F., Peâ€™er G., Heikkinen R.K., Matsinos Y.G., Watts K.
  and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
- eco-evolutionary dynamics and species’ responses to environmental changes.
+ eco-evolutionary dynamics and speciesâ€™ responses to environmental changes.
  Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
  Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
@@ -49,13 +49,6 @@
 #include <vector>
 #endif
 
- //#if RS_RCPP && !R_CMD
-#include "../Version.h"
-//#endif
-
-//#if !RS_RCPP && R_CMD
-//#include "../../Batch/Version.h"
-//#endif
 #include "Parameters.h"
 
 #if SEASONAL
@@ -1103,8 +1096,8 @@ private:
 	bool wait[NSTAGES][NSEXES];				// wait to continue moving next season (stage-structured model only)
 	bool go2nbrLocn[NSTAGES][NSEXES];	// settle in neighbouring cell/patch if available (ditto)
 	bool findMate[NSTAGES][NSEXES];
-	int minSteps;     								// minimum no. of steps
-	int maxSteps;											// maximum total no. of steps
+	int minSteps[NSTAGES][NSEXES];     								// minimum no. of steps
+	int maxSteps[NSTAGES][NSEXES];											// maximum total no. of steps
 	int maxStepsYr[NSTAGES][NSEXES]; 	// maximum no. of steps in any one dispersal period
 	float	s0[NSTAGES][NSEXES];				// maximum settlement probability
 	float alphaS[NSTAGES][NSEXES];		// slope of the settlement reaction norm to density
@@ -1168,11 +1161,6 @@ rationale is justified remains to be tested!
 */
 
 //---------------------------------------------------------------------------
-
-#if RSDEBUG
-//extern ofstream DEBUGLOG;
-extern void DebugGUI(string);
-#endif
 
 //---------------------------------------------------------------------------
 #endif

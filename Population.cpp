@@ -21,9 +21,6 @@
 
 
  //---------------------------------------------------------------------------
-#if RS_EMBARCADERO
-#pragma hdrstop
-#endif
 
 #include "Population.h"
 //---------------------------------------------------------------------------
@@ -53,10 +50,6 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 #endif
 {
 	// constructor for a Population of a specified size
-#if RSDEBUG
-//DEBUGLOG << "Population::Population(): this=" << this
-//	<< " pPch=" << pPch << " ninds="<< ninds << endl;
-#endif
 
 	int n, nindivs, age = 0, minage, maxage, nAges = 0;
 	int cumtotal = 0;
@@ -76,16 +69,11 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 	patchPopn pp;
 	pp.pSp = (intptr)pSpecies; pp.pPop = (intptr)this;
 	pPatch->addPopn(pp);
-#if RSDEBUG
-	//DEBUGLOG << "Population::Population(): this=" << this
-	//	<< " added population to patch " << endl;
-#endif
 
 	demogrParams dem = pSpecies->getDemogr();
 	stageParams sstruct = pSpecies->getStage();
 	emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();
-	//trfrSMSTraits sms = pSpecies->getSMSTraits();
 	settleType sett = pSpecies->getSettle();
 	genomeData gen = pSpecies->getGenomeData();
 	initParams init = paramsInit->getInit();
@@ -127,11 +115,6 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 			else { // non-structured population
 				minAge[stg][sex] = 0;
 			}
-#if RSDEBUG
-			//DEBUGLOG << "Population::Population(): 1111 "
-			//	<< " minAge[" << stg << "][" << sex << "]=" << minAge[stg][sex]
-			//	<< endl;
-#endif
 		}
 	}
 
@@ -151,10 +134,6 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 		else { // non-structured - all individuals go into stage 1
 			n = ninds;
 		}
-		//	for (int sex = 0; sex < nSexes; sex++) {
-		//		if (n < nSexes) n = nSexes; // to ensure at least one individual of each age is created
-		//		subPops.push_back(new SubPop(loc,stg,sex,n/nSexes));
-		//	}
 			// establish initial age distribution
 		minage = maxage = stg;
 		if (dem.stageStruct) {
@@ -202,11 +181,6 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 				}
 			}
 		}
-#if RSDEBUG
-		//DEBUGLOG << "Population::Population(): this=" << this
-		//	<< " n=" << n << " stg=" << stg << " minage=" << minage << " maxage=" << maxage
-		//	<< endl;
-#endif
 	// create individuals
 		int sex;
 		nindivs = (int)inds.size();
@@ -351,7 +325,6 @@ traitsums Population::getTraits(Species* pSpecies) {
 		ts.sumS0[i] = ts.ssqS0[i] = 0.0;
 		ts.sumAlphaS[i] = ts.ssqAlphaS[i] = 0.0; ts.sumBetaS[i] = ts.ssqBetaS[i] = 0.0;
 	}
-	//locus loc;
 
 	demogrParams dem = pSpecies->getDemogr();
 	emigRules emig = pSpecies->getEmig();
@@ -359,12 +332,7 @@ traitsums Population::getTraits(Species* pSpecies) {
 	settleType sett = pSpecies->getSettle();
 
 	int ninds = (int)inds.size();
-#if RSDEBUG
-	//DEBUGLOG << "Population::getTraits(): ninds = " << ts.ninds[0]
-	////	<< " nalleles = "<< nalleles
-	////	<< " nemiggenes = " << nemiggenes << " ntrfrgenes = " << ntrfrgenes
-	//	<< endl;
-#endif
+
 	for (int i = 0; i < ninds; i++) {
 		int sex = inds[i]->getSex();
 		if (emig.sexDep || trfr.sexDep || sett.sexDep) g = sex; else g = 0;
@@ -390,14 +358,7 @@ traitsums Population::getTraits(Species* pSpecies) {
 		ts.sumGB[g] += sms.gb; ts.ssqGB[g] += sms.gb * sms.gb;
 		ts.sumAlphaDB[g] += sms.alphaDB; ts.ssqAlphaDB[g] += sms.alphaDB * sms.alphaDB;
 		ts.sumBetaDB[g] += sms.betaDB;  ts.ssqBetaDB[g] += sms.betaDB * sms.betaDB;
-#if RSDEBUG
-		//DEBUGLOG << "Population::getTraits():"
-		//	<< " i=" << i << " g=" << g
-		//	<< " sms.dp= " << sms.dp << " sms.gb= " << sms.gb
-		//	<< " ts.sumDP[g]= " << ts.sumDP[g] << " ts.ssqDP[g]= " << ts.ssqDP[g]
-		//	<< " ts.sumGB[g]= " << ts.sumGB[g] << " ts.ssqGB[g]= " << ts.ssqGB[g]
-		//	<< endl;
-#endif
+
 		trfrCRWTraits c = inds[i]->getCRWTraits();
 		g = 0; // CURRENTLY INDIVIDUAL VARIATION CANNOT BE SEX-DEPENDENT
 		ts.sumStepL[g] += c.stepLength; ts.ssqStepL[g] += c.stepLength * c.stepLength;
@@ -409,14 +370,7 @@ traitsums Population::getTraits(Species* pSpecies) {
 		ts.sumS0[g] += s.s0;     ts.ssqS0[g] += s.s0 * s.s0;
 		ts.sumAlphaS[g] += s.alpha; ts.ssqAlphaS[g] += s.alpha * s.alpha;
 		ts.sumBetaS[g] += s.beta;   ts.ssqBetaS[g] += s.beta * s.beta;
-#if RSDEBUG
-		//DEBUGLOG << "Population::getTraits():"
-		//	<< " i=" << i << " g=" << g << " a=" << a
-		//	<< " e.d0= " << e.d0 << " e.alpha= " << e.alpha << " e.beta= " << e.beta
-		//	<< " mnd0= " << emigTraits[g]->mnD0 << " mnAlpha= " << emigTraits[g]->mnAlpha << " mnBeta= " << emigTraits[g]->mnBeta
-		//	<< " sqd0= " << emigTraits[g]->sqD0 << " sqAlpha= " << emigTraits[g]->sqAlpha << " sqBeta= " << emigTraits[g]->sqBeta
-		//	<< endl;
-#endif
+
 	}
 
 	return ts;
@@ -451,23 +405,10 @@ popStats Population::getStats(void)
 	p.nInds = (int)inds.size();
 	p.nNonJuvs = p.nAdults = 0;
 	p.breeding = false;
-#if RSDEBUG
-	//DEBUGLOG << "Population::getStats(): this=" << this
-	////	<< " p.pSpecies=" << p.pSpecies << " p.spNum=" << p.spNum
-	//	<< " p.pPatch=" << p.pPatch << " patchNum=" << p.pPatch->getPatchNum()
-	//	<< " nStages=" << nStages << " nSexes=" << nSexes << " p.nInds=" << p.nInds
-	//	<< endl;
-#endif
 	for (int stg = 1; stg < nStages; stg++) {
 		for (int sex = 0; sex < nSexes; sex++) {
 			ninds = nInds[stg][sex];
 			p.nNonJuvs += ninds;
-#if RSDEBUG
-			//DEBUGLOG << "Population::getStats(): this=" << this
-			//	<< " stg=" << stg << " sex=" << sex
-			//	<< " nInds[stg][sex]=" << nInds[stg][sex] << " p.nNonJuvs=" << p.nNonJuvs
-			//	<< endl;
-#endif
 			if (ninds > 0) {
 				if (pSpecies->stageStructured()) {
 #if RS_CONTAIN
@@ -549,13 +490,6 @@ popStats Population::getStats(void)
 		if (inds[i]->isAsocial()) p.nAsocial++; else p.nSocial++;
 	}
 #endif
-#if RSDEBUG
-	//DEBUGLOG << "Population::getStats(): this=" << this
-	//	<< " p.nInds=" << p.nInds << " p.nAdults=" << p.nAdults << " p.nNonJuvs=" << p.nNonJuvs
-	//	<< " breeders[0]=" << breeders[0] << " breeders[1]=" << breeders[1]
-	//	<< " p.breeding=" << p.breeding
-	//	<< endl;
-#endif
 	return p;
 }
 
@@ -566,12 +500,6 @@ int Population::totalPop(void) {
 	for (int stg = 0; stg < nStages; stg++) {
 		for (int sex = 0; sex < nSexes; sex++) {
 			t += nInds[stg][sex];
-#if RSDEBUG
-			//DEBUGLOG << "Population::totalPop(): this=" << this
-			//	<< " stg=" << stg << " sex=" << sex
-			//	<< " nInds[stg][sex]=" << nInds[stg][sex] << " t=" << t
-			//	<< endl;
-#endif
 		}
 	}
 	return t;
@@ -668,19 +596,7 @@ void Population::cull(Cull* pCull, double hectares)
 	}
 	int ninds = (int)inds.size();
 	int njuvs = (int)juvs.size();
-#if RSDEBUG
-	DEBUGLOG << "Population::cull(): this=" << this << " patch=" << pPatch->getPatchNum()
-		<< " hectares=" << hectares
-		<< " cullRate=" << c.cullRate << " cullMaxRate=" << c.cullMaxRate
-		<< " cullAlpha=" << c.cullAlpha << " cullBeta=" << c.cullBeta
-		<< " stagePop(0)=" << stagePop(0) << " stagePop(1)=" << stagePop(1) << " stagePop(2)=" << stagePop(2)
-		//	<< " getNInds=" << getNInds()
-		//	<< " ninds=" << ninds << " njuvs=" << njuvs
-		<< " density=" << density
-		<< " pculled[0]=" << pculled[0]
-		//	<< " nCulled=" << nCulled
-		<< endl;
-#endif
+
 	demogrParams dem = pSpecies->getDemogr();
 	nCulled = 0;
 	selectedForCull = true;
@@ -695,35 +611,14 @@ void Population::cull(Cull* pCull, double hectares)
 				else {
 					if (pRandom->Bernoulli(pculled[0])) { inds[i]->setStatus(10); nCulled++; }
 				}
-#if RSDEBUG
-				//DEBUGLOG << "Population::cull(): i=" << i << " ind.stage=" << ind.stage 
-				//	<< " nCulled=" << nCulled 
-				//	<< endl;
-#endif
+
 			}
 		}
 		else {
 			if (pRandom->Bernoulli(pculled[0])) { inds[i]->setStatus(10); nCulled++; }
 		}
 	}
-	/*
-	for (int i = 0; i < njuvs; i++) {
-		if (dem.stageStruct) {
-			ind = juvs[i]->getStats();
-			if (pCull->getCullStage(ind.stage)) {
-				if (pRandom->Bernoulli(pculled)) { juvs[i]->setStatus(10); nCulled++; }
-			}
-		}
-		else {
-			if (pRandom->Bernoulli(pculled)) { juvs[i]->setStatus(10); nCulled++; }
-		}
-	}
-	*/
-#if RSDEBUG
-	DEBUGLOG << "Population::cull(): this=" << this << " patch=" << pPatch->getPatchNum()
-		<< " nCulled=" << nCulled
-		<< endl;
-#endif
+	
 }
 
 void Population::resetCull(void) { nCulled = 0; selectedForCull = false; }
@@ -768,17 +663,6 @@ void Population::reproduction(const float localK, const float envval, const int 
 
 	// get population size at start of reproduction
 	int ninds = (int)inds.size();
-#if RSDEBUG
-	//DEBUGLOG << "Population::reproduction(): this=" << this
-	//#if BUTTERFLYDISP
-	//	<< " option=" << option
-	//#endif // BUTTERFLYDISP 
-	//#if RS_CONTAIN
-	//	<< " hab=" << hab
-	//#endif // RS_CONTAIN 
-	//	<< " ninds=" << ninds
-	//	<< endl;
-#endif // RSDEBUG 
 	if (ninds == 0) return;
 
 	int nsexes, stage, sex, njuvs, nj, nmales, nfemales;
@@ -787,7 +671,6 @@ void Population::reproduction(const float localK, const float envval, const int 
 	double expected;
 	bool skipbreeding;
 
-	//envGradParams grad = paramsGrad->getGradient();
 	envStochParams env = paramsStoch->getStoch();
 	demogrParams dem = pSpecies->getDemogr();
 	stageParams sstruct = pSpecies->getStage();
@@ -797,15 +680,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 	genomeData gen = pSpecies->getGenomeData();
 	simView v = paramsSim->getViews();
 
-#if GROUPDISP
-#if RSDEBUG
-	//DEBUGLOG << "Population::reproduction(): this=" << this
-	//	<< " pfglobal=" << pfglobal << " nglobal=" << nglobal
-	//	<< " pfglobal[0]=" << (*pfglobal)[0] << " pfglobal[1]=" << (*pfglobal)[1]
-	//	<< " pfglobal[nglobal-1]=" << (*pfglobal)[nglobal-1]
-	//	<< endl;
-#endif
-#endif
+
 
 #if SOCIALMODEL
 
@@ -818,28 +693,12 @@ void Population::reproduction(const float localK, const float envval, const int 
 	//else fsocial  = 1.0 / (1.0 + soc.Cs*(soc.Ts*localK-(float)ninds)*(soc.Ts*localK-(float)ninds));
 	//else fsocial  = 1.0 / (1.0 + exp(soc.cs + soc.bs*(soc.Ts*localK-(float)ninds)));
 	else fsocial = 1.0 / (1.0 + exp(soc.cs + soc.bs * (soc.Ts * localK - (float)ninds) / (float)ncells));
-#if RSDEBUG
-	//DEBUGLOG << "Population::reproduction(): this=" << this
-	//	<< " totalPop=" << totalPop() << " ncells=" << ncells << " ninds=" << ninds
-	//	<< " soc.cs=" << soc.cs << " soc.bs=" << soc.bs
-	//	<< " soc.Ts=" << soc.Ts << " localK=" << localK
-	//	<< " EXParg=" << soc.cs + soc.bs*(soc.Ts*localK-(float)ninds)/(float)ncells
-	//	<< " fsocial=" << fsocial
-	//	<< endl;
-#endif
+
 	if ((float)ninds > soc.Ta * localK) fasocial = 1.0;
 	//else fasocial = 1.0 / (1.0 + soc.Ca*(soc.Ta*localK-(float)ninds)*(soc.Ta*localK-(float)ninds));
 	//else fasocial  = 1.0 / (1.0 + exp(soc.ca + soc.ba*(soc.Ta*localK-(float)ninds)));
 	else fasocial = 1.0 / (1.0 + exp(soc.ca + soc.ba * (soc.Ta * localK - (float)ninds) / (float)ncells));
-#if RSDEBUG
-	//DEBUGLOG << "Population::reproduction(): this=" << this
-	//	<< " totalPop=" << totalPop() << " ncells=" << ncells << " ninds=" << ninds
-	//	<< " soc.ca=" << soc.ca << " soc.ba=" << soc.ba
-	//	<< " soc.Ta=" << soc.Ta << " localK=" << localK
-	//	<< " EXParg=" << soc.ca + soc.ba*(soc.Ta*localK-(float)ninds)/(float)ncells
-	//	<< " fasocial=" << fasocial
-	//	<< endl;
-#endif
+
 
 #endif // SOCIALMODEL
 
@@ -854,109 +713,42 @@ void Population::reproduction(const float localK, const float envval, const int 
 	float propLocal, propNghbr;
 	propLocal = propNghbr = 0.0;
 	if (dem.paternity == 2) {
-#if RSDEBUG
-		//DEBUGLOG << "Population::reproduction():"
-		//	<< " nfnbrhd=" << nfnbrhd
-		//	<< " dem.propLocal=" << dem.propLocal << " dem.propNghbr=" << dem.propNghbr
-		//	<< endl;
-#endif
+
 		if (nfnbrhd > 0) {
 			propLocal = dem.propLocal; propNghbr = dem.propNghbr;
 		}
 		else {
 			propLocal = dem.propLocal / (1.0 - dem.propNghbr); propNghbr = 0.0;
-#if RSDEBUG
-			//DEBUGLOG << "Population::reproduction(): AMENDING POLLEN KERNEL"
-			//	<< " propLocal=" << propLocal << " propNghbr=" << propNghbr
-			//	<< endl;
-#endif
+
 		}
 	}
 #else
 	if (dem.repType == 0) nsexes = 1; else nsexes = 2;
 #endif // GROUPDISP 
 
-#if RSDEBUG
-	//DEBUGLOG << "Population::reproduction(): this=" << this
-	//#if RS_CONTAIN
-	//	<< " hab=" << hab
-	//#else
-	//	<< " pSpecies=" << pSpecies
-	//	<< " localK=" << localK << " envval=" << envval << " resol=" << resol
-	//#endif // RS_CONTAIN 
-	//	<< " sstruct.nStages=" << sstruct.nStages << " nsexes=" << nsexes << " ninds=" << ninds
-	//	<< endl;
-#endif
+
 
 // set up local copy of species fecundity table
-	float fec[NSTAGES][NSEXES];
-#if GOBYMODEL
-	// also set up corresponding table for density-dependent effects, which cannot
-	// be applied until an individual female's sociality phenotype is known
-	float ddeffect[NSTAGES];
-	for (int i = 0; i < NSTAGES; i++) { ddeffect[i] = 1.0; }
-#endif
-#if SOCIALMODEL
-	// also set up corresponding table for density-dependent effects, which cannot
-	// be applied until an individual female's sociality phenotype is known
-	//float ddeffect[NSTAGES];
-	//for (int i = 0; i < NSTAGES; i++) { ddeffect[i] = 1.0; }
-#endif
-	for (int stg = 0; stg < sstruct.nStages; stg++) {
-		for (int sex = 0; sex < nsexes; sex++) {
-			if (dem.stageStruct) {
-				if (dem.repType == 1) { // simple sexual model
-					// both sexes use fecundity recorded for females
-#if RS_CONTAIN
-#if SEASONAL
-					fec[stg][sex] = pSpecies->getFec(hab, season, stg, 0);
-#else
-					fec[stg][sex] = pSpecies->getFec(hab, stg, 0);
-#endif // SEASONAL 
-#else
-#if SEASONAL
-					fec[stg][sex] = pSpecies->getFec(season, stg, 0);
-#else
-					fec[stg][sex] = pSpecies->getFec(stg, 0);
-#endif // SEASONAL 
-#endif // RS_CONTAIN 
-				}
-				else
-#if RS_CONTAIN
-#if SEASONAL
-					fec[stg][sex] = pSpecies->getFec(hab, season, stg, sex);
-#else
-					fec[stg][sex] = pSpecies->getFec(hab, stg, sex);
-#endif // SEASONAL 
-#else
-#if SEASONAL
-					fec[stg][sex] = pSpecies->getFec(season, stg, sex);
-#else
-					fec[stg][sex] = pSpecies->getFec(stg, sex);
-#endif // SEASONAL 
-#endif // RS_CONTAIN 
-				//			if (sex == 0 && fec[stg][sex] > dem.lambda) dem.lambda = fec[stg][sex];
+float fec[NSTAGES][NSEXES];
+for (int stg = 0; stg < sstruct.nStages; stg++) {
+	for (int sex = 0; sex < nsexes; sex++) {
+		if (dem.stageStruct) {
+			if (dem.repType == 1) { // simple sexual model
+				// both sexes use fecundity recorded for females
+				fec[stg][sex] = pSpecies->getFec(stg,0);
 			}
-			else { // non-structured population
-				if (stg == 1) fec[stg][sex] = dem.lambda; // adults
-				else fec[stg][sex] = 0.0; // juveniles
-			}
-#if RSDEBUG
-			//if (ninds > 0) {
-			//DEBUGLOG << "Population::reproduction(): fec[" << stg << "][" << sex << "] = " << fec[stg][sex]
-			//	<< endl;
-			//}
-#endif
+			else
+				fec[stg][sex] = pSpecies->getFec(stg,sex);
+		}
+		else { // non-structured population
+			if (stg == 1) fec[stg][sex] = dem.lambda; // adults
+			else fec[stg][sex] = 0.0; // juveniles
 		}
 	}
+}
 
 	if (dem.stageStruct) {
-#if RSDEBUG
-		//if (ninds > 0) {
-		//	DEBUGLOG << "Population::reproduction(): ninds=" << ninds << " localK=" << localK
-		//		<< " effect of density dependence:" << endl;
-		//}
-#endif
+
 	// apply environmental effects and density dependence
 	// to all non-zero female non-juvenile stages
 		for (int stg = 1; stg < nStages; stg++) {
@@ -988,13 +780,6 @@ void Population::reproduction(const float localK, const float envval, const int 
 									weight = pSpecies->getDDwtFec(stg, effstg);
 								}
 								effect += (float)nInds[effstg][effsex] * weight;
-#if RSDEBUG
-								//if (ninds > 0) {
-								//	DEBUGLOG << " effstg=" << effstg << " effsex=" << effsex << " nInds=" << nInds[effstg][effsex];
-								//	DEBUGLOG << " weight=" << weight << " effect=" << effect
-								//		<< endl;
-								//}
-#endif
 							}
 						}
 					}
@@ -1005,13 +790,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 #else
 					if (localK > 0.0) fec[stg][0] *= exp(-effect / localK);
 #endif
-#if RSDEBUG
-					//if (ninds > 0) {
-					//	DEBUGLOG << " eff popn=" << effect << " exponential=" << exp(-effect/localK);
-					//	DEBUGLOG << " fec[" << stg << "][0]=" << fec[stg][0]
-					//		<< endl;
-					//}
-#endif
+
 				}
 			}
 		}
@@ -1055,11 +834,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 #endif
 			//#endif
 		}
-#if RSDEBUG
-		//DEBUGLOG << "Population::reproduction(): dem.lambda=" << dem.lambda << " ninds=" << ninds
-		//	<< " localK=" << localK << " dem.bc=" << dem.bc << " fec[1][0]=" << fec[1][0]
-		//	<< endl;
-#endif
+
 	}
 
 	double propBreed;
@@ -1071,11 +846,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 	case 0: // asexual model
 		for (int i = 0; i < ninds; i++) {
 			stage = inds[i]->breedingFem();
-#if RSDEBUG
-			//DEBUGLOG << "Population::reproduction():"
-			//	<< " i=" << i << " ID=" << inds[i]->getId() << " stage=" << stage
-			//	<< endl;
-#endif
+
 			if (stage > 0) { // female of breeding age
 				if (dem.stageStruct) {
 					// determine whether she must miss current breeding attempt
@@ -1105,13 +876,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 						// effect of sociality has not been defined (as at 3/6/2016)
 						expected = fec[stage][0];
 					}
-#if RSDEBUG
-					//DEBUGLOG << "Population::reproduction(): 1111 ID=" << inds[i]->getId()
-					//	<< " asocial=" << inds[i]->isAsocial() << " dem.asocF=" << dem.asocF
-					//	<< " fec[stage][0]=" << fec[stage][0] << " ddeffect=" << ddeffect[stage]
-					//	<< " expected=" << expected
-					//	<< endl;
-#endif
+
 #else
 #if SOCIALMODEL
 					if (inds[i]->isAsocial())
@@ -1137,10 +902,10 @@ void Population::reproduction(const float localK, const float envval, const int 
 						for (int j = 0; j < njuvs; j++) {
 #if RS_CONTAIN
 #if RSDEBUG
-							// NOTE: CURRENTLY SETTING ALL INDIVIDUALS TO RECORD NO. OF STEPS ...
-							juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, stage, 0.0, true, trfr.moveType));
+						// NOTE: CURRENTLY SETTING ALL INDIVIDUALS TO RECORD NO. OF STEPS ...
+						juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, 0.0, true, trfr.moveType));
 #else
-							juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, stage, 0.0, trfr.moveModel, trfr.moveType));
+						juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, 0.0, trfr.moveModel, trfr.moveType));
 #endif
 #else
 #if PARTMIGRN
@@ -1186,11 +951,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 	case 2: // complex sexual model
 		// count breeding females and males
 		// add breeding males to list of potential fathers
-#if RSDEBUG
-//DEBUGLOG << "Population::reproduction(): case 1:"
-//	<< " fec[1][0]=" << fec[1][0] << " fec[1][1]=" << fec[1][1]
-//	<< endl;
-#endif
+
 		nfemales = nmales = 0;
 		for (int i = 0; i < ninds; i++) {
 			ind = inds[i]->getStats();
@@ -1198,16 +959,10 @@ void Population::reproduction(const float localK, const float envval, const int 
 			if (ind.sex == 1 && fec[ind.stage][1] > 0.0) {
 				fathers.push_back(inds[i]);
 				nmales++;
-#if RSDEBUG
-				//DEBUGLOG << "Population::reproduction(): i=" << i << " nmales=" << nmales
-				//	<< " inds[i]=" << inds[i] << endl;
-#endif
+
 			}
 		}
-#if RSDEBUG
-		//DEBUGLOG << "Population::reproduction(): breeding nfemales=" << nfemales
-		//	<< " breeding nmales=" << nmales << endl;
-#endif
+
 #if BUTTERFLYDISP
 		if (nfemales > 0 && (nmales > 0 || option == 2))
 #else
@@ -1218,11 +973,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 				// calculate proportion of eligible females which breed
 				propBreed = (2.0 * dem.harem * nmales) / (nfemales + dem.harem * nmales);
 				if (propBreed > 1.0) propBreed = 1.0;
-#if RSDEBUG
-				//DEBUGLOG << "Population::reproduction(): harem=" << dem.harem
-				//	<< " nfemales=" << nfemales << " nmales=" << nmales << " propBreed=" << propBreed
-				//	<< endl;
-#endif
+
 			}
 			else propBreed = 1.0;
 			for (int i = 0; i < ninds; i++) {
@@ -1259,31 +1010,15 @@ void Population::reproduction(const float localK, const float envval, const int 
 								// effect of sociality has not been defined (as at 3/6/2016)
 								expected = fec[stage][0];
 							}
-#if RSDEBUG
-							//DEBUGLOG << "Population::reproduction(): 2222 ID=" << inds[i]->getId()
-							//	<< " stage=" << stage << " asocial=" << inds[i]->isAsocial()
-							//	<< " sstruct.asocF=" << sstruct.asocF
-							//	<< " fec[stage][0]=" << fec[stage][0] << " ddeffect=" << ddeffect[stage]
-							//	<< " expected=" << expected
-							//	<< endl;
-#endif
+
 #else
 							expected = fec[stage][0]; // breeds
-#if RSDEBUG
-							//DEBUGLOG << "Population::reproduction(): THIS LINE SHOULD NOT APPEAR FOR GOBY MODEL"
-							//	<< " expected=" << expected
-							//	<< endl;
-#endif
 #endif // GOBYMODEL
 						}
 						else expected = 0.0; // fails to breed
 						if (expected <= 0.0) njuvs = 0;
 						else njuvs = pRandom->Poisson(expected);
-#if RSDEBUG
-						//DEBUGLOG << "Population::reproduction():"
-						//	<< " i " << i << " ID=" << inds[i]->getId() << " stage=" << stage
-						//	<< " expected=" << expected << " njuvs=" << njuvs << endl;
-#endif
+
 #if BUTTERFLYDISP
 						if (njuvs > 0 || option == 1)
 #else
@@ -1317,10 +1052,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 #if BUTTERFLYDISP
 							}
 #endif
-#if RSDEBUG
-							//DEBUGLOG << "Population::reproduction(): i = " << i << " rrr = " << rrr
-							//	<< " father = " << father << endl;
-#endif
+
 #if BUTTERFLYDISP
 							if (dem.stageStruct
 								|| (!dem.stageStruct && dem.dispersal == 1)
@@ -1333,10 +1065,10 @@ void Population::reproduction(const float localK, const float envval, const int 
 								for (int j = 0; j < njuvs; j++) {
 #if RS_CONTAIN
 #if RSDEBUG
-									// NOTE: CURRENTLY SETTING ALL INDIVIDUALS TO RECORD NO. OF STEPS ...
-									juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, stage, dem.propMales, true, trfr.moveType));
+								// NOTE: CURRENTLY SETTING ALL INDIVIDUALS TO RECORD NO. OF STEPS ...
+								juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, dem.propMales, true, trfr.moveType));
 #else
-									juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, stage, dem.propMales, trfr.moveModel, trfr.moveType));
+								juvs.push_back(new Individual(pCell, pPatch, 0, 0, 0, dem.propMales, trfr.moveModel, trfr.moveType));
 #endif
 #else
 #if PARTMIGRN
@@ -1395,16 +1127,10 @@ void Population::reproduction(const float localK, const float envval, const int 
 			if (fec[ind.stage][0] > 0.0) {
 				fathers.push_back(inds[i]);
 				nmales++;
-#if RSDEBUG
-				//DEBUGLOG << "Population::reproduction(): i=" << i << " nmales=" << nmales
-				//	<< " inds[i]=" << inds[i] << endl;
-#endif
+
 			}
 		}
-#if RSDEBUG
-		//DEBUGLOG << "Population::reproduction(): breeding 'males'=" << nmales
-		//	<< endl;
-#endif
+
 		if (nmales > 0) { // population can breed
 			propBreed = 1.0; // NOT NEEDED HERE BUT RETAINED FOR CONSISTENCY
 			for (int i = 0; i < ninds; i++) {
@@ -1427,28 +1153,17 @@ void Population::reproduction(const float localK, const float envval, const int 
 						inds[i]->resetFallow();
 						if (pRandom->Bernoulli(propBreed)) {
 							expected = fec[stage][0]; // breeds
-#if RSDEBUG
-							//DEBUGLOG << "Population::reproduction(): "
-							//	<< " expected=" << expected
-							//	<< endl;
-#endif
+
 						}
 						else expected = 0.0; // fails to breed
 						if (expected <= 0.0) njuvs = 0;
 						else njuvs = pRandom->Poisson(expected);
-#if RSDEBUG
-						//DEBUGLOG << "Population::reproduction():"
-						//	<< " i " << i << " ID=" << inds[i]->getId() << " stage=" << stage
-						//	<< " expected=" << expected << " njuvs=" << njuvs << endl;
-#endif
+
 						if (njuvs > 0) {
 							nj = (int)juvs.size();
 							int jj = 0; // index of viable juveniles in the brood
 							bool selectnewfather = true;
-#if RSDEBUG
-							//DEBUGLOG << "Population::reproduction(): i = " << i << " rrr = " << rrr
-							//	<< " father = " << father << endl;
-#endif
+
 							pCell = pPatch->getRandomCell();
 							for (int j = 0; j < njuvs; j++) {
 								bool viable = true;
@@ -1529,36 +1244,17 @@ void Population::reproduction(const float localK, const float envval, const int 
 	selectedForCull = false;
 #endif // RS_CONTAIN 
 
-#if RSDEBUG
-	//DEBUGLOG << "Population::reproduction(): before reprodn. " << " inds.size() = " << inds.size()
-	//	<< endl;
-#endif
-
 // THIS MAY NOT BE CORRECT FOR MULTIPLE SPECIES IF THERE IS SOME FORM OF
 // CROSS-SPECIES DENSITY-DEPENDENT FECUNDITY
-
-#if RSDEBUG
-//DEBUGLOG << "Population::reproduction(): after reprodn. this = " << this
-//	<< " juvs.size() = " << juvs.size() << " inds.size() = " << inds.size()
-//	<< endl;
-#endif
-
 }
 
 // Following reproduction of ALL species, add juveniles to the population prior to dispersal
 void Population::fledge(void)
 {
-#if RSDEBUG
-	//DEBUGLOG << "Population::fledge(): this=" << this
-	//	<< " ninds=" << (int)inds.size()
-	//	<< " njuvs=" << (int)juvs.size()
-	//	<< endl;
-#endif
 	demogrParams dem = pSpecies->getDemogr();
 
 	if (dem.stageStruct) { // juveniles are added to the individuals vector
 		inds.insert(inds.end(), juvs.begin(), juvs.end());
-		//	nInds += nJuvs; nJuvs = 0;
 	}
 	else { // all adults die and juveniles replace adults
 		int ninds = (int)inds.size();
@@ -1590,13 +1286,6 @@ void Population::emigration(float localK)
 	emigTraits eparams;
 	trfrRules trfr = pSpecies->getTrfr();
 	indStats ind;
-#if RSDEBUG
-	//DEBUGLOG << "Population::emigration(): this=" << this
-	//	<< " nStages=" << sstruct.nStages
-	////	<< " emig.emigGenes[0]=" << emig.emigGenes[0]
-	////	<< " emig.emigGenes[1]=" << emig.emigGenes[1]
-	//	<< endl;
-#endif
 
 // to avoid division by zero, assume carrying capacity is at least one individual
 // localK can be zero if there is a moving gradient or stochasticity in K
@@ -1641,28 +1330,7 @@ void Population::emigration(float localK)
 	emigSocial = 1.0 / (1.0 + exp(soc.alpha * (Rsocial - 1.0) + log((1.0 - soc.dK) / soc.dK)));
 	emigAsocial = 1.0 / (1.0 + exp(soc.alpha * (Rasocial - 1.0) + log((1.0 - soc.dK) / soc.dK)));
 
-#if RSDEBUG
-	int nTotal, Nasocial, Nsocial;
-	//if (int(this)%50 == 0) {
-		// looping through individuals twice is computationally inefficient but efficient in
-		// terms of programming time!
-	Nasocial = Nsocial = 0;
-	for (int i = 0; i < ninds; i++) {
-		if (inds[i]->isAsocial()) Nasocial++; else Nsocial++;
-	}
-	//	DEBUGLOG << "Population::emigration(): ninds=" << ninds
-	//		<< " Nsocial=" << Nsocial << " Nasocial=" << Nasocial
-	//		<< " Wsocial=" << Wsocial << " Wasocial=" << Wasocial
-	//		<< " emigSocial=" << emigSocial << " emigAsocial=" << emigAsocial
-	//		<< endl;
-	DEBUGLOG << "Population::emigration(): ninds=" << ninds
-		<< " Nsocial=" << Nsocial << " Nasocial=" << Nasocial
-		<< " fsocial=" << fsocial << " fasocial=" << fasocial
-		<< " Rsocial=" << Rsocial << " Rasocial=" << Rasocial
-		<< " emigSocial=" << emigSocial << " emigAsocial=" << emigAsocial
-		<< endl;
-	//}
-#endif
+
 
 #endif // SOCIALMODEL
 
@@ -1701,15 +1369,7 @@ void Population::emigration(float localK)
 						}
 					}
 					Pemig[stg][sex] = eparams.d0 / (1.0 + exp(-(NK - eparams.beta) * eparams.alpha));
-#if RSDEBUG
-					//if (ppLand.patch_model) {
-					//	DEBUGLOG << "Population::emigration(): stg=" << stg << " sex=" << sex
-					//		<< " totalPop=" << totalPop() << " localK=" << localK << " NK=" << NK
-					//		<< " d0=" << eparams.d0 << " beta=" << eparams.beta << " alpha=" << eparams.alpha
-					//		<< " Pemig[stg][sex]=" << Pemig[stg][sex]
-					//		<< endl;
-					//}
-#endif
+
 				}
 				else { // density-independent
 					if (emig.sexDep) {
@@ -1730,63 +1390,17 @@ void Population::emigration(float localK)
 					}
 				}
 			} // end of !emig.indVar
-#if RSDEBUG
-//DEBUGLOG << "Population::emigration(): this=" << (int)this
-//	<< " totalPop()=" << totalPop()
-//	<< " Pemig[" << stg << "][" << sex << "]="<< Pemig[stg][sex] << endl;
-#endif
+
 		}
 	}
 
-	//#if GROUPDISP
-	//bool newgroup = true;
-	//int currentsize = 0;
-	//#endif // GROUPDISP
-
-	//#if PARTMIGRN
-	//double cumprop[7];
-	//cumprop[0] = 0.0;
-	//for (int i = 1; i < 7; i++) {
-	//	cumprop[i] = cumprop[i-1] + pSpecies->getPropDispMigrn(i);
-	//#if RSDEBUG
-	//DEBUGLOG << "Population::emigration(): i=" << i
-	//	<< " cumprop[i]=" << cumprop[i]
-	//	<< endl;
-	//#endif
-	//}
-	//#endif // PARTMIGRN
-	//
 
 	for (int i = 0; i < ninds; i++) {
 		ind = inds[i]->getStats();
 #if SEASONAL
 		inds[i]->resetPathSeason();
 #if PARTMIGRN
-		//	if (ind.migrnstatus == 0) { // migration status not yet set
-		//		// TEMPORARY CODE TO SET MIGRATION STATUS
-		//		if (pRandom->Bernoulli(0.5)) {
-		//			if (pRandom->Bernoulli(0.5)) inds[i]->setMigrnStatus(1);
-		//			else {
-		//				if (pRandom->Bernoulli(0.5)) inds[i]->setMigrnStatus(2);
-		//				else inds[i]->setMigrnStatus(3);
-		//			}				
-		//		}
-		//		else {
-		//			if (pRandom->Bernoulli(0.5)) inds[i]->setMigrnStatus(4);
-		//			else {
-		//				if (pRandom->Bernoulli(0.5)) inds[i]->setMigrnStatus(5);
-		//				else inds[i]->setMigrnStatus(6);
-		//			}				
-		//		}
-		//		double r = pRandom->Random();
-		//		for (int m = 1; m < 7; m++) {
-		//			if (r < cumprop[m]) {
-		//				inds[i]->setMigrnStatus(m);
-		//				m = 7;
-		//			}
-		//		}
-		//	ind = inds[i]->getStats();
-		//	}
+		
 		if (ind.status < 6
 			&& (ind.migrnstatus == 0 || ind.migrnstatus == 2 || ind.migrnstatus == 3
 				|| (ind.migrnstatus == 4 && ind.status == 0)
@@ -1823,15 +1437,7 @@ void Population::emigration(float localK)
 				else {
 					Pdisp = eparams.d0 / (1.0 + exp(-(NK - eparams.beta) * eparams.alpha));
 				}
-#if RSDEBUG
-				//if (ppLand.patch_model) {
-				//	DEBUGLOG << "Population::emigration(): i=" << i << " sex=" << ind.sex << " stage=" << ind.stage
-				//		<< " totalPop=" << totalPop() << " localK=" << localK << " NK=" << NK
-				//		<< " d0=" << eparams.d0 << " beta=" << eparams.beta << " alpha=" << eparams.alpha
-				//		<< " Pdisp=" << Pdisp
-				//		<< endl;
-				//}
-#endif
+
 			}
 			else { // density-independent
 				if (emig.sexDep) {
@@ -1877,11 +1483,7 @@ void Population::emigration(float localK)
 #if SOCIALMODEL
 				if (ind.asocial) Pdisp = emigAsocial;
 				else Pdisp = emigSocial;
-#if RSDEBUG
-				DEBUGLOG << "Population::emigration(): i=" << i << " asocial=" << ind.asocial
-					<< " emigAsocial=" << emigAsocial << " emigSocial=" << emigSocial
-					<< " Pdisp=" << Pdisp << endl;
-#endif
+
 #else // !SOCIALMODEL
 
 #if SEASONAL
@@ -1904,14 +1506,6 @@ void Population::emigration(float localK)
 							Pdisp = Pemig[0][0];
 						}
 					}
-#if RSDEBUG
-					//if (ppLand.patch_model) {
-					//	DEBUGLOG << "Population::emigration(): i=" << i << " sex=" << ind.sex << " stage=" << ind.stage
-					//		<< " totalPop=" << totalPop() << " localK=" << localK << " NK=" << NK
-					//		<< " Pdisp=" << Pdisp
-					//		<< endl;
-					//}
-#endif
 				}
 				else { // density-independent
 					if (emig.sexDep) {
@@ -1930,14 +1524,6 @@ void Population::emigration(float localK)
 							Pdisp = Pemig[0][0];
 						}
 					}
-					//#if GROUPDISP
-					//				if (emig.groupdisp) {
-					//					if (Pdisp > 0) {
-					//
-					//					}
-					//
-					//				}
-					//#endif // GROUPDISP
 				}
 
 
@@ -1950,10 +1536,7 @@ void Population::emigration(float localK)
 #else
 			disp = pRandom->Bernoulli(Pdisp);
 #endif  // PARTMIGRN 
-#if RSDEBUG
-			//DEBUGLOG << "Population::emigration(): i=" << i << " sex=" << ind.sex << " stage=" << ind.stage
-			//	<< " Pdisp=" << Pdisp << " disp=" << disp << endl;
-#endif
+
 
 			if (disp == 1) { // emigrant
 				inds[i]->setStatus(1);
@@ -1998,13 +1581,6 @@ void Population::allEmigrate(void) {
 disperser Population::extractDisperser(int ix) {
 	disperser d;
 	indStats ind = inds[ix]->getStats();
-#if RSDEBUG
-	//if (ind.status > 0) {
-	//	DEBUGLOG << "Population::extractDisperser(): ix = " << ix << " inds[ix] = " << inds[ix]
-	//		<< " indId = " << inds[ix]->getId() << " ind.status = " << ind.status
-	//		<< endl;
-	//}
-#endif
 	if (ind.status == 1) { // emigrant
 		d.pInd = inds[ix]; d.yes = true;
 		inds[ix] = 0;
@@ -2065,15 +1641,10 @@ void Population::deleteGroup(int j) {
 disperser Population::extractSettler(int ix) {
 	disperser d;
 	Cell* pCell;
-	//Patch* pPatch;
 
 	indStats ind = inds[ix]->getStats();
 
 	pCell = inds[ix]->getLocn(1);
-#if RSDEBUG
-	//DEBUGLOG << "Population::extractSettler(): ix = " << ix << " inds[ix] = " << inds[ix]
-	//	<< " indId = " << inds[ix]->getId() << " ind.status = " << ind.status << endl;
-#endif
 	d.pInd = inds[ix];  d.pCell = pCell; d.yes = false;
 	if (ind.status == 4 || ind.status == 5) { // settled
 		d.yes = true;
@@ -2114,12 +1685,6 @@ void Population::recruit(Individual* pInd) {
 	inds.push_back(pInd);
 	indStats ind = pInd->getStats();
 	nInds[ind.stage][ind.sex]++;
-#if RSDEBUG
-	//DEBUGLOG << "Population::recruit(): patchNum=" << pPatch->getPatchNum()
-	//	<< " indId=" << pInd->getId()
-	//	<< " nInds[" << ind.stage << "][" << ind.sex << "]=" << nInds[ind.stage][ind.sex]
-	//	<< endl;
-#endif
 }
 
 //---------------------------------------------------------------------------
@@ -2920,16 +2485,6 @@ void Population::survival0(float localK, short option0, short option1)
 	//	  	 		1 - development and survival
 	//	  	 		2 - survival only (when survival is annual)
 
-#if RSDEBUG
-//DEBUGLOG << "Population::survival0():"
-//	<< " pSpecies=" << pSpecies << " this=" << this << " PatchNum=" << pPatch->getPatchNum()
-//#if SEASONAL
-//	<< " season=" << season 
-//#endif // SEASONAL
-//	<< " localK=" << localK << " option=" << option
-//	<< endl;
-#endif
-
 	densDepParams ddparams = pSpecies->getDensDep();
 	demogrParams dem = pSpecies->getDemogr();
 	stageParams sstruct = pSpecies->getStage();
@@ -3009,23 +2564,10 @@ void Population::survival0(float localK, short option0, short option1)
 	}
 
 	if (dem.stageStruct) {
-#if RSDEBUG
-		//	DEBUGLOG << "Population::survival0(): 2222 "
-		//		<< " ninds=" << ninds << " localK=" << localK
-		//		<< " effect of density dependence:" << endl;
-		//	for (int st = 0; st < nStages; st++) {
-		//		for (int sx = 0; sx < nsexes; sx++) {
-		//			DEBUGLOG << "st=" << st << " sx=" << sx << " nInds=" << nInds[st][sx] << endl;			
-		//		}
-		//	}
-#endif
 	// apply density dependence in development and/or survival probabilities
 		for (int stg = 0; stg < nStages; stg++) {
 			for (int sex = 0; sex < nsexes; sex++) {
 				if (option1 != 2 && sstruct.devDens && stg > 0) {
-#if RSDEBUG
-					//	DEBUGLOG << "DD in DEVELOPMENT for stg=" << stg << " sex=" << sex << endl;
-#endif
 				// NB DD in development does NOT apply to juveniles,
 				// which must develop to stage 1 if they survive
 					float effect = 0.0;
@@ -3045,11 +2587,6 @@ void Population::survival0(float localK, short option0, short option1)
 									weight = pSpecies->getDDwtDev(stg, effstg);
 								}
 								effect += (float)nInds[effstg][effsex] * weight;
-#if RSDEBUG
-								//	DEBUGLOG << " effstg=" << effstg << " effsex=" << effsex;
-								//	DEBUGLOG << " weight=" << weight << " effect=" << effect
-								//		<< endl;
-#endif
 							}
 						}
 					}
@@ -3057,18 +2594,8 @@ void Population::survival0(float localK, short option0, short option1)
 						effect = (float)totalPop();
 					if (localK > 0.0)
 						dev[stg][sex] *= exp(-(ddparams.devCoeff * effect) / localK);
-#if RSDEBUG
-					//DEBUGLOG << "Population::survival0(): 2288 " << " effect=" << effect;
-					//if (localK > 0.0)
-					//	DEBUGLOG << " exp=" << exp(-(ddparams.devCoeff*effect)/localK);
-					//DEBUGLOG << " dev[" << stg << "][" << sex << "] = " << dev[stg][sex]
-					//	<< endl;
-#endif
 				} // end of if (sstruct.devDens && stg > 0)
 				if (option1 != 0 && sstruct.survDens) {
-#if RSDEBUG
-					//	DEBUGLOG << "DD in SURVIVAL for stg=" << stg << " sex=" << sex << endl;
-#endif
 					float effect = 0.0;
 					if (sstruct.survStageDens) { // stage-specific density dependence
 						// NOTE: matrix entries represent effect of ROW on COLUMN 
@@ -3086,11 +2613,6 @@ void Population::survival0(float localK, short option0, short option1)
 									weight = pSpecies->getDDwtSurv(stg, effstg);
 								}
 								effect += (float)nInds[effstg][effsex] * weight;
-#if RSDEBUG
-								//	DEBUGLOG << " effstg=" << effstg << " effsex=" << effsex;
-								//	DEBUGLOG << " weight=" << weight << " effect=" << effect
-								//		<< endl;
-#endif
 							}
 						}
 					}
@@ -3098,13 +2620,6 @@ void Population::survival0(float localK, short option0, short option1)
 						effect = (float)totalPop();
 					if (localK > 0.0)
 						surv[stg][sex] *= exp(-(ddparams.survCoeff * effect) / localK);
-#if RSDEBUG
-					//DEBUGLOG << "Population::survival0(): 3333 " << " effect=" << effect;
-					//if (localK > 0.0)
-					//	DEBUGLOG << " exp = " << exp(-(ddparams.survCoeff*effect)/localK);
-					//DEBUGLOG << " surv[" << stg << "][" << sex << "] = " << surv[stg][sex]
-					//	<< endl;
-#endif
 				} // end of if (sstruct.survDens)
 			}
 		}
@@ -3314,10 +2829,6 @@ void Population::extremeEvent(float probMort) {
 void Population::ageIncrement(void) {
 	int ninds = (int)inds.size();
 	stageParams sstruct = pSpecies->getStage();
-#if RSDEBUG
-	//DEBUGLOG << "Population::ageIncrement():" << " inds.size() = " << inds.size()
-	//	<< endl;
-#endif
 	for (int i = 0; i < ninds; i++) {
 		inds[i]->ageIncrement(sstruct.maxAge);
 	}
@@ -3371,12 +2882,6 @@ void Population::clean(void)
 {
 	int ninds = (int)inds.size();
 	if (ninds > 0) {
-		//	sort (inds.begin(), inds.end());
-		//	reverse (inds.begin(), inds.end());
-		//
-		//	while (inds.size() > 0 && inds[inds.size()-1] == NULL ) {
-		//		inds.pop_back();
-		//	}
 			// ALTERNATIVE METHOD: AVOIDS SLOW SORTING OF POPULATION
 		std::vector <Individual*> survivors; // all surviving individuals
 		for (int i = 0; i < ninds; i++) {
@@ -3393,11 +2898,7 @@ void Population::clean(void)
 #if !RSDEBUG
 		// do not randomise individuals in RSDEBUG mode, as the function uses rand()
 		// and therefore the randomisation will differ between identical runs of RS
-#if RS_EMBARCADERO
-		random_shuffle(inds.begin(), inds.end());
-#else
 		shuffle(inds.begin(), inds.end(), pRandom->getRNG());
-#endif
 #endif // !RSDEBUG
 
 #endif // RS_RCPP
@@ -3415,8 +2916,6 @@ bool Population::outPopHeaders(int landNr, bool patchModel) {
 	}
 
 	string name;
-	//landParams ppLand = pLandscape->getLandParams();
-	//envStochParams env = paramsStoch->getStoch();
 	simParams sim = paramsSim->getSim();
 	envGradParams grad = paramsGrad->getGradient();
 
@@ -3427,8 +2926,8 @@ bool Population::outPopHeaders(int landNr, bool patchModel) {
 
 	if (sim.batchMode) {
 		name = paramsSim->getDir(2)
-			+ "Batch" + Int2Str(sim.batchNum) + "_"
-			+ "Sim" + Int2Str(sim.simulation) + "_Land" + Int2Str(landNr) + "_Pop.txt";
+			+ "Batch" + to_string(sim.batchNum) + "_"
+			+ "Sim" + to_string(sim.simulation) + "_Land" + Int2Str(landNr) + "_Pop.txt";
 	}
 	else {
 		name = paramsSim->getDir(2) + "Sim" + Int2Str(sim.simulation) + "_Pop.txt";
@@ -3447,13 +2946,7 @@ bool Population::outPopHeaders(int landNr, bool patchModel) {
 	if (paramsStoch->envStoch()) writeEnv = true;
 	if (writeEnv) outPop << "\tEpsilon\tGradient\tLocal_K";
 	outPop << "\tSpecies\tNInd";
-#if RSDEBUG
-	//DEBUGLOG << "Population::outPopHeaders(): this=" << this
-	//	<< " patchNum=" << pPatch->getPatchNum()
-	//	<< " totalPop()=" << totalPop()
-	//	<< " nStages=" << nStages << " nSexes=" << nSexes
-	//	<< endl;
-#endif
+
 	if (dem.stageStruct) {
 #if GROUPDISP
 		if (dem.repType == 0 || dem.repType == 3)
@@ -3499,13 +2992,6 @@ void Population::outPopulation(int rep, int yr, int gen, float eps,
 #endif // RS_ABC 
 {
 	Cell* pCell;
-
-#if RSDEBUG
-	//DEBUGLOG << "Population::outPopulations(): this=" << this
-	//	<< " writeEnv " << (int)writeEnv
-	//	<< endl;
-#endif
-
 // NEED TO REPLACE CONDITIONAL COLUMNS BASED ON ATTRIBUTES OF ONE SPECIES TO COVER
 // ATTRIBUTES OF *ALL* SPECIES AS DETECTED AT MODEL LEVEL
 	demogrParams dem = pSpecies->getDemogr();
@@ -3588,64 +3074,7 @@ void Population::outPopulation(int rep, int yr, int gen, float eps,
 	}
 	outPop << endl;
 
-	/*
-	#if RS_ABC
-	obsdata obs;
-	if (abcYear) {
-		int nobs = (int)pABCmaster->NObs();
-		for (int i = 0; i < nobs; i++) {
-			obs = pABCmaster->getObsData(i);
-	#if RSDEBUG
-	//DEBUGLOG << "Population::outPopulation(): this=" << this << " i=" << i << " yr=" << yr
-	//	<< " obs.year=" << obs.year << " obs.type=" << obs.type << " obs.name=" << obs.name
-	//	<< " obs.x=" << obs.x << " obs.y=" << obs.y
-	//	<< endl;
-	#endif
-			if (obs.year == yr && obs.type == 2) {
-				if (obs.name == "NInds" || obs.name == "Occupied") {
-					bool match = false;
-					if (patchModel) {
-						if (obs.x == pPatch->getPatchNum()) {
-							match = true;
-	#if RSDEBUG
-	//DEBUGLOG << "Population::outPopulation(): i=" << i << " PROCESS Population NInds"
-	//	<< " obs.id=" << obs.id << " obs.value=" << obs.value << " obs.x=" << obs.x
-	//	<< " pPatch->PatchNum()=" << pPatch->getPatchNum()
-	//	<< " totalPop()=" << totalPop() << " p.nNonJuvs=" << p.nNonJuvs
-	//	<< endl;
-	#endif
-						}
-					}
-					else {
-						locn loc = pPatch->getCentroid();
-						if (obs.x == loc.x && obs.y == loc.y) {
-							match = true;
-	#if RSDEBUG
-	DEBUGLOG << "Population::outPopulation(): i=" << i << " PROCESS Population NInds"
-		<< " obs.id=" << obs.id << " obs.value=" << obs.value << " obs.x="
-		<< obs.x << " obs.y=" << obs.y << " loc.x=" << loc.x << " loc.y=" << loc.y
-		<< " totalPop()=" << totalPop() << " p.nNonJuvs=" << p.nNonJuvs
-		<< endl;
-	#endif
-						}
-					}
-					if (match) {
-						if (obs.name == "NInds") {
-							if (dem.stageStruct)
-								pABCmaster->AddNewPred(sim.simulation,obs.id,rep,obs.value,p.nNonJuvs,obs.weight);
-							else
-								pABCmaster->AddNewPred(sim.simulation,obs.id,rep,obs.value,totalPop(),obs.weight);
-						}
-						else { // obs.name == "Occupied"
-							pABCmaster->AddNewPred(sim.simulation,obs.id,rep,obs.value,p.breeding,obs.weight);
-						}
-					}
-				}
-			}
-		}
-	}
-	#endif // ABC
-	*/
+
 }
 
 //---------------------------------------------------------------------------
@@ -3778,13 +3207,13 @@ void Population::outIndsHeaders(int rep, int landNr, bool patchModel)
 
 	if (sim.batchMode) {
 		name = paramsSim->getDir(2)
-			+ "Batch" + Int2Str(sim.batchNum) + "_"
-			+ "Sim" + Int2Str(sim.simulation)
-			+ "_Land" + Int2Str(landNr) + "_Rep" + Int2Str(rep) + "_Inds.txt";
+			+ "Batch" + to_string(sim.batchNum) + "_"
+			+ "Sim" + to_string(sim.simulation)
+			+ "_Land" + to_string(landNr) + "_Rep" + to_string(rep) + "_Inds.txt";
 	}
 	else {
-		name = paramsSim->getDir(2) + "Sim" + Int2Str(sim.simulation)
-			+ "_Rep" + Int2Str(rep) + "_Inds.txt";
+		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation)
+			+ "_Rep" + to_string(rep) + "_Inds.txt";
 	}
 	outInds.open(name.c_str());
 
@@ -3867,7 +3296,6 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 	Cell* pCell;
 
 	landParams ppLand = pLandscape->getLandParams();
-	//landOrigin lim = pLandscape->getOrigin();
 	demogrParams dem = pSpecies->getDemogr();
 	emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();

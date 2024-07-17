@@ -49,21 +49,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
- //#if RS_RCPP && !R_CMD
-#include "../Version.h"
-//#endif
-
-//#if !RS_RCPP && R_CMD
-//#include "../../Batch/Version.h"
-//#endif
-
 #include "Parameters.h"
 #include "Landscape.h"
 #include "Community.h"
 #include "SubCommunity.h"
 #include "Species.h"
 
-#if !RS_EMBARCADERO && !LINUX_CLUSTER && !RS_RCPP
+#if !LINUX_CLUSTER && !RS_RCPP
 #include <filesystem>
 using namespace std::filesystem;
 #endif
@@ -95,12 +87,12 @@ int RunModel(
 #if RS_RCPP && !R_CMD
 Rcpp::List RunModel(
 	Landscape*,	// pointer to Landscape
-	int					// sequential simulation number (always 0 for VCL version)
+	int					// sequential simulation number
 );
 #else
 int RunModel(
 	Landscape*,	// pointer to Landscape
-	int					// sequential simulation number (always 0 for VCL version)
+	int					// sequential simulation number
 );
 #endif // RS_RCPP && !R_CMD
 #endif // RS_ABC
@@ -129,20 +121,6 @@ void RangePopOutput(
 	int					// generation
 );
 #endif
-void Outputs_Visuals_B(
-	int,	// replicate
-	int,	// year
-	int,	// generation
-	int		// Landscape number
-);
-void RefreshVisualCost(void);
-traitCanvas SetupTraitCanvas(void);
-void SetupVisualOutput(void);
-void ResetVisualOutput(void);
-void DrawPopnGraph(
-	Community*,	// pointer to Community
-	int					// year
-);
 #if RS_CONTAIN
 void ManagementCull(Landscape*, int, int);
 #endif // RS_CONTAIN 
@@ -194,17 +172,7 @@ extern string envstochfilename;
 #endif // BUTTERFLYDISP 
 extern RSrandom* pRandom;
 
-// these functions to have different version for GUI and batch applications ...
-#if BATCH
-extern void MemoLine(string);
-#endif
-#if VCL
-extern void MemoLine(UnicodeString);
-#endif
-void GUIsetLandScale(
-	int,	// landscape image height (pixels)
-	int		// landscape image width  (pixels)
-);
+
 
 #if RS_RCPP
 extern std::uint32_t RS_random_seed;

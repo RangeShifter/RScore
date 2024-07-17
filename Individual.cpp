@@ -21,9 +21,6 @@
 
 
  //---------------------------------------------------------------------------
-#if RS_EMBARCADERO
-#pragma hdrstop
-#endif
 
 #include "Individual.h"
 //---------------------------------------------------------------------------
@@ -60,11 +57,6 @@ Individual::Individual(Cell* pCell, Patch* pPatch, short stg, short a, short rep
 #endif // RS_CONTAIN 
 {
 	indId = indCounter; indCounter++; // unique identifier for each individual
-#if RSDEBUG
-	//DEBUGLOG << "Individual::Individual(): indId=" << indId
-	//	<< " stg=" << stg << " a=" << a << " probmale=" << probmale
-	//	<< endl;
-#endif
 #if GROUPDISP
 	parentId[0] = parentId[1] = groupId = -1;
 	//groupId = -1;
@@ -110,31 +102,19 @@ Individual::Individual(Cell* pCell, Patch* pPatch, short stg, short a, short rep
 #endif // PARTMIGRN 
 #endif // SEASONAL
 
-	if (sex == 0 && repInt > 0) { // set no. of fallow seasons for female
-		fallow = pRandom->IRandom(0, repInt);
-	}
-	else fallow = 9999;
-	isDeveloping = false;
-#if GOBYMODEL
-	asocial = false;
-#endif
-#if SOCIALMODEL
-	asocial = false;
-#endif
-	pPrevCell = pCurrCell = pCell;
-	pNatalPatch = pPatch;
-#if SEASONAL
-	pPrevPatch = pPatch;
-#endif
-	if (movt) {
-		locn loc = pCell->getLocn();
-		path = new pathData;
-		path->year = 0; path->total = 0; path->out = 0;
-#if SEASONAL
-		path->season = 0;
-#endif
-		path->pSettPatch = 0; path->settleStatus = 0;
-		//	path->leftNatalPatch = false;
+if (sex == 0 && repInt > 0) { // set no. of fallow seasons for female
+	fallow = pRandom->IRandom(0,repInt);
+}
+else fallow = 9999;
+isDeveloping = false;
+pPrevCell = pCurrCell = pCell;
+pNatalPatch = pPatch;
+if (movt) {
+	locn loc = pCell->getLocn();
+	path = new pathData;
+	path->year = 0; path->total = 0; path->out = 0;
+	path->pSettPatch = 0; path->settleStatus = 0;
+//	path->leftNatalPatch = false;
 #if RS_RCPP
 		path->pathoutput = 1;
 #endif
@@ -167,13 +147,6 @@ Individual::Individual(Cell* pCell, Patch* pPatch, short stg, short a, short rep
 	kerntraits = 0;
 	setttraits = 0;
 	pGenome = 0;
-#if RSDEBUG
-	//locn currloc = pCurrCell->getLocn();
-	//DEBUGLOG << "Individual::Individual(): indId=" << indId
-	//	<< " x=" << currloc.x << " y=" << currloc.y
-	////	<< " smsData=" << smsData << " dp=" << smsData->dp
-	//	<< endl;
-#endif
 }
 
 Individual::~Individual(void) {
@@ -225,12 +198,6 @@ void Individual::setGenes(Species* pSpecies, int resol) {
 	else {
 		pGenome = new Genome(pSpecies);
 	}
-#if RSDEBUG
-	//DEBUGLOG << endl;
-	//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " sex=" << sex
-	//	<< " trait1Chromosome=" << gen.trait1Chromosome << " pGenome=" << pGenome
-	//	<< endl;
-#endif
 
 	int gposn = 0;	// current position on genome
 	int expr = 0;		// gene expression type - NOT CURRENTLY USED
@@ -328,21 +295,7 @@ void Individual::setGenes(Species* pSpecies, int resol) {
 				alpha = pRandom->Normal(0.0, eparams.alphaSD) / eparams.alphaScale;
 				beta = pRandom->Normal(0.0, eparams.betaSD) / eparams.betaScale;
 			}
-#if RSDEBUG
-			//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " g=" << g
-			//	<< " eparams.d0Mean=" << eparams.d0Mean << " eparams.d0SD=" << eparams.d0SD
-			//	<< " eparams.d0Scale=" << eparams.d0Scale << " d0=" << d0
-			////	<< " log(d0/(1.0-d0))=" << log(d0/(1.0-d0))
-			//	<< endl;
-			//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " g=" << g
-			//	<< " eparams.alphaMean=" << eparams.alphaMean << " eparams.alphaSD=" << eparams.alphaSD
-			//	<< " eparams.alphaScale=" << eparams.alphaScale << " alpha=" << alpha
-			//	<< endl;
-			//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " g=" << g
-			//	<< " eparams.betaMean=" << eparams.betaMean << " eparams.betaSD=" << eparams.betaSD
-			//	<< " eparams.betaScale=" << eparams.betaScale << " beta=" << beta
-			//	<< endl;
-#endif
+
 			if (gen.trait1Chromosome) {
 				pGenome->setGene(gposn++, expr, d0, gen.alleleSD);
 				if (emig.densDep) {
@@ -487,15 +440,10 @@ void Individual::setGenes(Species* pSpecies, int resol) {
 		}
 	}
 
-	//int settposn = 0;
-#if RSDEBUG
-//DEBUGLOG << "Individual::setGenes(): settlement genes" << endl;
-#endif
 	if (sett.indVar) {
 		int settposn = gposn;
 		double s0, alpha, beta;
 		settParams sparams;
-		//	settScales scale = pSpecies->getSettScales();
 		if (sett.sexDep) { // must be a sexual species
 			ntraits = 2;
 		}
@@ -517,26 +465,7 @@ void Individual::setGenes(Species* pSpecies, int resol) {
 			s0 = pRandom->Normal(0.0, sparams.s0SD) / sparams.s0Scale;
 			alpha = pRandom->Normal(0.0, sparams.alphaSSD) / sparams.alphaSScale;
 			beta = pRandom->Normal(0.0, sparams.betaSSD) / sparams.betaSScale;
-#if RSDEBUG
-			//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " g=" << g
-			//	<< " sparams.s0Mean=" << sparams.s0Mean
-			//	<< " sparams.s0SD=" << sparams.s0SD
-			//	<< " sparams.s0Scale=" << sparams.s0Scale
-			//	<< " s0=" << s0
-			//	<< endl;
-			//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " g=" << g
-			//	<< " sparams.alphaSMean=" << sparams.alphaSMean
-			//	<< " sparams.alphaSSD=" << sparams.alphaSSD
-			//	<< " sparams.alphaSScale=" << sparams.alphaSScale
-			//	<< " alpha=" << alpha
-			//	<< endl;
-			//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " g=" << g
-			//	<< " sparams.betaSMean=" << sparams.betaSMean
-			//	<< " sparams.betaSSD=" << sparams.betaSSD
-			//	<< " sparams.betaSScale=" << sparams.betaSScale
-			//	<< " beta=" << beta
-			//	<< endl;
-#endif
+
 			if (gen.trait1Chromosome) {
 				pGenome->setGene(gposn++, expr, s0, gen.alleleSD);
 				pGenome->setGene(gposn++, expr, alpha, gen.alleleSD);
@@ -557,27 +486,12 @@ void Individual::setGenes(Species* pSpecies, int resol) {
 			pGenome->setNeutralLoci(pSpecies, gen.alleleSD);
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " finished"
-	//	<< endl;
-#endif
 }
 
 // Inherit genome from parent(s)
 void Individual::setGenes(Species* pSpecies, Individual* mother, Individual* father,
 	int resol)
 {
-#if RSDEBUG
-	//locn currloc = pCurrCell->getLocn();
-	//DEBUGLOG << "Individual::setGenes(): indId=" << indId
-	//	<< " x=" << currloc.x << " y=" << currloc.y
-	////	<< " pSpecies=" << pSpecies
-	//	<< " mother=" << mother
-	//	<< " motherID=" << mother->getId()
-	//	<< " father=" << father;
-	//if (father != 0) DEBUGLOG << " fatherID=" << father->getId();
-	//DEBUGLOG << endl;
-#endif
 	emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();
 	settleType sett = pSpecies->getSettle();
@@ -707,17 +621,8 @@ void Individual::setGenes(Species* pSpecies, Individual* mother, Individual* fat
 		}
 		else { // diploid
 			setSettTraits(pSpecies, sett.settTrait[0], 3, sett.sexDep);
-			//		setSettTraits(pSpecies,sett.settTrait[0],3,0);
 		}
 	}
-
-#if RSDEBUG
-	//emigParams e = getEmigTraits(0,1,0);
-	//DEBUGLOG << "Individual::setGenes(): indId=" << indId << " finished "
-	//	<< " d0=" << e.d0
-	////	<< " alpha=" << e.alpha << " beta=" << e.beta
-	//	<< endl;
-#endif
 }
 
 #if VIRTUALECOLOGIST
@@ -810,11 +715,6 @@ void Individual::setYearSteps(int t) {
 		if (t >= 0) path->year = t;
 		else path->year = 666;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setYearSteps(): indId=" << indId
-	//	<< " t=" << t << " path->year=" << path->year
-	//	<< endl;
-#endif
 }
 
 pathSteps Individual::getSteps(void) {
@@ -869,11 +769,6 @@ void Individual::resetPathSeason(void) {
 // Set phenotypic emigration traits
 void Individual::setEmigTraits(Species* pSpecies, short emiggenelocn, short nemigtraits,
 	bool sexdep) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setEmigTraits(): indId=" << indId
-	//	<< " emiggenelocn=" << emiggenelocn << " nemigtraits=" << nemigtraits << " sexdep=" << sexdep
-	//	<< endl;
-#endif
 	emigTraits e; e.d0 = e.alpha = e.beta = 0.0;
 	if (pGenome != 0) {
 		if (pSpecies->has1ChromPerTrait()) {
@@ -915,11 +810,6 @@ void Individual::setEmigTraits(Species* pSpecies, short emiggenelocn, short nemi
 			}
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setEmigTraits(): indId=" << indId
-	//	<< " e.d0=" << e.d0 << " e.alpha=" << e.alpha << " e.beta=" << e.beta
-	//	<< endl;
-#endif
 
 	emigParams eparams;
 	if (sexdep) {
@@ -928,62 +818,29 @@ void Individual::setEmigTraits(Species* pSpecies, short emiggenelocn, short nemi
 	else {
 		eparams = pSpecies->getEmigParams(0, 0);
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setEmigTraits(): indId=" << indId
-	//	<< " eparams.betaMean=" << eparams.betaMean << " eparams.betaSD=" << eparams.betaSD 
-	//	<< " eparams.betaScale=" << eparams.betaScale
-	//	<< endl;
-#endif
 	emigtraits = new emigTraits;
 	emigtraits->d0 = (float)(e.d0 * eparams.d0Scale + eparams.d0Mean);
 	emigtraits->alpha = (float)(e.alpha * eparams.alphaScale + eparams.alphaMean);
 	emigtraits->beta = (float)(e.beta * eparams.betaScale + eparams.betaMean);
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setEmigTraits(): indId=" << indId
-	//	<< " emigtraits->d0=" << emigtraits->d0
-	//	<< " emigtraits->alpha=" << emigtraits->alpha << " emigtraits->beta=" << emigtraits->beta
-	//	<< endl;
-#endif
 	if (emigtraits->d0 < 0.0) emigtraits->d0 = 0.0;
 	if (emigtraits->d0 > 1.0) emigtraits->d0 = 1.0;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setEmigTraits(): indId=" << indId
-	//	<< " emigtraits->d0=" << emigtraits->d0
-	//	<< " emigtraits->alpha=" << emigtraits->alpha << " emigtraits->beta=" << emigtraits->beta
-	//	<< endl;
-#endif
 	return;
 }
 
 // Get phenotypic emigration traits
 emigTraits Individual::getEmigTraits(void) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getEmigTraits(): indId=" << indId
-	//	<< endl;
-#endif
 	emigTraits e; e.d0 = e.alpha = e.beta = 0.0;
 	if (emigtraits != 0) {
 		e.d0 = emigtraits->d0;
 		e.alpha = emigtraits->alpha;
 		e.beta = emigtraits->beta;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getEmigTraits(): indId=" << indId
-	//	<< " e.d0=" << e.d0 << " e.alpha=" << e.alpha << " e.beta=" << e.beta
-	//	<< endl;
-#endif
-
 	return e;
 }
 
 // Set phenotypic transfer by kernel traits
 void Individual::setKernTraits(Species* pSpecies, short kerngenelocn, short nkerntraits,
 	int resol, bool sexdep) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setKernTraits(): indId=" << indId
-	//	<< " kerngenelocn=" << kerngenelocn << " nkerntraits=" << nkerntraits << " sexdep=" << sexdep
-	//	<< endl;
-#endif
 	trfrKernTraits k; k.meanDist1 = k.meanDist2 = k.probKern1 = 0.0;
 	if (pGenome != 0) {
 		if (pSpecies->has1ChromPerTrait()) {
@@ -1025,12 +882,6 @@ void Individual::setKernTraits(Species* pSpecies, short kerngenelocn, short nker
 			}
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setKernTraits(): indId=" << indId
-	//	<< " k.meanDist1=" << k.meanDist1 << " k.meanDist2=" << k.meanDist2
-	//	<< " k.probKern1=" << k.probKern1
-	//	<< endl;
-#endif
 
 	trfrKernParams kparams;
 	if (sexdep) {
@@ -1043,13 +894,6 @@ void Individual::setKernTraits(Species* pSpecies, short kerngenelocn, short nker
 	kerntraits->meanDist1 = (float)(k.meanDist1 * kparams.dist1Scale + kparams.dist1Mean);
 	kerntraits->meanDist2 = (float)(k.meanDist2 * kparams.dist2Scale + kparams.dist2Mean);
 	kerntraits->probKern1 = (float)(k.probKern1 * kparams.PKern1Scale + kparams.PKern1Mean);
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setKernTraits(): indId=" << indId
-	//	<< " kerntraits->meanDist1=" << kerntraits->meanDist1
-	//	<< " kerntraits->meanDist2=" << kerntraits->meanDist2
-	//	<< " kerntraits->probKern1=" << kerntraits->probKern1
-	//	<< endl;
-#endif
 	if (!pSpecies->useFullKernel()) {
 		// kernel mean(s) may not be less than landscape resolution
 		if (kerntraits->meanDist1 < resol) kerntraits->meanDist1 = (float)resol;
@@ -1057,46 +901,23 @@ void Individual::setKernTraits(Species* pSpecies, short kerngenelocn, short nker
 	}
 	if (kerntraits->probKern1 < 0.0) kerntraits->probKern1 = 0.0;
 	if (kerntraits->probKern1 > 1.0) kerntraits->probKern1 = 1.0;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setKernTraits(): indId=" << indId
-	//	<< " kerntraits->meanDist1=" << kerntraits->meanDist1
-	//	<< " kerntraits->meanDist2=" << kerntraits->meanDist2
-	//	<< " kerntraits->probKern1=" << kerntraits->probKern1
-	//	<< endl;
-#endif
 	return;
 }
 
 // Get phenotypic emigration traits
 trfrKernTraits Individual::getKernTraits(void) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getKernTraits(): indId=" << indId
-	//	<< endl;
-#endif
 	trfrKernTraits k; k.meanDist1 = k.meanDist2 = k.probKern1 = 0.0;
 	if (kerntraits != 0) {
 		k.meanDist1 = kerntraits->meanDist1;
 		k.meanDist2 = kerntraits->meanDist2;
 		k.probKern1 = kerntraits->probKern1;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getKernTraits(): indId=" << indId
-	//	<< " k.meanDist1=" << k.meanDist1 << " k.meanDist2=" << k.meanDist1
-	//	<< " k.probKern1=" << k.probKern1
-	//	<< endl;
-#endif
-
 	return k;
 }
 
 // Set phenotypic transfer by SMS traits
 void Individual::setSMSTraits(Species* pSpecies, short SMSgenelocn, short nSMStraits,
 	bool sexdep) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSMSTraits(): indId=" << indId
-	//	<< " SMSgenelocn=" << SMSgenelocn << " nSMStraits=" << nSMStraits << " sexdep=" << sexdep
-	//	<< endl;
-#endif
 	trfrSMSTraits s = pSpecies->getSMSTraits();
 	double dp, gb, alphaDB, betaDB;
 	dp = gb = alphaDB = betaDB = 0.0;
@@ -1138,13 +959,6 @@ void Individual::setSMSTraits(Species* pSpecies, short SMSgenelocn, short nSMStr
 			}
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSMSTraits(): indId=" << indId
-	//	<< " dp=" << dp << " gb=" << gb
-	//	<< " alphaDB=" << alphaDB << " betaDB=" << betaDB
-	//	<< endl;
-#endif
-
 	trfrSMSParams smsparams;
 	if (sexdep) {
 		smsparams = pSpecies->getSMSParams(0, 0);
@@ -1162,53 +976,26 @@ void Individual::setSMSTraits(Species* pSpecies, short SMSgenelocn, short nSMStr
 		smsData->alphaDB = s.alphaDB;
 		smsData->betaDB = s.betaDB;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSMSTraits() 1111: indId=" << indId
-	//	<< " smsData->dp=" << smsData->dp	<< " smsData->gb=" << smsData->gb
-	//	<< " smsData->alphaDB=" << smsData->alphaDB	<< " smsData->betaDB=" << smsData->betaDB
-	//	<< endl;
-#endif
 	if (smsData->dp < 1.0) smsData->dp = 1.0;
 	if (smsData->gb < 1.0) smsData->gb = 1.0;
 	if (smsData->alphaDB <= 0.0) smsData->alphaDB = 0.000001f;
 	if (smsData->betaDB < 1) smsData->betaDB = 1;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSMSTraits() 2222: indId=" << indId
-	//	<< " smsData->dp=" << smsData->dp	<< " smsData->gb=" << smsData->gb
-	//	<< " smsData->alphaDB=" << smsData->alphaDB	<< " smsData->betaDB=" << smsData->betaDB
-	//	<< endl;
-#endif
 	return;
 }
 
 // Get phenotypic transfer by SMS traits
 trfrSMSTraits Individual::getSMSTraits(void) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getSMSTraits(): indId=" << indId << " smsData=" << smsData
-	//	<< endl;
-#endif
 	trfrSMSTraits s; s.dp = s.gb = s.alphaDB = 1.0; s.betaDB = 1;
 	if (smsData != 0) {
 		s.dp = smsData->dp; s.gb = smsData->gb;
 		s.alphaDB = smsData->alphaDB; s.betaDB = smsData->betaDB;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getSMSTraits(): indId=" << indId
-	//	<< " s.dp=" << s.dp << " s.gb=" << s.gb
-	//	<< " s.alphaDB=" << s.alphaDB << " s.betaDB=" << s.betaDB
-	//	<< endl;
-#endif
 	return s;
 }
 
 // Set phenotypic transfer by CRW traits
 void Individual::setCRWTraits(Species* pSpecies, short CRWgenelocn, short nCRWtraits,
 	bool sexdep) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setCRWTraits(): indId=" << indId
-	//	<< " CRWgenelocn=" << CRWgenelocn << " nCRWtraits=" << nCRWtraits << " sexdep=" << sexdep
-	//	<< endl;
-#endif
 	trfrCRWTraits c; c.stepLength = c.rho = 0.0;
 	if (pGenome != 0) {
 		if (pSpecies->has1ChromPerTrait()) {
@@ -1232,11 +1019,6 @@ void Individual::setCRWTraits(Species* pSpecies, short CRWgenelocn, short nCRWtr
 			}
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setCRWTraits(): indId=" << indId
-	//	<< " c.stepLength=" << c.stepLength << " c.rho=" << c.rho
-	//	<< endl;
-#endif
 
 	trfrCRWParams cparams;
 	if (sexdep) {
@@ -1247,52 +1029,25 @@ void Individual::setCRWTraits(Species* pSpecies, short CRWgenelocn, short nCRWtr
 	}
 	crw->stepL = (float)(c.stepLength * cparams.stepLScale + cparams.stepLgthMean);
 	crw->rho = (float)(c.rho * cparams.rhoScale + cparams.rhoMean);
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setCRWTraits(): indId=" << indId
-	//	<< " crw->stepL=" << crw->stepL	<< " crw->rho=" << crw->rho
-	//	<< endl;
-#endif
 	if (crw->stepL < 1.0) crw->stepL = 1.0;
 	if (crw->rho < 0.0) crw->rho = 0.0;
 	if (crw->rho > 0.999) crw->rho = 0.999f;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setCRWTraits(): indId=" << indId
-	//	<< " crw->stepL=" << crw->stepL	<< " crw->rho=" << crw->rho
-	//	<< endl;
-#endif
 	return;
 }
 
 // Get phenotypic transfer by CRW traits
 trfrCRWTraits Individual::getCRWTraits(void) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getCRWTraits(): indId=" << indId
-	//	<< endl;
-#endif
 	trfrCRWTraits c; c.stepLength = c.rho = 0.0;
 	if (crw != 0) {
 		c.stepLength = crw->stepL;
 		c.rho = crw->rho;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getCRWTraits(): indId=" << indId
-	//	<< " c.stepLength=" << c.stepLength << " c.rho=" << c.rho
-	//	<< endl;
-#endif
-
 	return c;
-
 }
 
 // Set phenotypic settlement traits
 void Individual::setSettTraits(Species* pSpecies, short settgenelocn, short nsetttraits,
 	bool sexdep) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSettTraits(): indId=" << indId << " sex=" << sex
-	//	<< " settgenelocn=" << settgenelocn << " nsetttraits=" << nsetttraits << " sexdep=" << sexdep
-	//	<< endl;
-#endif
-//simParams sim = paramsSim->getSim();
 	settleTraits s; s.s0 = s.alpha = s.beta = 0.0;
 	if (pGenome != 0) {
 		if (pSpecies->has1ChromPerTrait()) {
@@ -1321,11 +1076,6 @@ void Individual::setSettTraits(Species* pSpecies, short settgenelocn, short nset
 
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSettTraits(): indId=" << indId
-	//	<< " s.s0=" << s.s0 << " s.alpha=" << s.alpha << " s.beta=" << s.beta
-	//	<< endl;
-#endif
 
 	settParams sparams;
 	if (sexdep) {
@@ -1334,61 +1084,27 @@ void Individual::setSettTraits(Species* pSpecies, short settgenelocn, short nset
 	else {
 		sparams = pSpecies->getSettParams(0, 0);
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSettTraits(): indId=" << indId
-	//	<< " sparams.s0Mean=" << sparams.s0Mean << " sparams.s0SD=" << sparams.s0SD 
-	//	<< " sparams.s0Scale=" << sparams.s0Scale
-	//	<< endl;
-#endif
 	setttraits = new settleTraits;
 	setttraits->s0 = (float)(s.s0 * sparams.s0Scale + sparams.s0Mean);
 	setttraits->alpha = (float)(s.alpha * sparams.alphaSScale + sparams.alphaSMean);
 	setttraits->beta = (float)(s.beta * sparams.betaSScale + sparams.betaSMean);
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSettTraits(): indId=" << indId
-	//	<< " setttraits->s0=" << setttraits->s0
-	//	<< " setttraits->alpha=" << setttraits->alpha << " setttraits->beta=" << setttraits->beta
-	//	<< endl;
-#endif
 	if (setttraits->s0 < 0.0) setttraits->s0 = 0.0;
 	if (setttraits->s0 > 1.0) setttraits->s0 = 1.0;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::setSettTraits(): indId=" << indId
-	//	<< " setttraits->s0=" << setttraits->s0
-	//	<< " setttraits->alpha=" << setttraits->alpha << " setttraits->beta=" << setttraits->beta
-	//	<< endl;
-#endif
 	return;
 }
 
 // Get phenotypic settlement traits
 settleTraits Individual::getSettTraits(void) {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getSettTraits(): indId=" << indId
-	//	<< endl;
-#endif
 	settleTraits s; s.s0 = s.alpha = s.beta = 0.0;
 	if (setttraits != 0) {
 		s.s0 = setttraits->s0;
 		s.alpha = setttraits->alpha;
 		s.beta = setttraits->beta;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::getSettTraits(): indId=" << indId
-	//	<< " s.s0=" << s.s0 << " s.alpha=" << s.alpha << " s.beta=" << s.beta
-	//	<< endl;
-#endif
 
 	return s;
 }
 
-/*
-locus Individual::getAlleles(int g) {
-locus l; l.allele[0] = l.allele[1] = 0.0;
-if (pGenome != 0) l = pGenome->getAlleles(g);
-return l;
-}
-*/
 
 void Individual::setStatus(short s) {
 	if (s >= 0 && s <= 9) status = s;
@@ -1547,7 +1263,8 @@ void Individual::moveto(Cell* newCell) {
 	double d = sqrt(((double)currloc.x - (double)newloc.x) * ((double)currloc.x - (double)newloc.x)
 		+ ((double)currloc.y - (double)newloc.y) * ((double)currloc.y - (double)newloc.y));
 	if (d >= 1.0 && d < 1.5) { // ok
-		pCurrCell = newCell; status = 5;
+		pCurrCell = newCell; 
+		status = 5;
 	}
 }
 
@@ -1631,17 +1348,6 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 			}
 		}
 	}
-#if RSDEBUG
-	//Patch *startPatch = (Patch*)startpatch;
-	//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " x=" << loc.x << " y=" << loc.y
-	////	<< " natalPatch = " << natalPatch
-	////	<< " startpatch = " << startpatch << " patchNum = " << startPatch->getPatchNum()
-	//	<< " kern.meanDist1=" << kern.meanDist1;
-	//if (trfr.twinKern) {
-	//	DEBUGLOG << " meanDist2=" << kern.meanDist2 << " probKern1=" << kern.probKern1;
-	//}
-	//DEBUGLOG << endl;
-#endif
 
 // scale the appropriate kernel mean to the cell size
 #if RS_CONTAIN
@@ -1657,27 +1363,9 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 	}
 	else
 		meandist = kern.meanDist1 / (float)land.resol;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " meandist=" << meandist << endl;
-#endif
 // scaled mean may not be less than 1 unless emigration derives from the kernel
 // (i.e. the 'use full kernel' option is applied)
 	if (!usefullkernel && meandist < 1.0) meandist = 1.0;
-#if RSDEBUG
-	//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " meandist=" << meandist << endl;
-#endif
-
-#if RSDEBUG
-//Patch *startPatch = (Patch*)startpatch;
-//DEBUGLOG << "Individual::moveKernel(): indId = " << indId << " x = " << x << " y = " << y
-//	<< " natalPatch = " << natalPatch
-////	<< " startpatch = " << startpatch << " patchNum = " << startPatch->getPatchNum()
-//	<< " meanDist1 = " << kern.meanDist1;
-//if (trfr.twinKern) {
-//	DEBUGLOG << " probKern1 = " << kern.probKern1 << " meanDist2 = " << kern.meanDist2;
-//}
-//DEBUGLOG << " meandist = " << meandist << endl;
-#endif
 
 #if RS_CONTAIN
 
@@ -1777,15 +1465,9 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 					// calculate value of kernel at dist;
 					f = p / (PI * u * pow((1.0 + (dist*dist/u)),(p+1.0)));
 					if (r1 <= f) reject = false;
-	#if RSDEBUG
-	//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " dist=" << dist << " r1=" << r1
-	//	<< " f=" << f << " reject=" << reject << endl;
-	#endif
+	
 					}
-	#if RSDEBUG
-	//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " SAMPLED dist=" << dist
-	//	<< endl;
-	#endif
+	
 				// convert sampled distance to cell co-ordinates
 				dist /= (double)land.resol;
 	//			rndangle = pRandom->Random() * 2.0 * PI;
@@ -1823,15 +1505,7 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 						// calculate value of kernel at dist;
 						f = p / (PI * u * pow((1.0 + (dist * dist / u)), (p + 1.0)));
 						if (r1 <= f) reject = false;
-#if RSDEBUG
-						//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " dist=" << dist << " r1=" << r1
-						//	<< " f=" << f << " reject=" << reject << endl;
-#endif
 					}
-#if RSDEBUG
-					//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " SAMPLED dist=" << dist 
-					//	<< endl;
-#endif
 			// convert sampled distance to cell co-ordinates 
 					dist /= (double)land.resol;
 					//			rndangle = pRandom->Random() * 2.0 * PI;
@@ -1859,15 +1533,9 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 						f = sqrt(gamma / (2.0 * PI * dist * dist * dist))
 							* exp(-1.0 * gamma * (dist - mu) * (dist - mu) / (2.0 * dist * mu * mu));
 						if (r1 <= f) reject = false;
-#if RSDEBUG
-						//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " dist=" << dist << " r1=" << r1
-						//	<< " f=" << f << " reject=" << reject << endl;
-#endif
+
 					}
-#if RSDEBUG
-					//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " SAMPLED dist=" << dist 
-					//	<< endl;
-#endif
+
 			// convert sampled distance to cell co-ordinates 
 					dist /= (double)land.resol;
 
@@ -1888,12 +1556,7 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 				if (rndangle < 0.0) rndangle += 360.0;
 				if (rndangle >= 360.0) rndangle -= 360.0;
 				rndangle *= 2.0 * PI / 360.00;
-#if RSDEBUG
-				DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " status=" << status
-					<< " meanDirn=" << w.meanDirn << " sdDirn=" << w.sdDirn << " rndangle=" << rndangle
-					<< " loopsteps=" << loopsteps
-					<< endl;
-#endif
+
 #else
 				rndangle = pRandom->Random() * 2.0 * PI;
 #endif // RS_CONTAIN 
@@ -1905,12 +1568,6 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 				if (path != 0) (path->year)++;
 #endif
 				loopsteps++;
-#if RSDEBUG
-				//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " status=" << status
-				//	<< " loopsteps=" << loopsteps << " newX=" << newX << " newY=" << newY
-				//	<< " loc.x=" << loc.x << " loc.y=" << loc.y
-				//	<< endl;
-#endif
 			} while (loopsteps < 1000 &&
 				((!absorbing && (newX < land.minX || newX > land.maxX
 					|| newY < land.minY || newY > land.maxY))
@@ -1946,12 +1603,6 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 				patch = 0;
 				patchNum = -1;
 			}
-#if RSDEBUG
-			//DEBUGLOG << "Individual::moveKernel(): indId=" << indId << " status=" << status
-			//	<< " loopsteps=" << loopsteps << " newX=" << newX << " newY=" << newY
-			//	<< " pCell=" << pCell << " patch=" << patch << " patchNum=" << patchNum
-			//	<< endl;
-#endif
 		} while (!absorbing && patchNum < 0 && loopsteps < 1000); 			 // in a no-data region
 	} while (!usefullkernel && pPatch == pNatalPatch && loopsteps < 1000); 	// still in the original (natal) patch
 
@@ -1992,13 +1643,6 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 		status = 6;
 		dispersing = 0;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::moveKernel(): indId=" << indId
-	//	<< " newX=" << newX << " newY=" << newY
-	//	<< " patch=" << patch
-	//	<< " patchNum=" << patchNum << " status=" << status;
-	//DEBUGLOG << endl;
-#endif
 
 // apply dispersal-related mortality, which may be distance-dependent
 	dist *= (float)land.resol; // re-scale distance moved to landscape scale
@@ -2061,11 +1705,6 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 	settleSteps settsteps = pSpecies->getSteps(stage, sex);
 
 	patch = pCurrCell->getPatch();
-#if RSDEBUG
-	//DEBUGLOG << "Individual::moveStep() AAAA: indId=" << indId
-	//	<< " pCurrCell=" << pCurrCell << " patch=" << patch
-	//	<< endl;
-#endif
 
 	if (patch == 0) { // matrix
 		pPatch = 0;
@@ -2101,12 +1740,7 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 			mortprob = 1.0;
 		}
 		else mortprob = pSpecies->getHabMort(h);
-#if RSDEBUG
-		//locn temploc = pCurrCell->getLocn();
-		//DEBUGLOG << "Individual::moveStep(): x=" << temploc.x << " y=" << temploc.x
-		//	<< " landIx=" << landIx << " h=" << h << " mortprob=" << mortprob
-		//	<< endl;
-#endif
+
 	}
 	else mortprob = movt.stepMort;
 #endif // TEMPMORT 
@@ -2114,23 +1748,7 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 	if (pPatch == pNatalPatch && path->out == 0 && path->year == path->total) {
 		mortprob = 0.0;
 	}
-#if RSDEBUG
-	locn loc0, loc1, loc2;
-	//loc0 = pCurrCell->getLocn();
-	//DEBUGLOG << "Individual::moveStep() BBBB: indId=" << indId << " status=" << status
-	//	<< " path->year=" << path->year << " path->out=" << path->out
-	//	<< " settleStatus=" << path->settleStatus
-	//	<< " x=" << loc0.x << " y=" << loc0.y
-	////	<< " patch=" << patch
-	//	<< " pPatch=" << pPatch
-	//	<< " patchNum=" << patchNum;
-	////	<< " natalPatch=" << natalPatch;
-	////if (crw != 0) {
-	////	DEBUGLOG << " xc=" << crw->xc << " yc=" << crw->yc;
-	////	DEBUGLOG << " rho=" << movt.rho << " stepLength=" << movt.stepLength;
-	////}
-	//DEBUGLOG << endl;
-#endif
+
 	if (pRandom->Bernoulli(mortprob)) { // individual dies
 		status = 7;
 		dispersing = 0;
@@ -2156,27 +1774,13 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 		switch (trfr.moveType) {
 
 		case 1: // SMS
-#if RSDEBUG                   
-			//loc1 = pCurrCell->getLocn();      
-			//DEBUGLOG << "Individual::moveStep() FFFF: indId=" << indId << " status=" << status
-			////	<< " path->year=" << path->year
-			//	<< " path->season=" << path->season
-			//	<< " x=" << loc1.x << " y=" << loc1.y
-			//	<< " smsData->goalType=" << smsData->goalType
-			//	<< " goal.x=" << smsData->goal.x
-			//	<< " goal.y=" << smsData->goal.y
-			//	<< endl;
-#endif
+
 #if PARTMIGRN
 			move = smsMove(pLandscape, pSpecies, landIx, pPatch == pPrevPatch, trfr.indVar, absorbing);
 #else
 			move = smsMove(pLandscape, pSpecies, landIx, pPatch == pNatalPatch, trfr.indVar, absorbing);
 #endif  // PARTMIGRN 
-#if RSDEBUG
-			//DEBUGLOG << "Individual::moveStep() GGGG: indId=" << indId << " status=" << status
-			//	<< " move.dist=" << move.dist
-			//	<< endl;
-#endif
+
 			if (move.dist < 0.0) {
 				// either INTERNAL ERROR CONDITION - INDIVIDUAL IS IN NO-DATA SQUARE
 				// or individual has crossed absorbing boundary ...
@@ -2185,26 +1789,16 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 				dispersing = 0;
 			}
 			else {
-#if RSDEBUG
-				//loc1 = pCurrCell->getLocn();
-				//DEBUGLOG << "Individual::moveStep() HHHH: indId=" << indId << " status=" << status
-				//	<< " path->year=" << path->year
-				//	<< " x=" << loc1.x << " y=" << loc1.y
-				////	<< " smsData = " << smsData
-				//	<< endl;
-#endif
 
-		// WOULD IT BE MORE EFFICIENT FOR smsMove TO RETURN A POINTER TO THE NEW CELL? ...
+
+				// WOULD IT BE MORE EFFICIENT FOR smsMove TO RETURN A POINTER TO THE NEW CELL? ...
 
 				patch = pCurrCell->getPatch();
-				//int patchnum;
 				if (patch == 0) {
 					pPatch = 0;
-					//patchnum = 0;
 				}
 				else {
 					pPatch = (Patch*)patch;
-					//patchnum = pPatch->getPatchNum();
 				}
 				if (sim.saveVisits && pPatch != pNatalPatch) {
 					pCurrCell->incrVisits();
@@ -2263,13 +1857,6 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 					if (xcnew < 0.0) newX = -1; else newX = (int)xcnew;
 					if (ycnew < 0.0) newY = -1; else newY = (int)ycnew;
 					loopsteps++;
-#if RSDEBUG
-					//DEBUGLOG << "Individual::moveStep(): indId=" << indId
-					//	<< " xc=" << crw->xc << " yc=" << crw->yc << " pCurrCell=" << pCurrCell
-					//	<< " steps=" << path->year << " loopsteps=" << loopsteps
-					//	<< " steplen=" << steplen << " rho=" << rho << " angle=" << angle
-					//	<< " xcnew=" << xcnew << " ycnew=" << ycnew << " newX=" << newX << " newY=" << newY << endl;
-#endif
 				} while (!absorbing && loopsteps < 1000 &&
 					(newX < land.minX || newX > land.maxX || newY < land.minY || newY > land.maxY));
 				if (newX < land.minX || newX > land.maxX || newY < land.minY || newY > land.maxY)
@@ -2282,11 +1869,6 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 				}
 				else
 					patch = pCurrCell->getPatch();
-#if RSDEBUG
-				//DEBUGLOG << "Individual::moveStep(): indId=" << indId
-				//	<< " loopsteps=" << loopsteps << " absorbed=" << absorbed
-				//	<< " pCurrCell=" << pCurrCell << " patch=" << patch << endl;
-#endif
 			} while (!absorbing && pCurrCell == 0 && loopsteps < 1000);
 #if VCL
 			if (v.viewPaths) {
@@ -2318,36 +1900,11 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 					pCurrCell = pPrevCell;
 				}
 			}
-#if RSDEBUG
-			//DEBUGLOG << "Individual::moveStep(): indId=" << indId
-			//	<< " status=" << status
-			//	<< " pCurrCell=" << pCurrCell << " patch=" << patch << endl;
-#endif
 			break;
 
 		} // end of switch (trfr.moveType)
 
-#if RSDEBUG
-//locn loc2;
-//if (pCurrCell > 0) {
-//	loc2 = pCurrCell->getLocn();
-//}
-//else {
-//	loc2.x = -9999; loc2.y = -9999;
-//}
-//DEBUGLOG << "Individual::moveStep() ZZZZ: indId=" << indId
-//	<< " status=" << status
-//	<< " path->total=" << path->total
-//	<< " x=" << loc2.x << " y=" << loc2.y
-//	<< " patch=" << patch;
-//if (patch > 0) {
-//	pPatch = (Patch*)patch;
-//	DEBUGLOG << " patchNum=" << pPatch->getPatchNum()
-//		<< " getK()=" << pPatch->getK()
-//		<< " popn=" << pPatch->getPopn((int)pSpecies);
-//}
-//	DEBUGLOG << endl;
-#endif
+
 		if (patch > 0  // not no-data area or matrix
 			&& path->total >= settsteps.minSteps) {
 			pPatch = (Patch*)patch;
@@ -2430,12 +1987,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 	int cellcost, newcellcost;
 	locn current;
 
-	//if (write_out) {
-	//	out<<endl<<"ind = "<<get_id()<<" pr = "<<get_pr()<<" step = "<<step;
-	//	if (step == 0) out<<" start at "<<x<<" "<<y;
-	//	out<<endl;
-	//}
-	//pCell = pLand->findCell(x,y);
 	if (pCurrCell == 0)
 	{
 		// x,y is a NODATA square - this should not occur here
@@ -2443,10 +1994,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		move.dist = -69.0; move.cost = 0.0;
 		return move;
 	}
-
-#if RSDEBUG
-	//DEBUGLOG << "Individual::smsMove(): this=" << this << endl;
-#endif
 
 	landData land = pLand->getLandData();
 	trfrSMSTraits movt = pSpecies->getSMSTraits();
@@ -2475,23 +2022,7 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		else nbr = getSimDir(current.x, current.y, movt.dp);
 	}
 	if (natalPatch || path->settleStatus > 0) path->out = 0;
-	//if (natalPatch) path->out = 0;
-#if RSDEBUG
-//DEBUGLOG << "Individual::smsMove() 0000: nbr matrix" << endl;
-//for (y2 = 2; y2 > -1; y2--) {
-//	for (x2 = 0; x2 < 3; x2++) DEBUGLOG << nbr.cell[x2][y2] << " ";
-//	DEBUGLOG << endl;
-//}
-#endif
-//if (write_out) {
-//	out<<endl<<"directional persistence weights:"<<endl;
-//	for (y2 = 2; y2 > -1; y2--) {
-//		for (x2 = 0; x2 < 3; x2++) out<<nbr.cell[x2][y2]<<" ";
-//		out<<endl;
-//	}
-//}
-//if (write_out2)
-//	out2<<endl<<"ind = "<<get_id()<<" pr = "<<get_pr()<<" step = "<<step<<endl<<endl;
+
 
 //get weights for goal bias....
 	double gb;
@@ -2505,17 +2036,12 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		}
 		if (indvar) {
 			double exp_arg = -((double)nsteps - (double)smsData->betaDB) * (-smsData->alphaDB);
-#if RSDEBUG
-			//DEBUGLOG << "Individual::smsMove(): exp_arg=" << exp_arg;
-#endif
+
 			if (exp_arg > 100.0) exp_arg = 100.0; // to prevent exp() overflow error
 			gb = 1.0 + (smsData->gb - 1.0) / (1.0 + exp(exp_arg));
 		}
 		else {
 			double exp_arg = -((double)nsteps - (double)movt.betaDB) * (-movt.alphaDB);
-#if RSDEBUG
-			//DEBUGLOG << "Individual::smsMove(): exp_arg=" << exp_arg;
-#endif
 			if (exp_arg > 100.0) exp_arg = 100.0; // to prevent exp() overflow error
 			gb = 1.0 + (movt.gb - 1.0) / (1.0 + exp(exp_arg));
 		}
@@ -2538,63 +2064,20 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 #else
 	goal = getGoalBias(current.x, current.y, movt.goalType, (float)gb);
 #endif  // PARTMIGRN 
-	//if (write_out) {
-	//	out<<"goal bias weights:"<<endl;
-	//	for (y2 = 2; y2 > -1; y2--) {
-	//		for (x2 = 0; x2 < 3; x2++) out<<goal.cell[x2][y2]<<" ";
-	//		out<<endl;
-	//	}
-	//}
-	//if (write_out2)
-	//  out2<<endl<<"ind = "<<get_id()<<" pr = "<<get_pr()<<" step = "<<step<<endl<<endl;
 
 	// get habitat-dependent weights (mean effective costs, given perceptual range)
 	// first check if costs have already been calculated
 
 	hab = pCurrCell->getEffCosts();
-#if RSDEBUG
-	//if (hab.cell[0][0] >= 0) {
-	//	DEBUGLOG << "Individual::smsMove() 1111: x=" << current.x << " y=" << current.y << endl;
-	//	for (y2 = 2; y2 > -1; y2--) {
-	//		for (x2 = 0; x2 < 3; x2++) DEBUGLOG << hab.cell[x2][y2] << " ";
-	//		DEBUGLOG << endl;
-	//	}
-	//}
-#endif
-//if (write_out) {
-//  out<<"stored effective costs:"<<endl;
-//	for (y2 = 2; y2 > -1; y2--) {
-//    for (x2 = 0; x2 < 3; x2++) out<<hab.cell[x2][y2]<<" ";
-//	  out<<endl;
-//	}
-//}
+
 	if (hab.cell[0][0] < 0.0) { // costs have not already been calculated
 		hab = getHabMatrix(pLand, pSpecies, current.x, current.y, movt.pr, movt.prMethod,
 			landIx, absorbing);
-#if RSDEBUG
-		//DEBUGLOG << "Individual::smsMove() 2222: " << endl;
-		//for (y2 = 2; y2 > -1; y2--) {
-		//	for (x2 = 0; x2 < 3; x2++) DEBUGLOG << hab.cell[x2][y2] << " ";
-		//	DEBUGLOG << endl;
-		//}
-#endif
 		pCurrCell->setEffCosts(hab);
 	}
-	else { // they have already been calculated - no action required
-		//	if (write_out) {
-		//		out<<"*** using previous effective costs ***"<<endl;
-		//	}
+	else {
+		// they have already been calculated - no action required
 	}
-	//if (write_out) {
-	//	out<<"mean effective costs:"<<endl;
-	//	for (y2 = 2; y2 > -1; y2--) {
-	//		for (x2 = 0; x2 < 3; x2++) {
-	//			out<<hab.cell[x2][y2]<<" ";
-	//		}
-	//		out<<endl;
-	//	}
-	//	out<<"weighted effective costs:"<<endl;
-	//}
 
 	// determine weighted effective cost for the 8 neighbours
 	// multiply directional persistence, goal bias and habitat habitat-dependent weights
@@ -2607,54 +2090,19 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 				else // diagonal
 					nbr.cell[x2][y2] = (float)SQRT2 * nbr.cell[x2][y2] * goal.cell[x2][y2] * hab.cell[x2][y2];
 			}
-			//		if (write_out) {
-			//			out<<nbr.cell[x2][y2]<<" "; if (x2==1 && y2==1) out<<"         ";
-			//		}
 		}
-		//	if (write_out) out<<endl;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::smsMove() 3333: " << endl;
-	//for (y2 = 2; y2 > -1; y2--) {
-	//	for (x2 = 0; x2 < 3; x2++) DEBUGLOG << nbr.cell[x2][y2] << " ";
-	//	DEBUGLOG << endl;
-	//}
-#endif
 
-// determine reciprocal of effective cost for the 8 neighbours
-//if (write_out) out<<"reciprocal weighted effective costs:"<<endl;
+	// determine reciprocal of effective cost for the 8 neighbours
 	for (y2 = 2; y2 > -1; y2--) {
 		for (x2 = 0; x2 < 3; x2++) {
 			if (nbr.cell[x2][y2] > 0.0) nbr.cell[x2][y2] = 1.0f / nbr.cell[x2][y2];
-			//		if (write_out) {
-			//			out<<nbr.cell[x2][y2]<<" "; if (x2==1 && y2==1) out<<"         ";
-			//		}
 		}
-		//	if (write_out) out<<endl;
 	}
 
 	// set any cells beyond the current landscape limits and any no-data cells
 	// to have zero probability
 	// increment total for re-scaling to sum to unity
-
-#if RSDEBUG
-//array3x3d temp;
-//for (y2 = 2; y2 > -1; y2--) {
-//	for (x2 = 0; x2 < 3; x2++) {
-//		temp.cell[x2][y2] = nbr.cell[x2][y2];
-//		if (current.x == 488 && current.y == 422) {
-//			pCell = pLand->findCell((current.x+x2-1),(current.y+y2-1));
-//			DEBUGLOG << "Individual::smsMove(): this=" << this
-//				<< " IN THE PROBLEM CELL"
-//				<< " y=" << current.y << " x=" << current.x
-//				<< " y2=" << y2 << " x2=" << x2
-//				<< " pCell=" << pCell;
-//			if (pCell != 0) DEBUGLOG << " pCell->getCost=" << pCell->getCost();
-//			DEBUGLOG << endl;
-//		}
-//	}
-//}
-#endif
 
 	for (y2 = 2; y2 > -1; y2--) {
 		for (x2 = 0; x2 < 3; x2++) {
@@ -2668,44 +2116,21 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 					if (pCell == 0) nbr.cell[x2][y2] = 0.0; // no-data cell
 				}
 			}
-#if RSDEBUG
-			//DEBUGLOG << "Individual::smsMove(): this=" << this
-			//	<< " y=" << current.y << " x=" << current.x
-			//	<< " y2=" << y2 << " x2=" << x2
-			//	<< " pCell=" << pCell
-			//	<< endl;
-#endif
-//		if (write_out) {
-//			out<<nbr.cell[x2][y2]<<" "; if (x2==1 && y2==1) out<<"      ";
-//		}
+
 			sum_nbrs += nbr.cell[x2][y2];
 		}
-		//	if (write_out) out<<endl;
 	}
 
 	// scale effective costs as probabilities summing to 1
-	//if (write_out) out<<"probabilities:"<<endl;
 	if (sum_nbrs > 0.0) { // should always be the case, but safest to check...
 		for (y2 = 2; y2 > -1; y2--) {
 			for (x2 = 0; x2 < 3; x2++) {
 				nbr.cell[x2][y2] = nbr.cell[x2][y2] / (float)sum_nbrs;
-				//		if (write_out) {
-				//			out<<nbr.cell[x2][y2]<<" "; if (x2==1 && y2==1) out<<"      ";
-				//		}
 			}
-			//	if (write_out) out<<endl;
 		}
 	}
-#if RSDEBUG
-	//DEBUGLOG << "Individual::smsMove() 4444: " << endl;
-	//for (y2 = 2; y2 > -1; y2--) {
-	//	for (x2 = 0; x2 < 3; x2++) DEBUGLOG << nbr.cell[x2][y2] << " ";
-	//	DEBUGLOG << endl;
-	//}
-#endif
 
-// set up cell selection probabilities
-//if (write_out) out<<"rnd = "<<rnd<<endl;
+	// set up cell selection probabilities
 	double cumulative[9];
 	int j = 0;
 	cumulative[0] = nbr.cell[0][0];
@@ -2713,7 +2138,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		for (x2 = 0; x2 < 3; x2++) {
 			if (j != 0) cumulative[j] = cumulative[j - 1] + nbr.cell[x2][y2];
 			j++;
-			//    if (write_out) out<<"dx = "<<x2-1<<" dy = "<<y2-1<<" sum_rnd = "<<sum_rnd<<endl;
 		}
 	}
 
@@ -2727,23 +2151,11 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 			j = 0;
 			for (y2 = 0; y2 < 3; y2++) {
 				for (x2 = 0; x2 < 3; x2++) {
-#if RSDEBUG
-					//DEBUGLOG << "Individual::smsMove() 7777: rnd=" << rnd
-					//	<< " j=" << j	<< " cumulative[j]=" << cumulative[j]
-					//	<< endl;
-#endif
 					if (rnd < cumulative[j]) {
 						newX = current.x + x2 - 1;
 						newY = current.y + y2 - 1;
 						if (x2 == 1 || y2 == 1) move.dist = (float)(land.resol);
 						else move.dist = (float)(land.resol) * (float)SQRT2;
-						//			if (write_out) {
-						//				out<<"relative x and y "<<x2-1<<" "<<y2-1<<endl;
-						//				out<<"cost of move "<<move.cost<<endl;
-						//				out<<"move to: x = "<<x<<" y = "<<y;
-						//				if (oob) out<<" ***** OUT OF BOUNDS *****";
-						//				out<<endl;
-						//			}
 						y2 = 999; x2 = 999; //to break out of x2 and y2 loops.
 					}
 					j++;
@@ -2762,15 +2174,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 			pNewCell = pLand->findCell(newX, newY);
 		}
 	} while (!absorbing && pNewCell == 0 && loopsteps < 1000); // no-data cell
-#if RSDEBUG
-	//DEBUGLOG << "Individual::smsMove() 8888: pNewCell=" << pNewCell
-	//	<< " loopsteps=" << loopsteps
-	//	<< " current.x=" << current.x << " current.y=" << current.y
-	//	<< " newX=" << newX << " newY=" << newY
-	//	<< " land.minX=" << land.minX << " land.minY=" << land.minY
-	//	<< " land.maxX=" << land.maxX << " land.maxY=" << land.maxY
-	//	<< endl;
-#endif
 	if (loopsteps >= 1000 || pNewCell == 0) {
 		// unable to make a move or crossed absorbing boundary
 		// flag individual to die
@@ -2785,7 +2188,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 			memory.pop(); // remove oldest memory element
 		}
 		memory.push(current); // record previous location in memory
-		//if (write_out) out << "queue length is " << memory.size() << endl;
 		pCurrCell = pNewCell;
 	}
 	return move;
@@ -2800,7 +2202,6 @@ array3x3d Individual::getSimDir(const int x, const int y, const float dp)
 	double theta;
 	int xx, yy;
 
-	//if (write_out) out<<"step 0"<<endl;
 	if (memory.empty())
 	{ // no previous movement, set matrix to unity
 		for (xx = 0; xx < 3; xx++) {
@@ -2810,31 +2211,23 @@ array3x3d Individual::getSimDir(const int x, const int y, const float dp)
 		}
 	}
 	else { // set up the matrix dependent on relationship of previous location to current
-		//  if (write_out) out<<"step 1"<<endl;
 		d.cell[1][1] = 0;
 		prev = memory.front();
-		//  if (write_out) out<<"step 2"<<endl;
 		if ((x - prev.x) == 0 && (y - prev.y) == 0) {
 			// back to 'square 1' (first memory location) - use previous step drn only
 			prev = memory.back();
-			//    if (write_out) out<<"step 3"<<endl;
-			//		if (write_out) out<<"*** using last step only: x,y = "<<prev.x<<","<<prev.y<<endl;
 			if ((x - prev.x) == 0 && (y - prev.y) == 0) { // STILL HAVE A PROBLEM!
 				for (xx = 0; xx < 3; xx++) {
 					for (yy = 0; yy < 3; yy++) {
 						d.cell[xx][yy] = 1.0;
 					}
 				}
-				//      if (write_out) out<<"step 4"<<endl;
 				return d;
 			}
 		}
 		else {
-			//    if (write_out) out<<"step 5"<<endl;
 		}
-		//  if (write_out) out<<"step 6"<<endl;
 		theta = atan2(((double)x - (double)prev.x), ((double)y - (double)prev.y));
-		//  if (write_out) out<<"prev.x,prev.y: "<<prev.x<<","<<prev.y<<" theta: "<<theta<<endl;
 		d = calcWeightings(dp, (float)theta);
 
 	}
@@ -2842,8 +2235,6 @@ array3x3d Individual::getSimDir(const int x, const int y, const float dp)
 }
 
 // Weight neighbouring cells on basis of goal bias
-//array3x3d Individual::getGoalBias(const int x,const int y,
-//	const int goaltype,const float gb)
 array3x3d Individual::getGoalBias(const int x, const int y,
 	const int goaltype, const float gb)
 {
@@ -2917,8 +2308,6 @@ array3x3d Individual::calcWeightings(const double base, const double theta) {
 			}
 		}
 	}
-	//  if (write_out) out<<"goalx,goaly: "<<goalx<<","<<goaly<<" dx,dy: "<<dx<<","<<dy
-	//    <<" theta: "<<theta<<endl;
 	d.cell[1][1] = 0; // central cell has zero weighting
 	d.cell[dx + 1][dy + 1] = (float)i0;
 	d.cell[-dx + 1][-dy + 1] = (float)i4;
@@ -2975,34 +2364,23 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 			else {
 				if (x2 == 0 || y2 == 0) { // not diagonal (rook move)
 					if (x2 == 0) { // vertical (N-S) move
-						//out<<"ROOK N-S: x2 = "<<x2<<" y2 = "<<y2<<endl;
 						if (pr % 2 == 0) { xmin = -pr / 2; xmax = pr / 2; ymin = y2; ymax = y2 * pr; } // PR even
 						else { xmin = -(pr - 1) / 2; xmax = (pr - 1) / 2; ymin = y2; ymax = y2 * pr; } // PR odd
 					}
 					if (y2 == 0) { // horizontal (E-W) move
-						//out<<"ROOK E-W: x2 = "<<x2<<" y2 = "<<y2<<endl;
 						if (pr % 2 == 0) { xmin = x2; xmax = x2 * pr; ymin = -pr / 2; ymax = pr / 2; } // PR even
 						else { xmin = x2; xmax = x2 * pr; ymin = -(pr - 1) / 2; ymax = (pr - 1) / 2; } // PR odd
 					}
 				}
 				else { // diagonal (bishop move)
-					//out<<"BISHOP: x2 = "<<x2<<" y2 = "<<y2<<endl;
 					xmin = x2; xmax = x2 * pr; ymin = y2; ymax = y2 * pr;
 				}
 			}
-			//out<<"pre  swap: xmin = "<<xmin<<" ymin = "<<ymin<<" xmax = "<<xmax<<" ymax = "<<ymax<<endl;
 			if (xmin > xmax) { int z = xmax; xmax = xmin; xmin = z; } // swap xmin and xmax
 			if (ymin > ymax) { int z = ymax; ymax = ymin; ymin = z; } // swap ymin and ymax
-			//out<<"post swap: xmin = "<<xmin<<" ymin = "<<ymin<<" xmax = "<<xmax<<" ymax = "<<ymax<<endl;
-	//		if (write_out2) {
-	//			out2<<"current x and y  "<<x<<" "<<y<<endl;
-	//			out2<<"x2 and y2  "<<x2<<" "<<y2<<endl;
-	//			out2<<"xmin,ymin "<<xmin<<","<<ymin<<" xmax,ymax "<<xmax<<","<<ymax<<endl;
-	//		}
 
 			// calculate effective mean cost of cells in perceptual range
 			ncells = 0; weight = 0.0; sumweights = 0.0;
-			//		targetseen = 0;
 			if (x2 != 0 || y2 != 0) { // not central cell (i.e. current cell)
 				for (int x3 = xmin; x3 <= xmax; x3++) {
 					for (int y3 = ymin; y3 <= ymax; y3++) {
@@ -3012,10 +2390,6 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 						else { if ((x + x3) > land.maxX) x4 = x + x3 - land.maxX - 1; else x4 = x + x3; }
 						if ((y + y3) < 0) y4 = y + y3 + land.maxY + 1;
 						else { if ((y + y3) > land.maxY) y4 = y + y3 - land.maxY - 1; else y4 = y + y3; }
-						//					if (write_out && (x4 < 0 || y4 < 0)) {
-						//						out<<"ERROR: x "<<x<<" y "<<y<<" x3 "<<x3<<" y3 "<<y3
-						//							<<" xbound "<<xbound<<" ybound "<<ybound<<" x4 "<<x4<<" y4 "<<y4<<endl;
-						//					}
 						if (x4 < 0 || x4 > land.maxX || y4 < 0 || y4 > land.maxY) {
 							// unexpected problem - e.g. due to ridiculously large PR
 							// treat as a no-data cell
@@ -3034,19 +2408,9 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 									if (cost == 0) { // cost not yet set for the cell
 										h = pCell->getHabIndex(landIx);
 										cost = pSpecies->getHabCost(h);
-#if RSDEBUG
-										//DEBUGLOG << "Individual::getHabMatrix(): x4=" << x4 << " y4=" << y4
-										//	<< " landIx=" << landIx << " h=" << h << " cost=" << cost
-										//	<< endl;
-#endif
 										pCell->setCost(cost);
 									}
 									else {
-#if RSDEBUG
-										//DEBUGLOG << "Individual::getHabMatrix(): x4=" << x4 << " y4=" << y4
-										//	<< " cost=" << cost
-										//	<< endl;
-#endif
 
 									}
 								}
@@ -3070,26 +2434,14 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 								ncells++; sumweights += weight;
 							}
 						}
-						//          if (write_out2) out2<<x+x3<<","<<y+y3<<","<<cost<<" wt. "<<weight<<endl;
-						//#if GO2TARGET
-						//					if (sq != 0) {
-						//						if (sq->get_target() > 50) targetseen++;
-						//					}
-						//#endif
 					} //end of y3 loop
 				}  //end of x3 loop
-	//		if (write_out) out<<"ncells in PR = "<<ncells<<" tot.wt. = "<<sumweights
-	//      <<" w.cell = "<<w.cell[x2+1][y2+1]<<endl;
 				if (ncells > 0) {
 					if (prmethod == 1) w.cell[x2 + 1][y2 + 1] /= ncells; // arithmetic mean
 					if (prmethod == 2) w.cell[x2 + 1][y2 + 1] = ncells / w.cell[x2 + 1][y2 + 1]; // hyperbolic mean
 					if (prmethod == 3 && sumweights > 0)
 						w.cell[x2 + 1][y2 + 1] /= (float)sumweights; // weighted arithmetic mean
 				}
-				//#if GO2TARGET
-				//      if (targetseen > 0) // target is within PR - set to a very low score
-				//        w.cell[x2+1][y2+1] = (1/(1000000*(double)targetseen));
-				//#endif
 			}
 			else { // central cell
 				// record cost if not already recorded
@@ -3105,8 +2457,6 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 					}
 				}
 			}
-			//		if (write_out2) out2<<"effective mean cost "<<w.cell[x2+1][y2+1]<<endl;
-
 		}//end of y2 loop
 	}//end of x2 loop
 
@@ -3120,11 +2470,6 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 void Individual::outGenetics(const int rep, const int year, const int spnum,
 	const int landNr, const bool patchmodel, const bool xtab)
 {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::outGenetics(): indId=" << indId
-	//	<< " rep=" << rep << " landNr=" << landNr
-	//	<< endl;
-#endif
 	if (landNr == -1) {
 		if (pGenome != 0) {
 			int X = -1; int Y = -1;
@@ -3151,11 +2496,6 @@ void Individual::outGenetics(const int rep, const int year, const int spnum,
 void Individual::outGenetics(const int rep, const int year, const int spnum,
 	const int landNr, const bool xtab)
 {
-#if RSDEBUG
-	//DEBUGLOG << "Individual::outGenetics(): indId=" << indId
-	//	<< " rep=" << rep << " landNr=" << landNr
-	//	<< endl;
-#endif
 	if (landNr == -1) {
 		if (pGenome != 0) {
 			pGenome->outGenetics(rep, year, spnum, indId, xtab);
@@ -3232,7 +2572,6 @@ double wrpcauchy(double location, double rho) {
 	double result;
 
 	if (rho < 0.0 || rho > 1.0) {
-		//	ML_ERR_return_NAN;
 		result = location;
 	}
 
@@ -3248,13 +2587,57 @@ double wrpcauchy(double location, double rho) {
 
 double cauchy(double location, double scale) {
 	if (scale < 0) return location;
-	//return location + scale * tan(M_PI * unif_rand());
 	return location + scale * tan(PI * pRandom->Random());
-	//return location + scale * tan(M_PI * pRandom->Random());
 }
-//#endif
-//#endif
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+#if RSDEBUG
+
+
+void testIndividual() {
+
+	Patch* pPatch = new Patch(0, 0);
+	int cell_x = 2;
+	int cell_y = 5;
+	int cell_hab = 2;
+	Cell* pCell = new Cell(cell_x, cell_y, (intptr)pPatch, cell_hab);
+
+	// Create an individual
+	short stg = 0;
+	short age = 0;
+	short repInt = 0;
+	float probmale = 0;
+	bool uses_movt_process = true;
+	short moveType = 1;
+	Individual ind(pCell, pPatch, stg, age, repInt, probmale, uses_movt_process, moveType);
+
+	// An individual can move to a neighbouring cell
+	//ind.moveto();
+
+	// Gets its sex drawn from pmale
+	
+	// Can age or develop
+
+	// 
+
+	// Reproduces
+	// depending on whether it is sexual or not
+	// depending on the stage
+	// depending on the trait inheritance
+
+
+	// Disperses
+	// Emigrates
+	// Transfers
+	// Settles
+
+	// Survives
+
+	// Develops
+
+}
+#endif // RSDEBUG
+

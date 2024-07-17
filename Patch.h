@@ -68,14 +68,6 @@
 #include <vector>
 using namespace std;
 
-//#if RS_RCPP && !R_CMD
-#include "../Version.h"
-//#endif
-
-//#if !RS_RCPP && R_CMD
-//#include "../../Batch/Version.h"
-//#endif
-
 #include "Parameters.h"
 #include "Cell.h"
 #include "Species.h"
@@ -192,13 +184,7 @@ public:
 #else
 	float getK(void);
 #endif // SEASONAL 
-#if VCL
-	// for GUI version, draw the Patch on the screen
-	void drawCells(TCanvas*, float, int, rgb);
-#else
-	// dummy function for batch version
-	void drawCells(float, int, rgb);
-#endif
+
 
 private:
 	int patchSeqNum;// sequential patch number - patch 0 is reserved for the inter-patch matrix

@@ -38,15 +38,8 @@
 
 #include <stdlib.h>
 #include <fstream>
- //#include <iostream>
-
- //#if RS_RCPP && !R_CMD
-#include "../Version.h"
-//#endif
-
-//#if !RS_RCPP && R_CMD
-//#include "../../Batch/Version.h"
-//#endif
+#include <cassert>
+#include "Utils.h"
 
 using namespace std;
 
@@ -54,72 +47,13 @@ using namespace std;
 extern ofstream DEBUGLOG;
 #endif
 
-
-
-#if RS_EMBARCADERO
-
-//--------------- 1.) Former version of RSrandom.cpp
-
-
-#if LINUX_CLUSTER
-//#include <random>
-//#include <tr1/random>
-#include "maths.h"
-#else
-#if RSWIN64
-#include <dinkumware64/random>
-#else
-#include <dinkumware/random>
-#endif
-#endif
-
-class RSrandom {
-
-public:
-#if RS_ABC
-	RSrandom(int);
-#else
-	RSrandom(void);
-#endif
-	~RSrandom(void);
-	double Random(void);
-	int IRandom(int, int);
-	int Bernoulli(double);
-	double Normal(double, double);
-	int Poisson(double);
-#if RS_ABC
-	double Beta(double, double);
-	double Gamma(double, double);
-#endif
-
-private:
-	double normal_x2; int normal_x2_valid; // variables used by Normal distribution
-#if !LINUX_CLUSTER
-	tr1::uniform_real<>* pRandom01;
-	tr1::normal_distribution<>* pNormal;
-#if RS_ABC
-	tr1::mt19937* gen;
-#endif
-#endif
-};
-
-//--------------------------------------------------------------------------------------------------
-//--------------------------------------------------------------------------------------------------
-
-#else // not RS_EMBARCADERO
-
-
-
 #if !RS_RCPP
-
 //--------------- 2.) New version of RSrandom.cpp
-
-
-#include <cmath>
-#include <random>
-#if !LINUX_CLUSTER
-#include <ctime>
-#endif
+	#include <cmath>
+	#include <random>
+	#if !LINUX_CLUSTER
+	#include <ctime>
+	#endif
 
 class RSrandom
 {
@@ -193,8 +127,9 @@ private:
 
 #endif // !RS_RCPP
 
-#endif // RS_EMBARCADERO
-
+#if RSDEBUG
+	void testRSrandom();
+#endif // RSDEBUG
 
 //---------------------------------------------------------------------------
 

@@ -21,9 +21,6 @@
 
 
  //---------------------------------------------------------------------------
-#if RS_EMBARCADERO 
-#pragma hdrstop
-#endif
 
 #include "Community.h"
 
@@ -744,11 +741,6 @@ void Community::dispersal(short landIx)
 	DEBUGLOG << "Community::dispersal(): transfer time=" << t2 - t1 << endl;
 #endif
 
-#if RSDEBUG
-	//int t3 = time(0);
-	//DEBUGLOG << "Community::dispersal(): completion time = " << t3-t2 << endl;
-#endif
-
 }
 
 #if SPATIALMORT
@@ -1168,36 +1160,17 @@ commStats Community::getStats(void)
 		s.nsocial += patchPop.nSocial;
 		s.nasocial += patchPop.nAsocial;
 #endif
-#if RSDEBUG
-		//DEBUGLOG << "Community::getStats(): i = " << i
-		//	<< " pSpecies = " << patchPop.pSpecies << " pPatch = " << patchPop.pPatch
-		//	<< " nInds = " << patchPop.nInds << endl;
-#endif
+
 		if (patchPop.pPatch != 0) { // not the matrix patch
-#if RSDEBUG
-			//DEBUGLOG << "Community::getStats(): i = " << i
-			//	<< " patchNum = " << patchPop.pPatch->getPatchNum() << endl;
-#endif
+
 			if (patchPop.pPatch->getPatchNum() != 0) { // not matrix patch
 #if SEASONAL
 				localK = patchPop.pPatch->getK(season);
-#if RSDEBUG
-				//DEBUGLOG << "Community::getStats(): season=" << season << " i= " << i  
-				//	<< " patchNum= " << patchPop.pPatch->getPatchNum() << " localK= " << localK
-				//	<< " nInds= " << patchPop.nInds << " nNonJuvs= " << patchPop.nNonJuvs 
-				//	<< " nAdults= " << patchPop.nAdults << " breeding= " << (int)patchPop.breeding
-				//	<< endl;
-#endif
+
 #else
 				localK = patchPop.pPatch->getK();
 #endif // SEASONAL 
-#if RSDEBUG
-				//DEBUGLOG << "Community::getStats(): i= " << i
-				//	<< " pSpecies= " << patchPop.pSpecies << " pPatch= " << patchPop.pPatch
-				//	<< " patchNum= " << patchPop.pPatch->getPatchNum() << " localK= " << localK
-				//	<< " nInds= " << patchPop.nInds << " breeding= " << (int)patchPop.breeding
-				//	<< endl;
-#endif
+
 				if (localK > 0.0) s.suitable++;
 				if (patchPop.nInds > 0 && patchPop.breeding) {
 					s.occupied++;
@@ -1251,12 +1224,7 @@ void Community::outPop(int rep, int yr, int gen)
 		int nobs = (int)pABCmaster->NObs();
 		for (int i = 0; i < nobs; i++) {
 			obs = pABCmaster->getObsData(i);
-#if RSDEBUG
-			//DEBUGLOG << "Community::outPop(): this=" << this << " i=" << i << " yr=" << yr
-			//	<< " obs.year=" << obs.year << " obs.type=" << obs.type << " obs.name=" << obs.name
-			//	<< " obs.x=" << obs.x << " obs.y=" << obs.y
-			//	<< endl;
-#endif
+
 			if (obs.year == yr && obs.type == 2) {
 				if (obs.name == "NInds" || obs.name == "Occupied") {
 					bool match = false;
@@ -1284,15 +1252,7 @@ void Community::outPop(int rep, int yr, int gen)
 							pop = pPopn->getStats();
 						}
 					}
-#if RSDEBUG
-					//DEBUGLOG << "Community::outPop(): i=" << i << " PROCESS Population NInds OR Occupied"
-					//	<< " obs.id=" << obs.id << " obs.value=" << obs.value
-					//	<< " obs.x=" << obs.x << " obs.y=" << obs.y 
-					//	<< " obs.stage=" << obs.stage << " obs.sex=" << obs.sex 
-					//	<< " match=" << match << " pPopn=" << pPopn << " pop.breeding=" << pop.breeding
-					//	<< " pop.nInds=" << pop.nInds << " pop.nAdults=" << pop.nAdults << " pop.nNonJuvs=" << pop.nNonJuvs
-					//	<< endl;
-#endif
+
 					if (obs.name == "NInds") {
 						if (match) {
 							if (dem.stageStruct) {
@@ -1438,18 +1398,18 @@ bool Community::outRangeHeaders(Species* pSpecies, int landNr)
 	if (sim.batchMode) {
 		name = paramsSim->getDir(2)
 #if RS_RCPP
-			+ "Batch" + Int2Str(sim.batchNum) + "_"
-			+ "Sim" + Int2Str(sim.simulation) + "_Land"
-			+ Int2Str(landNr)
+			+ "Batch" + to_string(sim.batchNum) + "_"
+			+ "Sim" + to_string(sim.simulation) + "_Land"
+			+ to_string(landNr)
 #else
-			+ "Batch" + Int2Str(sim.batchNum) + "_"
-			+ "Sim" + Int2Str(sim.simulation) + "_Land"
-			+ Int2Str(landNr)
+			+ "Batch" + to_string(sim.batchNum) + "_"
+			+ "Sim" + to_string(sim.simulation) + "_Land"
+			+ to_string(landNr)
 #endif
 			+ "_Range.txt";
 	}
 	else {
-		name = paramsSim->getDir(2) + "Sim" + Int2Str(sim.simulation) + "_Range.txt";
+		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation) + "_Range.txt";
 	}
 	outrange.open(name.c_str());
 #if SEASONAL
@@ -1645,20 +1605,9 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 		int nobs = (int)pABCmaster->NObs();
 		for (int i = 0; i < nobs; i++) {
 			obs = pABCmaster->getObsData(i);
-#if RSDEBUG
-			//DEBUGLOG << "Community::outRange(): i=" << i << " yr=" << yr
-			//	<< " obs.year=" << obs.year << " obs.type=" << obs.type << " obs.name=" << obs.name
-			//	<< endl;
-#endif
 			if (obs.year == yr && obs.type == 1) {
 				if (obs.name == "NInds") {
-#if RSDEBUG
-					DEBUGLOG << "Community::outRange(): i=" << i << " PROCESS Range NInds"
-						<< " obs.id=" << obs.id << " obs.value=" << obs.value
-						<< " obs.stage=" << obs.stage << " obs.sex=" << obs.sex
-						<< " s.ninds=" << s.ninds << " s.nnonjuvs=" << s.nnonjuvs
-						<< endl;
-#endif
+
 					if (dem.stageStruct) {
 						if (obs.stage == 0) { // all non-juvenile stages
 							pABCmaster->AddNewPred(sim.simulation, obs.id, rep, obs.value, s.nnonjuvs, obs.weight);
@@ -1677,11 +1626,7 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 				}
 				if (obs.name == "NOccupPatches") {
 					pABCmaster->AddNewPred(sim.simulation, obs.id, rep, obs.value, s.occupied, obs.weight);
-#if RSDEBUG
-					DEBUGLOG << "Community::outRange(): i=" << i << " PROCESS Range NOccupPatches"
-						<< " obs.id=" << obs.id << " obs.value=" << obs.value << " s.occupied=" << s.occupied
-						<< endl;
-#endif
+
 				}
 			}
 		}
@@ -1691,10 +1636,7 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 	if (emig.indVar || trfr.indVar || sett.indVar) { // output trait means
 		traitsums ts;
 		traitsums scts; // sub-community traits
-		traitCanvas tcanv;
 		int ngenes, popsize;
-
-		tcanv.pcanvas[0] = NULL;
 
 		for (int i = 0; i < NSEXES; i++) {
 			ts.ninds[i] = 0;
@@ -1713,7 +1655,7 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 
 		int nsubcomms = (int)subComms.size();
 		for (int i = 0; i < nsubcomms; i++) { // all sub-communities (incl. matrix)
-			scts = subComms[i]->outTraits(tcanv, pLandscape, rep, yr, gen, true);
+			scts = subComms[i]->outTraits(pLandscape, rep, yr, gen, true);
 			for (int j = 0; j < NSEXES; j++) {
 				ts.ninds[j] += scts.ninds[j];
 				ts.sumD0[j] += scts.sumD0[j];     ts.ssqD0[j] += scts.ssqD0[j];
@@ -1731,17 +1673,6 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 				ts.sumS0[j] += scts.sumS0[j];     ts.ssqS0[j] += scts.ssqS0[j];
 				ts.sumAlphaS[j] += scts.sumAlphaS[j]; ts.ssqAlphaS[j] += scts.ssqAlphaS[j];
 				ts.sumBetaS[j] += scts.sumBetaS[j];  ts.ssqBetaS[j] += scts.ssqBetaS[j];
-#if RSDEBUG
-				//DEBUGLOG << "Community::outRange(): i=" << i << " j=" << j
-				//	<< " scts.ninds[j]=" << scts.ninds[j]
-				//	<< " scts.sumD0[j]=" << scts.sumD0[j]
-				//	<< " scts.ssqD0[j]=" << scts.ssqD0[j]
-				//	<< endl;
-				//DEBUGLOG << "Community::outRange(): i=" << i << " j=" << j
-				//	<< " ts.ninds[j]=" << ts.ninds[j]
-				//	<< " ts.sumD0[j]=" << ts.sumD0[j] << " ts.ssqD0[j]=" << ts.ssqD0[j]
-				//	<< endl;
-#endif
 			}
 		}
 
@@ -1780,16 +1711,6 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 						sdD0[g] = sdAlpha[g] = sdBeta[g] = 0.0;
 					}
 				}
-#if RSDEBUG
-				//DEBUGLOG << "Community::outRange(): ngenes=" << ngenes << " g=" << g
-				//	<< " ts.ninds[g]=" << ts.ninds[g]
-				//	<< " ts.sumD0[g]=" << ts.sumD0[g]
-				//	<< " ts.ssqD0[g]=" << ts.ssqD0[g]
-				//	<< endl;
-				//DEBUGLOG << "Community::outRange(): popsize=" << popsize
-				//	<< " mnD0[g]" << mnD0[g] << " sdD0[g]" << sdD0[g]
-				//	<< endl;
-#endif
 			}
 			if (emig.sexDep) {
 				outrange << "\t" << mnD0[0] << "\t" << sdD0[0];
@@ -1867,17 +1788,6 @@ void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
 						if (sdBetaDB[g] > 0.0) sdBetaDB[g] = sqrt(sdBetaDB[g]); else sdBetaDB[g] = 0.0;
 					}
 				}
-#if RSDEBUG
-				//DEBUGLOG << "Community::outRange(): ngenes=" << ngenes << " g=" << g
-				//	<< " ts.ninds[g]=" << ts.ninds[g]
-				//	<< " ts.sumDP[g]=" << ts.sumDP[g] << " ts.ssqDP[g]=" << ts.ssqDP[g]
-				//	<< " ts.sumGB[g]=" << ts.sumGB[g] << " ts.ssqGB[g]=" << ts.ssqGB[g]
-				//	<< endl;
-				//DEBUGLOG << "Community::outRange(): popsize=" << popsize
-				//	<< " mnDP[g]" << mnDP[g] << " sdDP[g]" << sdDP[g]
-				//	<< " mnGB[g]" << mnGB[g] << " sdGB[g]" << sdGB[g]
-				//	<< endl;
-#endif
 			}
 			if (trfr.moveModel) {
 				if (trfr.moveType == 1) {
@@ -1991,28 +1901,27 @@ bool Community::outOccupancyHeaders(int option)
 
 	string name, nameI;
 	simParams sim = paramsSim->getSim();
-	//demogrParams dem = pSpecies->getDemogr();
 	landParams ppLand = pLandscape->getLandParams();
 	int outrows = (sim.years / sim.outIntOcc) + 1;
 
 	name = paramsSim->getDir(2);
 	if (sim.batchMode) {
-		name += "Batch" + Int2Str(sim.batchNum) + "_";
-		name += "Sim" + Int2Str(sim.simulation) + "_Land" + Int2Str(ppLand.landNum);
+		name += "Batch" + to_string(sim.batchNum) + "_";
+		name += "Sim" + to_string(sim.simulation) + "_Land" + to_string(ppLand.landNum);
 	}
 	else
-		name += "Sim" + Int2Str(sim.simulation);
+		name += "Sim" + to_string(sim.simulation);
 	name += "_Occupancy_Stats.txt";
 	outsuit.open(name.c_str());
 	outsuit << "Year\tMean_OccupSuit\tStd_error" << endl;
 
 	name = paramsSim->getDir(2);
 	if (sim.batchMode) {
-		name += "Batch" + Int2Str(sim.batchNum) + "_";
-		name += "Sim" + Int2Str(sim.simulation) + "_Land" + Int2Str(ppLand.landNum);
+		name += "Batch" + to_string(sim.batchNum) + "_";
+		name += "Sim" + to_string(sim.simulation) + "_Land" + to_string(ppLand.landNum);
 	}
 	else
-		name += "Sim" + Int2Str(sim.simulation);
+		name += "Sim" + to_string(sim.simulation);
 	name += "_Occupancy.txt";
 	outoccup.open(name.c_str());
 	if (ppLand.patchModel) {
@@ -2034,7 +1943,6 @@ bool Community::outOccupancyHeaders(int option)
 void Community::outOccupancy(void) {
 	landParams ppLand = pLandscape->getLandParams();
 	simParams sim = paramsSim->getSim();
-	//streamsize prec = outoccup.precision();
 	locn loc;
 
 	int nsubcomms = (int)subComms.size();
@@ -2057,42 +1965,18 @@ void Community::outOccupancy(void) {
 void Community::outOccSuit(bool view) {
 	double sum, ss, mean, sd, se;
 	simParams sim = paramsSim->getSim();
-	//streamsize prec = outsuit.precision();
-
-#if RSDEBUG
-//DEBUGLOG << "Community::outOccSuit(): sim.reps=" << sim.reps
-//	<< " sim.years=" << sim.years << " sim.outInt=" << sim.outInt << endl;
-#endif
 	for (int i = 0; i < (sim.years / sim.outIntOcc) + 1; i++) {
 		sum = ss = 0.0;
 		for (int rep = 0; rep < sim.reps; rep++) {
 			sum += occSuit[i][rep];
 			ss += occSuit[i][rep] * occSuit[i][rep];
-#if RSDEBUG
-			//DEBUGLOG << "Community::outOccSuit(): i=" << i << " rep=" << rep
-			//	<< " occSuit[i][rep]=" << occSuit[i][rep]
-			//	<< " sum=" << sum << " ss=" << ss
-			//	<< endl;
-#endif
 		}
 		mean = sum / (double)sim.reps;
 		sd = (ss - (sum * sum / (double)sim.reps)) / (double)(sim.reps - 1);
-#if RSDEBUG
-		//DEBUGLOG << "Community::outOccSuit(): i=" << i
-		//	<< " mean=" << mean << " sd=" << sd << endl;
-#endif
 		if (sd > 0.0) sd = sqrt(sd);
 		else sd = 0.0;
 		se = sd / sqrt((double)(sim.reps));
-#if RSDEBUG
-		//DEBUGLOG << "Community::outOccSuit(): i=" << i
-		//	<< " sd=" << sd << " se=" << se << endl;
-#endif
-
-//	outsuit << i*sim.outInt << "\t" << mean << "\t" << se << endl;
-//	if (view) viewOccSuit(i*sim.outInt,mean,se);
 		outsuit << i * sim.outIntOcc << "\t" << mean << "\t" << se << endl;
-		if (view) viewOccSuit(i * sim.outIntOcc, mean, se);
 	}
 
 }
@@ -2108,18 +1992,11 @@ only, this function relies on the fact that subcommunities are created in the sa
 sequence as patches, which is in asecending order of x nested within descending
 order of y
 */
-//void Community::outTraits(emigCanvas ecanv,trfrCanvas tcanv,Species *pSpecies,
-//	int rep,int yr,int gen)
-void Community::outTraits(traitCanvas tcanv, Species* pSpecies,
-	int rep, int yr, int gen)
+void Community::outTraits(Species* pSpecies, int rep, int yr, int gen)
 {
 	simParams sim = paramsSim->getSim();
 	simView v = paramsSim->getViews();
 	landParams land = pLandscape->getLandParams();
-	//demogrParams dem = pSpecies->getDemogr();
-	//emigRules emig = pSpecies->getEmig();
-	//trfrRules trfr = pSpecies->getTrfr();
-	//locn loc;
 	traitsums* ts = 0;
 	traitsums sctraits;
 	if (sim.outTraitsRows && yr >= sim.outStartTraitRow && yr % sim.outIntTraitRow == 0) {
@@ -2142,24 +2019,6 @@ void Community::outTraits(traitCanvas tcanv, Species* pSpecies,
 			}
 		}
 	}
-#if VCL
-#if RSDEBUG
-	//DEBUGLOG << "Community::outTraits(): canvasComm = " <<  canvasComm << endl;
-#endif
-	landPix p = pLandscape->getLandPix();
-	//for (int i = 0; i < 6; i++)
-	for (int i = 0; i < NTRAITS; i++)
-	{ // fill canvas with black background
-	//	if (ecanv.pcanvas[i] != 0) {
-	//		ecanv.pcanvas[i]->Brush->Color=(TColor)RGB(0,0,0);
-	//		ecanv.pcanvas[i]->FillRect(Rect(0,0,(land.maxX+1)*p.gpix,(land.maxY+1)*p.gpix));
-	//	}
-		if (tcanv.pcanvas[i] != NULL) {
-			tcanv.pcanvas[i]->Brush->Color = (TColor)RGB(0, 0, 0);
-			tcanv.pcanvas[i]->FillRect(Rect(0, 0, (land.dimX) * p.gpix, (land.dimY) * p.gpix));
-		}
-	}
-#endif
 	if (v.viewTraits
 		|| ((sim.outTraitsCells && yr >= sim.outStartTraitCell && yr % sim.outIntTraitCell == 0) ||
 			(sim.outTraitsRows && yr >= sim.outStartTraitRow && yr % sim.outIntTraitRow == 0)))
@@ -2167,9 +2026,7 @@ void Community::outTraits(traitCanvas tcanv, Species* pSpecies,
 		// generate output for each sub-community (patch) in the community
 		int nsubcomms = (int)subComms.size();
 		for (int i = 1; i < nsubcomms; i++) { // // all except matrix sub-community
-			//		sctraits = subComms[i]->outTraits(ecanv,tcanv,pLandscape,rep,yr,gen);
-			//		sctraits = subComms[i]->outTraits(tcanv,pLandscape,rep,yr,gen,v.viewGrad);
-			sctraits = subComms[i]->outTraits(tcanv, pLandscape, rep, yr, gen, false);
+			sctraits = subComms[i]->outTraits(pLandscape, rep, yr, gen, false);
 			locn loc = subComms[i]->getLocn();
 			int y = loc.y;
 			if (sim.outTraitsRows && yr >= sim.outStartTraitRow && yr % sim.outIntTraitRow == 0)
@@ -2199,10 +2056,6 @@ void Community::outTraits(traitCanvas tcanv, Species* pSpecies,
 			}
 		}
 	}
-	//if (sim.outTraitsRows && yr >= sim.outStartTraitRow && yr%sim.outIntTraitRow == 0)
-	//{
-	//	if (ts != 0) delete[] ts;
-	//}
 	if (ts != 0) { delete[] ts; ts = 0; }
 }
 
@@ -2210,10 +2063,6 @@ void Community::outTraits(traitCanvas tcanv, Species* pSpecies,
 void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int y,
 	traitsums ts)
 {
-	//simParams sim = paramsSim->getSim();
-	//simView v = paramsSim->getViews();
-	//landData land = pLandscape->getLandData();
-	//landOrigin origin = pLandscape->getOrigin();
 	emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();
 	settleType sett = pSpecies->getSettle();
@@ -2224,7 +2073,6 @@ void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int
 	int popsize = ts.ninds[0] + ts.ninds[1];
 	outtraitsrows << rep << "\t" << yr << "\t" << gen
 		<< "\t" << y;
-	//	<< "\t"	<< y*land.resol + origin.minNorth;
 	if ((emig.indVar && emig.sexDep) || (trfr.indVar && trfr.sexDep))
 		outtraitsrows << "\t" << ts.ninds[0] << "\t" << ts.ninds[1];
 	else
@@ -2289,14 +2137,6 @@ void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int
 				if (popsize > 1) sd = ts.ssqRho[0] / (double)popsize - mn * mn; else sd = 0.0;
 				if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
 				outtraitsrows << "\t" << mn << "\t" << sd;
-				//			if (ts.ninds[0] > 0) mn = ts.sumStepL[0]/(double)ts.ninds[0]; else mn = 0.0;
-				//			if (ts.ninds[0] > 1) sd = ts.ssqStepL[0]/(double)ts.ninds[0] - mn*mn; else sd = 0.0;
-				//			if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-				//			outtraitsrows << "\t" << mn << "\t" << sd;
-				//			if (ts.ninds[0] > 0) mn = ts.sumRho[0]/(double)ts.ninds[0]; else mn = 0.0;
-				//			if (ts.ninds[0] > 1) sd = ts.ssqRho[0]/(double)ts.ninds[0] - mn*mn; else sd = 0.0;
-				//			if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-				//			outtraitsrows << "\t" << mn << "\t" << sd;
 			}
 		}
 		else { // dispersal kernel
@@ -2358,34 +2198,6 @@ void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int
 	}
 
 	if (sett.indVar) {
-		// NB - CURRENTLY CANNOT BE SEX-DEPENDENT...
-	//	if (sett.sexDep) {
-	//		if (ts.ninds[0] > 0) mn = ts.sumS0[0]/(double)ts.ninds[0]; else mn = 0.0;
-	//		if (ts.ninds[0] > 1) sd = ts.ssqS0[0]/(double)ts.ninds[0] - mn*mn; else sd = 0.0;
-	//		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-	//		outtraitsrows << "\t" << mn << "\t" << sd;
-	//		if (ts.ninds[1] > 0) mn = ts.sumS0[1]/(double)ts.ninds[1]; else mn = 0.0;
-	//		if (ts.ninds[1] > 1) sd = ts.ssqS0[1]/(double)ts.ninds[1] - mn*mn; else sd = 0.0;
-	//		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-	//		outtraitsrows << "\t" << mn << "\t" << sd;
-	//		if (ts.ninds[0] > 0) mn = ts.sumAlphaS[0]/(double)ts.ninds[0]; else mn = 0.0;
-	//		if (ts.ninds[0] > 1) sd = ts.ssqAlphaS[0]/(double)ts.ninds[0] - mn*mn; else sd = 0.0;
-	//		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-	//		outtraitsrows << "\t" << mn << "\t" << sd;
-	//		if (ts.ninds[1] > 0) mn = ts.sumAlphaS[1]/(double)ts.ninds[1]; else mn = 0.0;
-	//		if (ts.ninds[1] > 1) sd = ts.ssqAlphaS[1]/(double)ts.ninds[1] - mn*mn; else sd = 0.0;
-	//		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-	//		outtraitsrows << "\t" << mn << "\t" << sd;
-	//		if (ts.ninds[0] > 0) mn = ts.sumBetaS[0]/(double)ts.ninds[0]; else mn = 0.0;
-	//		if (ts.ninds[0] > 1) sd = ts.ssqBetaS[0]/(double)ts.ninds[0] - mn*mn; else sd = 0.0;
-	//		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-	//		outtraitsrows << "\t" << mn << "\t" << sd;
-	//		if (ts.ninds[1] > 0) mn = ts.sumBetaS[1]/(double)ts.ninds[1]; else mn = 0.0;
-	//		if (ts.ninds[1] > 1) sd = ts.ssqBetaS[1]/(double)ts.ninds[1] - mn*mn; else sd = 0.0;
-	//		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
-	//		outtraitsrows << "\t" << mn << "\t" << sd;
-	//	}
-	//	else { // no sex dependence in settlement
 		if (popsize > 0) mn = ts.sumS0[0] / (double)popsize; else mn = 0.0;
 		if (popsize > 1) sd = ts.ssqS0[0] / (double)popsize - mn * mn; else sd = 0.0;
 		if (sd > 0.0) sd = sqrt(sd); else sd = 0.0;
@@ -2422,11 +2234,11 @@ bool Community::outTraitsRowsHeaders(Species* pSpecies, int landNr) {
 	string DirOut = paramsSim->getDir(2);
 	if (sim.batchMode) {
 		name = DirOut
-			+ "Batch" + Int2Str(sim.batchNum) + "_"
-			+ "Sim" + Int2Str(sim.simulation) + "_Land" + Int2Str(landNr) + "_TraitsXrow.txt";
+			+ "Batch" + to_string(sim.batchNum) + "_"
+			+ "Sim" + to_string(sim.simulation) + "_Land" + to_string(landNr) + "_TraitsXrow.txt";
 	}
 	else {
-		name = DirOut + "Sim" + Int2Str(sim.simulation) + "_TraitsXrow.txt";
+		name = DirOut + "Sim" + to_string(sim.simulation) + "_TraitsXrow.txt";
 	}
 	outtraitsrows.open(name.c_str());
 
@@ -2488,16 +2300,9 @@ bool Community::outTraitsRowsHeaders(Species* pSpecies, int landNr) {
 	}
 
 	if (sett.indVar) {
-		//	if (sett.sexDep) {
-		//		outtraitsrows << "\tF_meanS0\tF_stdS0\tM_meanS0\tM_stdS0";
-		//		outtraitsrows << "\tF_meanAlphaS\tF_stdAlphaS\tM_meanAlphaS\tM_stdAlphaS";
-		//		outtraitsrows << "\tF_meanBetaS\tF_stdBetaS\tM_meanBetaS\tM_stdBetaS";
-		//	}
-		//	else {
 		outtraitsrows << "\tmeanS0\tstdS0";
 		outtraitsrows << "\tmeanAlphaS\tstdAlphaS";
 		outtraitsrows << "\tmeanBetaS\tstdBetaS";
-		//	}
 	}
 	outtraitsrows << endl;
 
@@ -2653,12 +2458,11 @@ Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) {  // TODO: def
 	intptr subcomm = 0;
 	SubCommunity* pSubComm = 0;
 	popStats pop;
-	//pop.breeding = false;
 	pop.nInds = pop.nAdults = pop.nNonJuvs = 0;
 
 	for (int y = 0; y < ppLand.dimY; y++) {
 		for (int x = 0; x < ppLand.dimX; x++) {
-			Cell* pCell = pLandscape->findCell(x, y); //if (pLandscape->cells[y][x] == 0) {
+			Cell* pCell = pLandscape->findCell(x, y);
 			if (pCell == 0) { // no-data cell
 				pop_map_year(ppLand.dimY - 1 - y, x) = NA_INTEGER;
 			}
@@ -2676,14 +2480,12 @@ Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) {  // TODO: def
 					else {
 						pSubComm = (SubCommunity*)subcomm;
 						pop = pSubComm->getPopStats();
-						//pop_map_year(ppLand.dimY-1-y,x) = pop.nInds; // use indices like this because matrix gets transposed upon casting it into a raster on R-level
-						pop_map_year(ppLand.dimY - 1 - y, x) = pop.nAdults;
+						pop_map_year(ppLand.dimY - 1 - y, x) = pop.nInds; // use indices like this because matrix gets transposed upon casting it into a raster on R-level
 					}
 				}
 			}
 		}
 	}
-	//list_outPop.push_back(pop_map_year, "rep" + std::to_string(rep) + "_year" + std::to_string(yr));
 	return pop_map_year;
 }
 #endif

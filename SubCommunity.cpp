@@ -21,9 +21,6 @@
 
 
  //---------------------------------------------------------------------------
-#if RS_EMBARCADERO
-#pragma hdrstop
-#endif
 
 #include "SubCommunity.h"
 //---------------------------------------------------------------------------
@@ -101,14 +98,7 @@ void SubCommunity::initialise(Landscape* pLandscape, Species* pSpecies)
 	int ncells;
 	landParams ppLand = pLandscape->getLandParams();
 	initParams init = paramsInit->getInit();
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::initialise(): subCommNum=" << subCommNum
-	//	<< " seedType="<< init.seedType
-	//	<< " popns.size()="<< popns.size()
-	//	<< endl;
-#endif
 // determine size of initial population
-//int hx,nInds;
 	int nInds = 0;
 	if (subCommNum == 0 // matrix patch
 		|| !initial)   		// not in initial region or distribution
@@ -141,10 +131,6 @@ void SubCommunity::initialise(Landscape* pLandscape, Species* pSpecies)
 		else nInds = 0;
 	}
 
-	// create new population (even if it has no individuals)
-	//popns.push_back(new Population(pSpecies,pPatch,nInds));
-	//newPopn(pSpecies,pPatch,nInds);
-
 	// create new population only if it is non-zero or the matrix popn
 	if (subCommNum == 0 || nInds > 0) {
 #if PEDIGREE
@@ -175,8 +161,6 @@ void SubCommunity::initialInd(Landscape* pLandscape, Species* pSpecies,
 	short stg, age, repInt;
 	Individual* pInd;
 	float probmale;
-	//	 bool movt;
-	//	 short moveType;
 
 	// create new population if not already in existence
 	int npopns = (int)popns.size();
@@ -202,12 +186,6 @@ void SubCommunity::initialInd(Landscape* pLandscape, Species* pSpecies,
 	else {
 		if (iind.sex == 1) probmale = 1.0; else probmale = 0.0;
 	}
-	//if (trfr.moveModel) {
-	//	movt = true;
-	//	if (trfr.moveType) {
-	//
-	//	}
-	//}
 #if RS_CONTAIN
 	pInd = new Individual(pCell, pPatch, stg, age, repInt, 1, probmale, trfr.moveModel, trfr.moveType);
 #else
@@ -244,21 +222,13 @@ Population* SubCommunity::newPopn(Landscape* pLandscape, Species* pSpecies,
 	Patch* pPatch, int nInds)
 #endif
 {
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::newPopn(): subCommNum = " << subCommNum
-	//	<< " pPatch = " << pPatch << " nInds = "<< nInds << endl;
-#endif
+
 	landParams land = pLandscape->getLandParams();
 	int npopns = (int)popns.size();
 #if PEDIGREE
 	popns.push_back(new Population(pSpecies, pPed, pPatch, nInds, land.resol));
 #else
 	popns.push_back(new Population(pSpecies, pPatch, nInds, land.resol));
-#endif
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::newPopn(): subCommNum = " << subCommNum
-	//	<< " npopns = " << npopns << " popns[npopns] = " << popns[npopns]
-	//	<< endl;
 #endif
 	return popns[npopns];
 }
@@ -274,11 +244,6 @@ popStats SubCommunity::getPopStats(void) {
 	//p = popns[0]->getStats();
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
-#if RSDEBUG
-		//DEBUGLOG << "SubCommunity::getPopStats(): npops = " << npops
-		//	<< " i = " << i
-		//	<< " popns[i] = " << popns[i] << endl;
-#endif
 #if RS_CONTAIN
 		pop = popns[i]->getStats(habIndex);
 #else
@@ -293,14 +258,6 @@ popStats SubCommunity::getPopStats(void) {
 #if GOBYMODEL
 		p.nSocial += pop.nSocial;
 		p.nAsocial += pop.nAsocial;
-#endif
-#if RSDEBUG
-		//DEBUGLOG << "SubCommunity::getPopStats():"
-		//	<< " p.pSpecies = " << p.pSpecies
-		//	<< " p.pPatch = " << p.pPatch
-		//	<< " p.spNum = " << p.spNum
-		//	<< " p.nInds = " << p.nInds
-		//	<< endl;
 #endif
 	}
 	return p;
@@ -318,10 +275,6 @@ void SubCommunity::resetPopns(void) {
 
 void SubCommunity::resetPossSettlers(void) {
 	if (subCommNum == 0) return; // not applicable in the matrix
-	//int npops = (int)popns.size();
-	//for (int i = 0; i < npops; i++) { // all populations
-	//	popns[i]->resetPossSettlers();
-	//}
 	pPatch->resetPossSettlers();
 }
 
@@ -461,28 +414,10 @@ void SubCommunity::reproduction(int resol, float epsGlobal, short rasterType, bo
 					} // end of for yy
 				} // end of for xx
 				nfnbrhd = (int)fnbrhd.size();
-#if RSDEBUG
-				//DEBUGLOG << "SubCommunity::reproduction(): this=" << this
-				//	<< " loc.x=" << loc.x << " loc.y=" << loc.y << " nbrcells=" << nbrcells
-				//	<< " nfnbrhd=" << nfnbrhd
-				////	<< " min.x=" << min.x << " min.y=" << min.y
-				////	<< " max.x=" << max.x << " max.y=" << max.y
-				//	<< endl;
-#endif
 			} // end of population is breeding
 		}
 	}
 
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::reproduction(): this=" << this
-	//	<< " pfnbrhd=" << pfnbrhd << " nfnbrhd=" << nfnbrhd
-	//	<< endl;
-	//DEBUGLOG << "SubCommunity::reproduction(): this=" << this
-	//	<< " pfglobal=" << pfglobal << " nglobal=" << nglobal
-	//	<< " pfglobal[0]=" << (*pfglobal)[0] << " pfglobal[1]=" << (*pfglobal)[1]
-	//	<< " pfglobal[nfathers-1]=" << (*pfglobal)[nfathers-1]
-	//	<< endl;
-#endif
 #endif
 
 	int npops = (int)popns.size();
@@ -547,39 +482,8 @@ void SubCommunity::reproduction(int resol, float epsGlobal, short rasterType, bo
 #endif
 		}
 	}
-	/*
-	else { // patch in dynamic landscape has become unsuitable
-		// NB - THIS WILL NEED TO BE MADE SPECIES-SPECIFIC...
-		Species *pSpecies;
-		for (int i = 0; i < npops; i++) { // all populations
-			pSpecies = popns[i]->getSpecies();
-			demogrParams dem = pSpecies->getDemogr();
-			if (dem.stageStruct) {
-				stageParams sstruct = pSpecies->getStage();
-				if (sstruct.disperseOnLoss) popns[i]->allEmigrate();
-				else popns[i]->extirpate();
-			}
-			else { // non-stage-structured species is destroyed
-				popns[i]->extirpate();
-			}
-		}
-	}
-	*/
 
-	/*
-	#if RSDEBUG
-	//if (npops > 0) {
-	//	DEBUGLOG << "SubCommunity::reproduction(): this = " << this
-	//		<< " npops = " << npops << endl;
-	//}
-	#endif
-	#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::reproduction(): patchNum = " << pPatch->getPatchNum()
-	//	<< " nCells " << pPatch->getNCells()
-	//	<< " localK = " << localK
-	//	<< endl;
-	#endif
-	*/
+	
 }
 
 #if BUTTERFLYDISP
@@ -634,20 +538,10 @@ void SubCommunity::emigration(void)
 // Remove emigrants from their natal patch and add to patch 0 (matrix)
 void SubCommunity::initiateDispersal(SubCommunity* matrix) {
 	if (subCommNum == 0) return; // no dispersal initiation in the matrix
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::initiateDispersal(): this=" << this
-	//	<< " subCommNum=" << subCommNum
-	//	<< endl;
-#endif
 	popStats pop;
 	disperser disp;
 
 	int npops = (int)popns.size();
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::initiateDispersal(): patchNum = " << patchNum
-	//	<< " npops " << npops
-	//	<< endl;
-#endif
 	for (int i = 0; i < npops; i++) { // all populations
 #if RS_CONTAIN
 		pop = popns[i]->getStats(habIndex);
@@ -660,11 +554,6 @@ void SubCommunity::initiateDispersal(SubCommunity* matrix) {
 		emigRules emig = pop.pSpecies->getEmig();
 #endif // GROUPDISP
 		for (int j = 0; j < pop.nInds; j++) {
-#if RSDEBUG
-			//DEBUGLOG << "SubCommunity::initiateDispersal(): i = " << i
-			//	<< " j " << j
-			//	<< endl;
-#endif
 			disp = popns[i]->extractDisperser(j);
 			if (disp.yes) { // disperser - has already been removed from natal population
 #if GROUPDISP
@@ -735,10 +624,6 @@ void SubCommunity::outGroups(Pedigree* pPed, int rep, int yr, int gen, bool patc
 
 // Add an individual into the local population of its species in the patch
 void SubCommunity::recruit(Individual* pInd, Species* pSpecies) {
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::recruit(): this=" << this
-	//	<< endl;
-#endif
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
 		if (pSpecies == popns[i]->getSpecies()) {
@@ -754,10 +639,7 @@ int SubCommunity::transfer(Landscape* pLandscape, short landIx, short nextseason
 int SubCommunity::transfer(Landscape* pLandscape, short landIx)
 #endif // SEASONAL || RS_RCPP
 {
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::transfer(): this=" << this
-	//	<< endl;
-#endif
+
 	int ndispersers = 0;
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
@@ -775,15 +657,7 @@ int SubCommunity::transfer(Landscape* pLandscape, short landIx)
 		ndispersers += popns[i]->transfer(pLandscape, landIx);
 #endif // SEASONAL || RS_RCPP
 #endif // GROUPDISP
-#if RSDEBUG
-		//DEBUGLOG << "SubCommunity::transfer(): i = " << i
-		//	<< " this = " << this
-		//	<< " subCommNum = " << subCommNum
-		//	<< " npops = " << npops
-		//	<< " popns[i] = " << popns[i]
-		//	<< " ndispersers = " << ndispersers
-		//	<< endl;
-#endif
+
 	}
 	return ndispersers;
 }
@@ -800,12 +674,7 @@ void SubCommunity::completeDispersal(Landscape* pLandscape, Pedigree* pPed, bool
 void SubCommunity::completeDispersal(Landscape* pLandscape, bool connect)
 #endif
 {
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::completeDispersal(): this=" << this
-	//	<< endl;
-#endif
-//popStats pop;
-//int popsize,subcomm;
+
 	int popsize;
 #if GROUPDISP
 	dispgroup groupsettler;
@@ -832,15 +701,6 @@ void SubCommunity::completeDispersal(Landscape* pLandscape, bool connect)
 #else
 		popsize = popns[i]->getNInds();
 #endif
-#if RSDEBUG
-		//DEBUGLOG << "SubCommunity::completeDispersal(): i=" << i
-		//	<< " subCommNum=" << subCommNum
-		//	<< " pPatch=" << pPatch << " patchNum=" << pPatch->getPatchNum()
-		//	<< " npops=" << npops
-		//	<< " popns[i]=" << popns[i]
-		//	<< " popsize=" << popsize
-		//	<< endl;
-#endif
 		for (int j = 0; j < popsize; j++) {
 			bool settled;
 #if GROUPDISP
@@ -861,23 +721,6 @@ void SubCommunity::completeDispersal(Landscape* pLandscape, bool connect)
 			if (settled) {
 				// settler - has already been removed from matrix population
 				// in popns[i]->extractSettler()
-#if RSDEBUG
-//locn loc = pNewCell->getLocn();
-//DEBUGLOG << "SubCommunity::completeDispersal(): j=" << j << " settled=" << settled;
-//#if GROUPDISP
-//if (emig.groupdisp) {
-//DEBUGLOG	<< " groupID=" << groupsettler.pGroup->getGroupID()
-//	<< " groupsize=" << groupsettler.groupsize
-//	<< " status=" << groupsettler.pGroup->getStatus();
-//}
-//else {
-//DEBUGLOG	<< " settler.pInd=" << settler.pInd;
-//}
-//#else
-//DEBUGLOG	<< " settler.pInd=" << settler.pInd;
-//#endif // GROUPDISP
-//DEBUGLOG	<< " loc.x=" << loc.x << " loc.y=" << loc.y << endl;
-#endif // RSDEBUG
 			// find new patch
 #if GROUPDISP
 				if (emig.groupdisp) {
@@ -978,34 +821,16 @@ void SubCommunity::completeDispersal(Landscape* pLandscape, bool connect)
 					// in order to be reported in individual-level output, each Individual
 					// within the group must be recruited to the matrix Population itself
 					short status = groupsettler.pGroup->getStatus();
-#if RSDEBUG
-					//locn xloc = pNewCell->getLocn();
-					//DEBUGLOG << "SubCommunity::completeDispersal(): j=" << j
-					//	<< " settled=" << settled
-					//	<< " groupID=" << groupsettler.pGroup->getGroupID()
-					//	<< " status=" << status
-					//	<< " x=" << xloc.x << " y=" << xloc.y
-					//	<< endl;
-#endif
+
 					if (status > 5 && status < 9) {
 						for (int k = 0; k < groupsettler.groupsize; k++) {
 							pInd = groupsettler.pGroup->getMember(k);
-#if RSDEBUG
-							//locn xloc = pNewCell->getLocn();
-							//DEBUGLOG << "SubCommunity::completeDispersal(): 1111 k=" << k
-							//	<< " pInd=" << pInd << " indID=" << pInd->getId() << " status=" << pInd->getStatus()
-							//	<< endl;
-#endif
+
 							pInd->setStatus(status);
 							pInd->moveTo(pNewCell);
 							pathSteps p = groupsettler.pGroup->getSteps();
 							pInd->setYearSteps(p.year);
-#if RSDEBUG
-							//DEBUGLOG << "SubCommunity::completeDispersal(): 2222 k=" << k
-							//	<< " pInd=" << pInd << " indID=" << pInd->getId() << " status=" << pInd->getStatus()
-							//	<< " p.year=" << p.year
-							//	<< endl;
-#endif
+
 							popns[i]->recruit(pInd);
 						}
 						// all group processing is now finished
@@ -1037,12 +862,6 @@ void SubCommunity::completeDispersal(Landscape* pLandscape, bool connect)
 #else
 		popsize = popns[i]->getNInds();
 #endif
-		//DEBUGLOG << "SubCommunity::completeDispersal(): i=" << i
-		//	<< " popns[i]=" << popns[i]
-		////	<< " pop.pPatch = " << pop.pPatch
-		////	<< " pop.nInds = " << pop.nInds
-		//	<< " popsize=" << popsize
-		//	<< endl;
 #endif
 	}
 
@@ -1354,10 +1173,7 @@ void SubCommunity::createOccupancy(int nrows) {
 }
 
 void SubCommunity::updateOccupancy(int row) {
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::updateOccupancy(): this=" << this
-	//	<< endl;
-#endif
+
 	popStats pop;
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) {
@@ -1420,14 +1236,6 @@ void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen,
 void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen)
 #endif
 {
-#if RS_ABC
-#if RSDEBUG
-	//DEBUGLOG << "SubCommunity::outPop(): subCommNum=" << subCommNum
-	//	<< " yr=" << yr << " pPatch="<< pPatch
-	//	<< " abcYear=" << abcYear << " popOutputYear="<< popOutputYear
-	//	<< endl;
-#endif
-#endif
 	landParams land = pLandscape->getLandParams();
 	envGradParams grad = paramsGrad->getGradient();
 	envStochParams env = paramsStoch->getStoch();
@@ -1445,7 +1253,6 @@ void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen)
 	// or it is the matrix patch in a patch-based model
 	int npops = (int)popns.size();
 	int patchnum;
-	//Species* pSpecies;
 	Cell* pCell;
 	float localK;
 	float eps = 0.0;
@@ -1651,7 +1458,6 @@ int SubCommunity::stagePop(int stage) {
 // Open traits file and write header record
 bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, int landNr)
 {
-	//Population *pPop;
 	landParams land = pLandscape->getLandParams();
 	if (landNr == -999) { // close file
 		if (outtraits.is_open()) outtraits.close();
@@ -1669,23 +1475,23 @@ bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, in
 	if (sim.batchMode) {
 		if (land.patchModel) {
 			name = DirOut
-				+ "Batch" + Int2Str(sim.batchNum) + "_"
-				+ "Sim" + Int2Str(sim.simulation) + "_Land" + Int2Str(landNr)
+				+ "Batch" + to_string(sim.batchNum) + "_"
+				+ "Sim" + to_string(sim.simulation) + "_Land" + to_string(landNr)
 				+ "_TraitsXpatch.txt";
 		}
 		else {
 			name = DirOut
-				+ "Batch" + Int2Str(sim.batchNum) + "_"
-				+ "Sim" + Int2Str(sim.simulation) + "_Land" + Int2Str(landNr)
+				+ "Batch" + to_string(sim.batchNum) + "_"
+				+ "Sim" + to_string(sim.simulation) + "_Land" + to_string(landNr)
 				+ "_TraitsXcell.txt";
 		}
 	}
 	else {
 		if (land.patchModel) {
-			name = DirOut + "Sim" + Int2Str(sim.simulation) + "_TraitsXpatch.txt";
+			name = DirOut + "Sim" + to_string(sim.simulation) + "_TraitsXpatch.txt";
 		}
 		else {
-			name = DirOut + "Sim" + Int2Str(sim.simulation) + "_TraitsXcell.txt";
+			name = DirOut + "Sim" + to_string(sim.simulation) + "_TraitsXcell.txt";
 		}
 	}
 	outtraits.open(name.c_str());
@@ -1767,8 +1573,7 @@ bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, in
 }
 
 // Write records to traits file and return aggregated sums
-traitsums SubCommunity::outTraits(traitCanvas tcanv,
-	Landscape* pLandscape, int rep, int yr, int gen, bool commlevel)
+traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int gen, bool commlevel)
 {
 	int popsize, ngenes;
 	landParams land = pLandscape->getLandParams();
@@ -2289,17 +2094,6 @@ traitsums SubCommunity::outTraits(traitCanvas tcanv,
 				ts.sumS0[s] += poptraits.sumS0[s];     ts.ssqS0[s] += poptraits.ssqS0[s];
 				ts.sumAlphaS[s] += poptraits.sumAlphaS[s]; ts.ssqAlphaS[s] += poptraits.ssqAlphaS[s];
 				ts.sumBetaS[s] += poptraits.sumBetaS[s];  ts.ssqBetaS[s] += poptraits.ssqBetaS[s];
-#if RSDEBUG
-				//DEBUGLOG << "SubCommunity::outTraits(): i=" << i << " popns[i]=" << popns[i]
-				//	<< " s=" << s
-				////	<< " poptraits.sumRho[s]= " << poptraits.sumRho[s]
-				////	<< " ts.sumRho[s]= " << ts.sumRho[s]
-				//	<< " poptraits.sumDP[s]= " << poptraits.sumDP[s] << " poptraits.ssqDP[s]= " << poptraits.ssqDP[s]
-				//	<< " ts.sumDP[s]= " << ts.sumDP[s] << " ts.ssqDP[s]= " << ts.ssqDP[s]
-				//	<< " poptraits.sumGB[s]= " << poptraits.sumGB[s] << " poptraits.ssqGB[s]= " << poptraits.ssqGB[s]
-				//	<< " ts.sumGB[s]= " << ts.sumGB[s] << " ts.ssqGB[s]= " << ts.ssqGB[s]
-				//	<< endl;
-#endif
 			}
 		}
 	}

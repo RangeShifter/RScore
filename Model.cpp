@@ -21,9 +21,6 @@
 
 
  //---------------------------------------------------------------------------
-#if RS_EMBARCADERO
-#pragma hdrstop
-#endif
 
 #include "Model.h"
 
@@ -44,18 +41,14 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif
 #endif
 {
-	//int Nsuit,yr,totalInds;
 	int yr, totalInds;
-	//float gradval,gradmin,gradmax;
 	bool filesOK;
-	//int t0,t1;
 
 	landParams ppLand = pLandscape->getLandParams();
 	envGradParams grad = paramsGrad->getGradient();
 	envStochParams env = paramsStoch->getStoch();
 	demogrParams dem = pSpecies->getDemogr();
 	stageParams sstruct = pSpecies->getStage();
-	//emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();
 	initParams init = paramsInit->getInit();
 	simParams sim = paramsSim->getSim();
@@ -64,18 +57,12 @@ int RunModel(Landscape* pLandscape, int seqsim)
 	virtParams virt = paramsSim->getVirtParams();
 #endif
 
-	//t0 = time(0);
-
 #if RSDEBUG
 	landPix p = pLandscape->getLandPix();
 	DEBUGLOG << "RunModel(): reps=" << sim.reps
 		<< " ppLand.nHab=" << ppLand.nHab
 		<< " p.pix=" << p.pix
 		<< endl;
-	//DEBUGLOG << "RunModel(): random integers:";
-	//for (int i = 0; i < 5; i++) {
-	//	int rrrr = pRandom->IRandom(1000,2000); DEBUGLOG << " " << rrrr;
-	//}
 	DEBUGLOG << endl;
 #endif
 
@@ -94,22 +81,13 @@ int RunModel(Landscape* pLandscape, int seqsim)
 		pComm = new Community(pLandscape); // set up community
 		// set up a sub-community associated with each patch (incl. the matrix)
 		pLandscape->updateCarryingCapacity(pSpecies, 0, 0);
-		//	if (ppLand.rasterType <= 2 && ppLand.dmgLoaded) 
-		//		pLandscape->updateDamageIndices();
 		patchData ppp;
 		int npatches = pLandscape->patchCount();
 		for (int i = 0; i < npatches; i++) {
 			ppp = pLandscape->getPatchData(i);
-#if RSDEBUG
-			//DEBUGLOG << "RunModel(): i = " << i
-			//	<< " ppp.pPatch = " << ppp.pPatch << " ppp.patchNum = " << ppp.patchNum
-			//	<< endl;
-#endif
+
 			pComm->addSubComm(ppp.pPatch, ppp.patchNum); // SET UP ALL SUB-COMMUNITIES
-			//	if (i == 0 || ppp.pPatch->getK() > 0.0) {
-			//		// SET UP SUB-COMMUNITY FOR MATRIX PATCH AND ANY PATCH HAVING NON-ZERO CARRYING CAPACITY
-			//		pComm->addSubComm(ppp.pPatch,ppp.patchNum);
-			//	}
+
 		}
 		if (init.seedType == 0 && init.freeType < 2 && init.initFrzYr > 0) {
 			// restrict available landscape to initialised region
@@ -156,8 +134,6 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif
 #endif
 
-		MemoLine(("Running replicate " + Int2Str(rep) + "...").c_str());
-
 		if (sim.saveVisits && !ppLand.generated) {
 			pLandscape->resetVisits();
 		}
@@ -181,29 +157,16 @@ int RunModel(Landscape* pLandscape, int seqsim)
 			// its corresponding patch upon deletion)
 			if (pComm != 0) delete pComm;
 			// generate new cell-based landscape
-			MemoLine("...generating new landscape...");
 			pLandscape->resetLand();
 #if RSDEBUG
 			DEBUGLOG << "RunModel(): finished resetting landscape" << endl << endl;
 #endif
-			pLandscape->generatePatches();
-			//#if VCL
-			if (v.viewLand || sim.saveMaps) {
-				pLandscape->setLandMap();
-				pLandscape->drawLandscape(rep, 0, ppLand.landNum);
-			}
-			//#endif
-			//#if BATCH
-			//		if (sim.saveMaps) {
-			//			pLandscape->drawLandscape(rep,0,ppLand.landNum);
-			//		}
-			//#endif
+ 			pLandscape->generatePatches();
 #if RSDEBUG
 			DEBUGLOG << endl << "RunModel(): finished generating patches" << endl;
 #endif
 			pComm = new Community(pLandscape); // set up community
 			// set up a sub-community associated with each patch (incl. the matrix)
-	//		pLandscape->updateCarryingCapacity(pSpecies,0);
 			pLandscape->updateCarryingCapacity(pSpecies, 0, 0);
 			patchData ppp;
 			int npatches = pLandscape->patchCount();
@@ -212,21 +175,12 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif
 			for (int i = 0; i < npatches; i++) {
 				ppp = pLandscape->getPatchData(i);
-#if RSDEBUG
-				//DEBUGLOG << "RunModel(): i = " << i
-				//	<< " ppp.pPatch = " << ppp.pPatch << " ppp.patchNum = " << ppp.patchNum
-				//	<< endl;
-#endif
 #if RSWIN64
 #if LINUX_CLUSTER
 				pComm->addSubComm(ppp.pPatch, ppp.patchNum); // SET UP ALL SUB-COMMUNITIES
 #else
 				SubCommunity* pSubComm = pComm->addSubComm(ppp.pPatch, ppp.patchNum); // SET UP ALL SUB-COMMUNITIES
 #endif
-				//			if (ppp.y >= 9995) {
-				//				DEBUGLOG << "RunModel(): i=" << i << " pSubComm=" << pSubComm
-				//					<< endl;
-				//			}
 #else
 				pComm->addSubComm(ppp.pPatch, ppp.patchNum); // SET UP ALL SUB-COMMUNITIES
 #endif
@@ -472,12 +426,8 @@ int RunModel(Landscape* pLandscape, int seqsim)
 		DEBUGLOG << "RunModel(): completed initialisation, rep=" << rep
 			<< " pSpecies=" << pSpecies << endl;
 #endif
-#if BATCH
-#if RS_RCPP && !R_CMD
+#if BATCH && RS_RCPP && !R_CMD
 		Rcpp::Rcout << "RunModel(): completed initialisation " << endl;
-#else
-		cout << "RunModel(): completed initialisation " << endl;
-#endif
 #endif
 
 		// open a new individuals file for each replicate
@@ -574,12 +524,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif
 							pLandscape->setLandLimits(ppLand.minX, minY, ppLand.maxX, ppLand.maxY);
 							updateCC = true;
-#if RSDEBUG
-							//landData d = pLandscape->getLandData();
-							//DEBUGLOG << "RunModel(): landscape yr=" << yr
-							//	<< " minX=" << d.minX << " minY=" << d.minY << " maxX=" << d.maxX << " maxY=" << d.maxY
-							//	<< endl;
-#endif
+
 						}
 					}
 					if (yr == init.finalFrzYr) {
@@ -596,12 +541,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif
 						pLandscape->setLandLimits(ppLand.minX, s.minY, ppLand.maxX, s.maxY);
 						updateCC = true;
-#if RSDEBUG
-						//landData d = pLandscape->getLandData();
-						//DEBUGLOG << "RunModel(): landscape yr=" << yr
-						//	<< " minX=" << d.minX << " minY=" << d.minY << " maxX=" << d.maxX << " maxY=" << d.maxY
-						//	<< endl;
-#endif
+
 					}
 				}
 			}
@@ -622,10 +562,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif // SEASONAL 
 					updateCC = true;
 				}
-#if RSDEBUG
-				//DEBUGLOG << "RunModel(): yr=" << yr << " shift_begin=" << grad.shift_begin
-				//	<< " shift_stop=" << grad.shift_stop << " opt_y=" << grad.opt_y << endl;
-#endif
+
 				if (env.stoch) {
 					if (env.local) pLandscape->updateLocalStoch();
 					updateCC = true;
@@ -646,15 +583,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 							Cell* pCell;
 							patchchange = pLandscape->getPatchChange(ixpchchg++);
 							while (patchchange.chgnum <= landIx && ixpchchg <= npatchchanges) {
-#if RSDEBUG
-								//DEBUGLOG << "RunModel(): yr=" << yr << " landIx=" << landIx
-								//	<< " npatchchanges=" << npatchchanges << " ixpchchg=" << ixpchchg
-								//	<< " patchchange.chgnum=" << patchchange.chgnum
-								//	<< " .oldpatch=" << patchchange.oldpatch
-								//	<< " .newpatch=" << patchchange.newpatch
-								//	<< " .x=" << patchchange.x << " .y=" << patchchange.y
-								//	<< endl;
-#endif
+
 							// move cell from original patch to new patch
 								pCell = pLandscape->findCell(patchchange.x, patchchange.y);
 								if (patchchange.oldpatch != 0) { // not matrix
@@ -682,15 +611,6 @@ int RunModel(Landscape* pLandscape, int seqsim)
 							Cell* pCell;
 							costchange = pLandscape->getCostChange(ixcostchg++);
 							while (costchange.chgnum <= landIx && ixcostchg <= ncostchanges) {
-#if RSDEBUG
-								//DEBUGLOG << "RunModel(): yr=" << yr << " landIx=" << landIx
-								//	<< " ncostchanges=" << ncostchanges << " ixcostchg=" << ixcostchg
-								//	<< " costchange.chgnum=" << costchange.chgnum
-								//	<< " .x=" << costchange.x << " .y=" << costchange.y
-								//	<< " .oldcost=" << costchange.oldcost
-								//	<< " .newcost=" << costchange.newcost
-								//	<< endl;
-#endif
 								pCell = pLandscape->findCell(costchange.x, costchange.y);
 								if (pCell != 0) {
 									pCell->setCost(costchange.newcost);
@@ -708,11 +628,6 @@ int RunModel(Landscape* pLandscape, int seqsim)
 						}
 					}
 				}
-#if VCL
-				if (grad.gradient && v.viewGrad) {
-					pLandscape->drawGradient();
-				}
-#endif
 			} // end of environmental gradient, etc.
 
 			if (updateCC) {
@@ -1330,20 +1245,9 @@ int RunModel(Landscape* pLandscape, int seqsim)
 				int nobs = (int)pABCmaster->NObs();
 				for (int i = 0; i < nobs; i++) {
 					obs = pABCmaster->getObsData(i);
-#if RSDEBUG
-					//DEBUGLOG << "RunModel(): i=" << i << " yr=" << yr
-					//	<< " obs.year=" << obs.year << " obs.type=" << obs.type << " obs.name=" << obs.name
-					//	<< endl;
-#endif
+
 					if (obs.year == yr && obs.type == 4) {
-#if RSDEBUG
-						DEBUGLOG << "RunModel(): i=" << i << " PROCESS Type 4 Connectivity"
-							<< " obs.id=" << obs.id << " obs.name=" << obs.name
-							<< " obs.x=" << obs.x << " obs.y=" << obs.y
-							<< " obs.value=" << obs.value
-							<< " obs.weight=" << obs.weight
-							<< endl;
-#endif
+
 						if (obs.name == "NInds") {
 							int npred = pLandscape->outABCconnect(obs.x, obs.y);
 							pABCmaster->AddNewPred(sim.simulation, obs.id, rep, obs.value,
@@ -1444,18 +1348,13 @@ int RunModel(Landscape* pLandscape, int seqsim)
 				RangePopOutput(pComm, rep, yr, 0);
 #endif
 #if RSDEBUG
-			DEBUGLOG << "RunModel(): yr=" << yr << " completed final summary output" << endl;
+		DEBUGLOG << "RunModel(): yr=" << yr << " completed final summary output" << endl;
 #endif
 #if VCL
 		}
 #endif
 
 		pComm->resetPopns();
-
-		//	if (batchMode) {
-		//		// delete the community of species using the landscape
-		//		pComm->resetPopns();
-		//	}
 
 			//Reset the gradient optimum
 		if (grad.gradient) paramsGrad->resetOptY();
@@ -1475,15 +1374,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 			Cell* pCell;
 			patchchange = pLandscape->getPatchChange(ixpchchg++);
 			while (patchchange.chgnum <= 666666 && ixpchchg <= npatchchanges) {
-#if RSDEBUG
-				//DEBUGLOG << "RunModel(): yr=" << yr << " landIx=" << "reset"
-				//	<< " npatchchanges=" << npatchchanges << " ixpchchg=" << ixpchchg
-				//	<< " patchchange.chgnum=" << patchchange.chgnum
-				//	<< " .oldpatch=" << patchchange.oldpatch
-				//	<< " .newpatch=" << patchchange.newpatch
-				//	<< " .x=" << patchchange.x << " .y=" << patchchange.y
-				//	<< endl;
-#endif
+
 			// move cell from original patch to new patch
 				pCell = pLandscape->findCell(patchchange.x, patchchange.y);
 				if (patchchange.oldpatch != 0) { // not matrix
@@ -1513,15 +1404,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 					Cell* pCell;
 					costchange = pLandscape->getCostChange(ixcostchg++);
 					while (costchange.chgnum <= 666666 && ixcostchg <= ncostchanges) {
-#if RSDEBUG
-						//DEBUGLOG << "RunModel(): yr=" << yr << " landIx=" << landIx
-						//	<< " ncostchanges=" << ncostchanges << " ixcostchg=" << ixcostchg
-						//	<< " costchange.chgnum=" << costchange.chgnum
-						//	<< " .x=" << costchange.x << " .y=" << costchange.y
-						//	<< " .oldcost=" << costchange.oldcost
-						//	<< " .newcost=" << costchange.newcost
-						//	<< endl;
-#endif
+
 						pCell = pLandscape->findCell(costchange.x, costchange.y);
 						if (pCell != 0) {
 							pCell->setCost(costchange.newcost);
@@ -1534,12 +1417,6 @@ int RunModel(Landscape* pLandscape, int seqsim)
 				if (!trfr.costMap) pLandscape->resetCosts(); // in case habitats have changed
 			}
 		}
-		//					if (landIx < pLandscape->numLandChanges()) { // get next change
-		//						landChg = pLandscape->getLandChange(landIx);
-		//					}
-		//					else {
-		//						landChg.chgyear = 9999999;
-		//					}
 #if RSDEBUG
 		DEBUGLOG << "RunModel(): yr=" << yr << " completed reset"
 			<< endl;
@@ -1609,13 +1486,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 	//cout << "RunModel(): npreds=" << npreds << endl;
 	for (int i = 0; i < npreds; i++) {
 		pred = pABCmaster->getPredData(i);
-#if RSDEBUG
-		//DEBUGLOG << "RunModel(): sample=" << pred.sample
-		//	<< " id=" << pred.id << " rep=" << pred.rep
-		//	<< " obsvalue=" << pred.obsvalue << " predvalue=" << pred.predvalue
-		//	<< " weight=" << pred.weight
-		//	<< endl;
-#endif
+
 		if (pred.id != predcomp.id) { // save comparison for previous id
 			if (nreps > 0) meanpred /= (double)nreps; else meanpred = 0.0;
 			pABCmaster->AddNewPredComp(predcomp.sample, predcomp.id, nreps,
@@ -1647,13 +1518,10 @@ int RunModel(Landscape* pLandscape, int seqsim)
 
 	// Occupancy outputs
 	if (sim.outOccup && sim.reps > 1) {
-		MemoLine("Writing final occupancy output...");
 		pComm->outOccupancy();
 		pComm->outOccSuit(v.viewGraph);
-		//	pComm->deleteOccupancy((sim.years/sim.outInt)+1);
 		pComm->deleteOccupancy((sim.years / sim.outIntOcc) + 1);
 		pComm->outOccupancyHeaders(-999);
-		MemoLine("...finished");
 	}
 
 #if RS_CONTAIN
@@ -1700,23 +1568,12 @@ int RunModel(Landscape* pLandscape, int seqsim)
 	pComm->outGroupHeaders(-999); // close groups file
 #endif
 
-	MemoLine("Deleting community...");
 	delete pComm; pComm = 0;
 #if VIRTUALECOLOGIST
 	if (sim.virtualEcologist && pVirt != 0) {
 		delete pVirt; // delete virtual ecologist
 	}
 #endif
-	MemoLine("...finished");
-
-#if VCL
-	Application->ProcessMessages();
-#endif
-
-	// Write performance data
-	//t1 = time(0);
-	//RSlog << "Simulation," << sim.simulation << "," << sim.reps << "," << sim.years
-	//	<< "," << t1-t0 << endl;
 
 #if RS_RCPP && !R_CMD
 	return list_outPop;
@@ -1726,7 +1583,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 
 }
 
-#if RS_EMBARCADERO || LINUX_CLUSTER || RS_RCPP 
+#if LINUX_CLUSTER || RS_RCPP
 // Check whether a specified directory path exists
 bool is_directory(const char* pathname) {
 	struct stat info;
@@ -1760,7 +1617,7 @@ bool CheckDirectory(void)
 //For outputs and population visualisations pre-reproduction
 void PreReproductionOutput(Landscape* pLand, Community* pComm, int rep, int yr, int gen)
 {
-#if RSDEBUG || VCL
+#if RSDEBUG
 	landParams ppLand = pLand->getLandParams();
 #endif
 	simParams sim = paramsSim->getSim();
@@ -1776,60 +1633,15 @@ void PreReproductionOutput(Landscape* pLand, Community* pComm, int rep, int yr, 
 		<< endl;
 #endif
 
-#if RSDEBUG
-	//DEBUGLOG << "PreReproductionOutput(): 22222 " << endl;
-#endif
-
-//emigCanvas ecanv;
-//trfrCanvas tcanv;
-	traitCanvas tcanv;
-	//for (int i = 0; i < 6; i++) {
-	//	ecanv.pcanvas[i] = 0; tcanv.pcanvas[i] = 0;
-	//}
-	for (int i = 0; i < NTRAITS; i++) {
-		tcanv.pcanvas[i] = 0;
-	}
-
 	// trait outputs and visualisation
-
-	if (v.viewTraits) {
-		//	ecanv = SetupEmigCanvas();
-		//	tcanv = SetupTrfrCanvas();
-		//	tcanv = SetupTraitCanvas(v.viewGrad);
-		tcanv = SetupTraitCanvas();
-	}
-
 	if (v.viewTraits
 		|| ((sim.outTraitsCells && yr >= sim.outStartTraitCell && yr % sim.outIntTraitCell == 0) ||
 			(sim.outTraitsRows && yr >= sim.outStartTraitRow && yr % sim.outIntTraitRow == 0)))
 	{
-		//	pComm->outTraits(ecanv,tcanv,pSpecies,rep,yr,gen);
-		pComm->outTraits(tcanv, pSpecies, rep, yr, gen);
+		pComm->outTraits(pSpecies, rep, yr, gen);
 	}
-
-#if RSDEBUG
-	//DEBUGLOG << "PreReproductionOutput(): 33333 " << endl;
-#endif
-
 	if (sim.outOccup && yr % sim.outIntOcc == 0 && gen == 0)
-#if SEASONAL
-		pComm->updateOccupancy(yr / sim.outIntOcc, rep, 0);
-#else
 		pComm->updateOccupancy(yr / sim.outIntOcc, rep);
-#endif // SEASONAL 
-
-#if RSDEBUG
-	//DEBUGLOG << "PreReproductionOutput(): 88888 " << endl;
-#endif
-
-// Remaining graphical output actions are performed for GUI only
-#if VCL
-	if (v.viewTraits) Outputs_Visuals_B(rep, yr, gen, ppLand.landNum);
-#endif
-
-#if RSDEBUG
-	//DEBUGLOG << "PreReproductionOutput(): finished " << endl;
-#endif
 }
 
 //For outputs and population visualisations pre-reproduction
@@ -1931,11 +1743,11 @@ void OutParameters(Landscape* pLandscape)
 	string name;
 	if (sim.batchMode)
 		name = paramsSim->getDir(2)
-		+ "Batch" + Int2Str(sim.batchNum) + "_"
-		+ "Sim" + Int2Str(sim.simulation)
-		+ "_Land" + Int2Str(ppLand.landNum) + "_Parameters.txt";
+		+ "Batch" + to_string(sim.batchNum) + "_"
+		+ "Sim" + to_string(sim.simulation)
+		+ "_Land" + to_string(ppLand.landNum) + "_Parameters.txt";
 	else
-		name = paramsSim->getDir(2) + "Sim" + Int2Str(sim.simulation) + "_Parameters.txt";
+		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation) + "_Parameters.txt";
 	outPar.open(name.c_str());
 
 	outPar << "RangeShifter 2.0 ";
@@ -2087,9 +1899,7 @@ void OutParameters(Landscape* pLandscape)
 			}
 			if (chg.costfile != "none" && chg.costfile != "NULL") {
 				outPar << "Costs    : " << chg.costfile << endl;
-			}
-			//		outPar << "Change no. " << chg.chgnum << " in year " << chg.chgyear
-			//			<< " habitat map: " << chg.habfile << endl;
+			}			<< " habitat map: " << chg.habfile << endl;
 		}
 	}
 #if RS_CONTAIN
@@ -2111,7 +1921,6 @@ void OutParameters(Landscape* pLandscape)
 #endif // SEASONAL 
 
 	outPar << endl << "SPECIES DISTRIBUTION LOADED: \t";
-	//if (sim.initDistLoaded)
 	if (ppLand.spDist)
 	{
 		outPar << "yes" << endl;
@@ -2511,45 +2320,6 @@ void OutParameters(Landscape* pLandscape)
 #endif // SEASONAL 
 #endif // RS_CONTAIN 
 		}
-		/*
-		#if RSDEBUG
-			outPar << endl << "TRANSITION MATRIX AS ENTERED:" << endl;
-			if (batchMode) {
-				DEBUGLOG << "outParameters(): matrix = " << matrix
-					<< " matrix[1][1] = " << matrix[1][1]
-					<< endl;
-				if (dem.repType == 2) {
-					nrows = sstruct.nStages*2-1; ncols = sstruct.nStages*2;
-				}
-				else {
-					nrows = sstruct.nStages; ncols = sstruct.nStages;
-				}
-				for (int i = 0; i < nrows; i++) {
-					for (int j = 0; j < ncols; j++) {
-						outPar << matrix[j][i] << "\t";
-					}
-					outPar << endl;
-				}
-			}
-		#if VCL
-			else {
-
-			// NOTE: TO PREVENT COMPILING FOR BATCH MODE, THIS CODE NEEDS TO BE INCLUDED IN COMPILER
-			// CONDITIONAL BLOCK  AS SHOWN
-
-		//	outPar << "Row count: " << frmSpecies->transMatrix->RowCount << endl;
-		//	outPar << "Col count: " << frmSpecies->transMatrix->ColCount << endl;
-				for (int i = 1; i < frmSpecies->transMatrix->RowCount; i++) {
-					for (int j = 1; j < frmSpecies->transMatrix->ColCount; j++) {
-						outPar << frmSpecies->transMatrix->Cells[j][i].ToDouble() << "\t";
-					}
-					outPar << endl;
-				}
-			}
-		#endif
-			outPar << endl;
-		#endif
-		*/
 
 		outPar << "SCHEDULING OF SURVIVAL: ";
 		switch (sstruct.survival) {
@@ -3212,12 +2982,6 @@ void OutParameters(Landscape* pLandscape)
 
 	if (trfr.moveModel) {
 		string plusmating = "+ mating requirements";
-		ssteps = pSpecies->getSteps(0, 0);
-
-		outPar << "MIN. No. OF STEPS:\t " << ssteps.minSteps << endl;
-		outPar << "MAX. No. OF STEPS:\t ";
-		if (ssteps.maxSteps == 99999999) outPar << "not applied" << endl;
-		else outPar << ssteps.maxSteps << endl;
 
 		if (sett.sexDep) {
 			nsexes = 2;
@@ -3225,10 +2989,33 @@ void OutParameters(Landscape* pLandscape)
 			if (sett.stgDep) {
 				nstages = sstruct.nStages;
 				outPar << stgdept << "yes" << endl;
+				for (int i = 0; i < nstages; i++) {
+				    if (dem.stageStruct && nstages > 1) outPar << "stage " << i << ": " << endl;
+				    for (int sx = 0; sx < nsexes; sx++) {
+				        if (sx == 0) outPar << "FEMALES:" << endl;
+				        else outPar << "MALES:" << endl;
+				        ssteps = pSpecies->getSteps(i, sx);
+
+				        outPar << "MIN. No. OF STEPS:\t " << ssteps.minSteps << endl;
+				        outPar << "MAX. No. OF STEPS:\t ";
+				        if (ssteps.maxSteps == 99999999) outPar << "not applied" << endl;
+				        else outPar << ssteps.maxSteps << endl;
+				    }
+				}
 			}
 			else { // !sett.stgDep
 				nstages = 1;
 				outPar << stgdept << "no" << endl;
+				for (int sx = 0; sx < nsexes; sx++) {
+				    if (sx == 0) outPar << "FEMALES:" << endl;
+				    else outPar << "MALES:" << endl;
+				    ssteps = pSpecies->getSteps(0, sx);
+
+				    outPar << "MIN. No. OF STEPS:\t " << ssteps.minSteps << endl;
+				    outPar << "MAX. No. OF STEPS:\t ";
+				    if (ssteps.maxSteps == 99999999) outPar << "not applied" << endl;
+				    else outPar << ssteps.maxSteps << endl;
+				}
 			}
 		}
 		else { // !sett.sexDep
@@ -3237,10 +3024,25 @@ void OutParameters(Landscape* pLandscape)
 			if (sett.stgDep) {
 				nstages = sstruct.nStages;
 				outPar << stgdept << "yes" << endl;
+				for (int i = 0; i < nstages; i++) {
+				    if (dem.stageStruct && nstages > 1) outPar << "stage " << i << ": " << endl;
+				    ssteps = pSpecies->getSteps(i, 0);
+
+				    outPar << "MIN. No. OF STEPS:\t " << ssteps.minSteps << endl;
+				    outPar << "MAX. No. OF STEPS:\t ";
+				    if (ssteps.maxSteps == 99999999) outPar << "not applied" << endl;
+				    else outPar << ssteps.maxSteps << endl;
+				}
 			}
 			else { // !sett.stgDep
 				nstages = 1;
 				outPar << stgdept << "no" << endl;
+				ssteps = pSpecies->getSteps(0, 0);
+
+				outPar << "MIN. No. OF STEPS:\t " << ssteps.minSteps << endl;
+				outPar << "MAX. No. OF STEPS:\t ";
+				if (ssteps.maxSteps == 99999999) outPar << "not applied" << endl;
+				else outPar << ssteps.maxSteps << endl;
 			}
 		}
 		for (int sx = 0; sx < nsexes; sx++) {
@@ -3575,9 +3377,6 @@ void OutParameters(Landscape* pLandscape)
 			}
 			break;
 		}
-		//	outPar << "Delay (years):             " << c.delay << endl;
-		//	outPar << "Bias towards range edge:   ";
-		//	if (c.edgeBias) outPar << "yes"; else outPar << "no"; outPar << endl;
 	}
 	else {
 		outPar << "Not applied" << endl;
@@ -3711,9 +3510,6 @@ void OutParameters(Landscape* pLandscape)
 		outPar << "GEOGRAPHICAL CONSTRAINTS (cell numbers): " << endl;
 		outPar << "min X: " << init.minSeedX << " max X: " << init.maxSeedX << endl;
 		outPar << "min Y: " << init.minSeedY << " max Y: " << init.maxSeedY << endl;
-		//	if (init.seedType != 1 && init.freeType < 2 && init.initFrzYr > 0) {
-		//		outPar << "Freeze initial range until year " << init.initFrzYr << endl;
-		//	}
 		if (init.seedType == 0 && init.freeType < 2) {
 			if (init.initFrzYr > 0) {
 				outPar << "Freeze initial range until year " << init.initFrzYr << endl;
@@ -3732,13 +3528,11 @@ void OutParameters(Landscape* pLandscape)
 	if (sim.outRange) {
 		outPar << "Range - every " << sim.outIntRange << " year";
 		if (sim.outIntRange > 1) outPar << "s";
-		//	if (sim.outStartRange > 0) outPar << " starting year " << sim.outStartRange;
 		outPar << endl;
 	}
 	if (sim.outOccup) {
 		outPar << "Occupancy - every " << sim.outIntOcc << " year";
 		if (sim.outIntOcc > 1) outPar << "s";
-		//	if (sim.outStartOcc > 0) outPar << " starting year " << sim.outStartOcc;
 		outPar << endl;
 	}
 	if (sim.outPop) {
@@ -3773,17 +3567,6 @@ void OutParameters(Landscape* pLandscape)
 		if (sim.outGenXtab) outPar << " (as cross table)";
 		outPar << endl;
 	}
-#if VIRTUALECOLOGIST
-	if (virt.landscapeGenetics) {
-		outPar << "Landscape genetics - every " << virt.outInt << " year";
-		if (virt.outInt > 1) outPar << "s";
-		if (virt.outStart > 0) outPar << " starting year " << virt.outStart;
-		outPar << endl;
-		outPar << "Output sampled genomes: ";
-		if (virt.outGenomes) outPar << "yes"; else outPar << "no";
-		outPar << endl;
-	}
-#endif
 
 	if (sim.outTraitsCells) {
 		outPar << "Traits per ";

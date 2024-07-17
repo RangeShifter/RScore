@@ -21,9 +21,6 @@
 
 
  //---------------------------------------------------------------------------
-#if RS_EMBARCADERO
-#pragma hdrstop
-#endif
 
 #include "Parameters.h"
 //---------------------------------------------------------------------------
@@ -206,12 +203,6 @@ float paramInit::getProp(short stg) {
 }
 
 void paramInit::addInitInd(initInd iind) {
-#if RSDEBUG
-	//DebugGUI(("paramInit::addInitInd(): iind.patchID=" + Int2Str(iind.patchID)
-	//	+ " iind.x=" + Int2Str(iind.x)
-	//	+ " iind.y=" + Int2Str(iind.y)
-	//	).c_str());
-#endif
 	initinds.push_back(iind);
 }
 
@@ -224,13 +215,6 @@ initInd paramInit::getInitInd(int ix) {
 		iind.year = iind.patchID = iind.x = iind.y = iind.sex = iind.age = iind.stage = 0;
 		iind.species = -1;
 	}
-#if RSDEBUG
-	//DEBUGLOG << "paramInit::getInitInd(): ix=" << ix << " size()=" << initinds.size()
-	//	<< " iind.patchID=" << iind.patchID
-	//	<< " iind.x=" << iind.x
-	//	<< " iind.y=" << iind.y
-	//	<< endl;
-#endif
 	return iind;
 }
 
@@ -247,7 +231,6 @@ paramSim::paramSim(void) {
 	simulation = 0;
 	reps = years = 1;
 	outIntRange = 1;
-	//	outStartRange = outStartOcc = outStartPop = outStartInd = 0;
 	outStartPop = outStartInd = outStartGenetic = 0;
 	outStartTraitCell = outStartTraitRow = outStartConn = 0;
 	outIntOcc = outIntPop = outIntInd = outIntGenetic = 10;
@@ -290,7 +273,6 @@ paramSim::paramSim(void) {
 	outStartPaths = 0; outIntPaths = 0;
 	outPaths = false; ReturnPopRaster = false; CreatePopFile = true;
 #endif
-	drawLoaded = false;
 	viewLand = false; viewPatch = false; viewGrad = false; viewCosts = false;
 	viewPop = false; viewTraits = false; viewPaths = false; viewGraph = false;
 #if RS_CONTAIN
@@ -360,7 +342,6 @@ void paramSim::setSim(simParams s) {
 	ReturnPopRaster = s.ReturnPopRaster;
 	CreatePopFile = s.CreatePopFile;
 #endif
-	drawLoaded = s.drawLoaded;
 }
 
 simParams paramSim::getSim(void) {
@@ -408,7 +389,6 @@ simParams paramSim::getSim(void) {
 	s.ReturnPopRaster = ReturnPopRaster;
 	s.CreatePopFile = CreatePopFile;
 #endif
-	s.drawLoaded = drawLoaded;
 	return s;
 }
 

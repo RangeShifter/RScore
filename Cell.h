@@ -189,10 +189,6 @@ private:
 
 };
 
-#if RSDEBUG
-extern void DebugGUI(string);
-#endif
-
 //---------------------------------------------------------------------------
 
 #endif
