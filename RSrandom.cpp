@@ -22,8 +22,6 @@
 
 #include "RSrandom.h"
 
-#if RS_EMBARCADERO
-
  //--------------- 1.) Former version of RSrandom.cpp
 
 #pragma hdrstop

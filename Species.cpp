@@ -190,7 +190,6 @@ Species::Species(void)
 
 	// initialise settlement parameters
 	stgDepSett = false; sexDepSett = false; indVarSett = false;
-	minSteps = 0; maxSteps = 99999999;
 	for (int i = 0; i < NSTAGES; i++) {
 		for (int j = 0; j < NSEXES; j++) {
 			densDepSett[i][j] = false; wait[i][j] = false; go2nbrLocn[i][j] = false; findMate[i][j] = false;

@@ -2927,10 +2927,10 @@ bool Population::outPopHeaders(int landNr, bool patchModel) {
 	if (sim.batchMode) {
 		name = paramsSim->getDir(2)
 			+ "Batch" + to_string(sim.batchNum) + "_"
-			+ "Sim" + to_string(sim.simulation) + "_Land" + Int2Str(landNr) + "_Pop.txt";
+			+ "Sim" + to_string(sim.simulation) + "_Land" + to_string(landNr) + "_Pop.txt";
 	}
 	else {
-		name = paramsSim->getDir(2) + "Sim" + Int2Str(sim.simulation) + "_Pop.txt";
+		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation) + "_Pop.txt";
 	}
 	outPop.open(name.c_str());
 #if SEASONAL

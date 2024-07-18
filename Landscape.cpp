@@ -2911,10 +2911,6 @@ int Landscape::readMortalityFiles(string mortfile0, string mortfile1) {
 				if (mfloat[i] < 0.0 || mfloat[i] > 1.0) // invalid mortality rate
 					errorvalue = true;
 			}
-#if DEBUG
-			//MemoLine(("y=" + Int2Str(y) + " x=" + Int2Str(x) + " hfloat=" + Float2Str(hfloat)
-			//	+ " p=" + Int2Str(p)).c_str());
-#endif
 			if (errorvalue) {
 				for (int i = 0; i < 2; i++) {
 					mfile[i].close(); mfile[i].clear();

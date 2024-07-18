@@ -195,10 +195,6 @@ int RunModel(Landscape* pLandscape, int seqsim)
 				if (virt.patchMethod != 2) pVirt->samplePatches(pLandscape, pComm);
 			}
 #endif
-			MemoLine("...completed...");
-#if RSDEBUG
-			DEBUGLOG << endl << "RunModel(): finished generating populations" << endl;
-#endif
 		}
 #if VCL
 		else {
@@ -222,13 +218,11 @@ int RunModel(Landscape* pLandscape, int seqsim)
 			// open output files
 			if (sim.outRange) { // open Range file
 				if (!pComm->outRangeHeaders(pSpecies, ppLand.landNum)) {
-					MemoLine("UNABLE TO OPEN RANGE FILE");
 					filesOK = false;
 				}
 #if RS_CONTAIN
 				if (ppLand.dmgLoaded) {
 					if (!pLandscape->outSummDmgHeaders(ppLand.landNum)) {
-						MemoLine("UNABLE TO OPEN SUMMARY DAMAGE FILE");
 						filesOK = false;
 					}
 				}
@@ -236,20 +230,17 @@ int RunModel(Landscape* pLandscape, int seqsim)
 			}
 			if (sim.outOccup && sim.reps > 1)
 				if (!pComm->outOccupancyHeaders(0)) {
-					MemoLine("UNABLE TO OPEN OCCUPANCY FILE(S)");
 					filesOK = false;
 				}
 			if (sim.outPop) {
 				// open Population file
 				if (!pComm->outPopHeaders(pSpecies, ppLand.landNum)) {
-					MemoLine("UNABLE TO OPEN POPULATION FILE");
 					filesOK = false;
 				}
 #if RS_CONTAIN
 				if (pCull->isCullApplied()) {
 					// also open Cull file
 					if (!pComm->outCullHeaders(pSpecies, ppLand.landNum)) {
-						MemoLine("UNABLE TO OPEN MANAGEMENT CULL FILE");
 						filesOK = false;
 					}
 				}
@@ -257,17 +248,14 @@ int RunModel(Landscape* pLandscape, int seqsim)
 			}
 			if (sim.outTraitsCells)
 				if (!pComm->outTraitsHeaders(pSpecies, ppLand.landNum)) {
-					MemoLine("UNABLE TO OPEN TRAITS FILE");
 					filesOK = false;
 				}
 			if (sim.outTraitsRows)
 				if (!pComm->outTraitsRowsHeaders(pSpecies, ppLand.landNum)) {
-					MemoLine("UNABLE TO OPEN TRAITS ROWS FILE");
 					filesOK = false;
 				}
 			if (sim.outConnect && ppLand.patchModel) // open Connectivity file
 				if (!pLandscape->outConnectHeaders(0)) {
-					MemoLine("UNABLE TO OPEN CONNECTIVITY FILE");
 					filesOK = false;
 				}
 #if RS_CONTAIN
@@ -281,17 +269,12 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #if VIRTUALECOLOGIST
 			if (sim.virtualEcologist) {
 				if (!pVirt->outLandGenHeaders(ppLand.landNum, ppLand.patchModel)) {
-#if RSDEBUG
-					DEBUGLOG << "RunModel(): UNABLE TO OPEN LANDSCAPE GENETICS FILE" << endl;
-#endif
+
 					MemoLine("UNABLE TO OPEN LANDSCAPE GENETICS FILE");
 					filesOK = false;
 				}
 				if (virt.outGenomes) {
 					if (!pVirt->outGenSamplesHeaders(ppLand.landNum, ppLand.patchModel)) {
-#if RSDEBUG
-						DEBUGLOG << "RunModel(): UNABLE TO OPEN GENETIC SAMPLES FILE" << endl;
-#endif
 						MemoLine("UNABLE TO OPEN GENETIC SAMPLES FILE");
 						filesOK = false;
 					}
@@ -300,18 +283,13 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif // VIRTUALECOLOGIST 
 #if PEDIGREE
 			if (!pComm->outGroupHeaders(0)) {
-				MemoLine("UNABLE TO OPEN GROUPS FILE");
 				filesOK = false;
 			}
 #endif
 		}
-#if RSDEBUG
-		DEBUGLOG << "RunModel(): completed opening output files" << endl;
-#endif
+
 		if (!filesOK) {
-#if RSDEBUG
-			DEBUGLOG << "RunModel(): PROBLEM - closing output files" << endl;
-#endif
+
 			// close any files which may be open
 			if (sim.outRange) {
 				pComm->outRangeHeaders(pSpecies, -999);
@@ -473,7 +451,6 @@ int RunModel(Landscape* pLandscape, int seqsim)
 #endif  
 
 		// years loop
-		MemoLine("...running...");
 		for (yr = 0; yr < sim.years; yr++) {
 #if RSDEBUG
 			DEBUGLOG << endl << "RunModel(): starting simulation=" << sim.simulation
@@ -789,12 +766,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 				if (yr == yearABC && gen == 0) abcYear = true;
 				else abcYear = false;
 #endif
-				if (v.viewPop || (sim.saveMaps && yr % sim.mapInt == 0)) {
-					if (updateland && gen == 0) {
-						pLandscape->drawLandscape(rep, landIx, ppLand.landNum);
-					}
-					pComm->draw(rep, yr, gen, ppLand.landNum);
-				}
+			
 				// Output and pop. visualisation before reproduction
 				if (v.viewPop || v.viewTraits || sim.outOccup
 					|| sim.outTraitsCells || sim.outTraitsRows || sim.saveMaps)
@@ -1899,7 +1871,7 @@ void OutParameters(Landscape* pLandscape)
 			}
 			if (chg.costfile != "none" && chg.costfile != "NULL") {
 				outPar << "Costs    : " << chg.costfile << endl;
-			}			<< " habitat map: " << chg.habfile << endl;
+			}
 		}
 	}
 #if RS_CONTAIN
