@@ -48,7 +48,6 @@ extern ofstream DEBUGLOG;
 #endif
 
 #if !RS_RCPP
-//--------------- 2.) New version of RSrandom.cpp
 	#include <cmath>
 	#include <random>
 	#if !LINUX_CLUSTER
@@ -71,10 +70,6 @@ public:
 	double Normal(double, double);
 	int Poisson(double);
 	mt19937 getRNG(void);
-#if RS_ABC
-	double Beta(double, double);
-	double Gamma(double, double);
-#endif
 
 private:
 	mt19937* gen;
@@ -85,11 +80,6 @@ private:
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------------------------
-
-
-
-//--------------- 3.) R package version of RSrandom.cpp
-
 
 #else // if RS_RCPP 
 
