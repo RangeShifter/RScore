@@ -162,7 +162,7 @@ public:
 		short,		// number of emigration genes
 		bool			// TRUE if emigration is sex-dependent
 	);
-	emigTraits getEmigTraits(void); // Get phenotypic emigration traits
+	emigTraits getEmigTraits(void) const; // Get phenotypic emigration traits
 
 	void setKernTraits( // Set phenotypic transfer by kernel traits
 		Species*,	// pointer to Species
@@ -171,7 +171,7 @@ public:
 		int,			// Landscape resolution
 		bool			// TRUE if transfer is sex-dependent
 	);
-	trfrKernTraits getKernTraits(void); // Get phenotypic transfer by kernel traits
+	trfrKernTraits getKernTraits(void) const; // Get phenotypic transfer by kernel traits
 
 	void setSMSTraits( // Set phenotypic transfer by SMS traits
 		Species*,	// pointer to Species
@@ -179,14 +179,14 @@ public:
 		short,		// number of SMS genes
 		bool			// TRUE if transfer is sex-dependent
 	);
-	trfrSMSTraits getSMSTraits(void); // Get phenotypic transfer by SMS traits
+	trfrSMSTraits getSMSTraits(void) const; // Get phenotypic transfer by SMS traits
 	void setCRWTraits( // Set phenotypic transfer by CRW traits
 		Species*,	// pointer to Species
 		short,		// location of CRW genes on genome
 		short,		// number of CRW genes
 		bool			// TRUE if transfer is sex-dependent
 	);
-	trfrCRWTraits getCRWTraits(void); // Get phenotypic transfer by CRW traits
+	trfrCRWTraits getCRWTraits(void) const; // Get phenotypic transfer by CRW traits
 
 	void setSettTraits( // Set phenotypic settlement traits
 		Species*,	// pointer to Species
@@ -194,22 +194,22 @@ public:
 		short,		// number of settlement genes
 		bool			// TRUE if settlement is sex-dependent
 	);
-	settleTraits getSettTraits(void); // Get phenotypic settlement traits
+	settleTraits getSettTraits(void) const; // Get phenotypic settlement traits
 
 	// Identify whether an individual is a potentially breeding female -
 	// if so, return her stage, otherwise return 0
-	int breedingFem(void);
-	int getId(void);
-	int getSex(void);
-	int getStatus(void);
-	indStats getStats(void);
+	int breedingFem(void) const;
+	int getId(void) const;
+	int getSex(void) const;
+	int getStatus(void) const;
+	indStats getStats(void) const;
 	Cell* getLocn( // Return location (as pointer to Cell)
 		const short	// option: 0 = get natal locn, 1 = get current locn
-	); //
-	Patch* getNatalPatch(void);
+	) const; //
+	Patch* getNatalPatch(void) const;
 	void setYearSteps(int);
-	pathSteps getSteps(void);
-	settlePatch getSettPatch(void);
+	pathSteps getSteps(void) const;
+	settlePatch getSettPatch(void) const;
 	void setSettPatch(const settlePatch);
 	void setStatus(short);
 	void developing(void);
@@ -251,17 +251,17 @@ public:
 		const int,	// current x co-ordinate
 		const int,	// current y co-ordinate
 		const float	// directional persistence value
-	);
+	) const;
 	array3x3d getGoalBias( // Weight neighbouring cells on basis of goal bias
 		const int,	// current x co-ordinate
 		const int,	// current y co-ordinate
 		const int,	// goal type: 0 = none, 1 = towards goal (NOT IMPLEMENTED), 2 = dispersal bias
 		const float	// GOAL BIAS VALUE
-	);
+	) const;
 	array3x3d calcWeightings( // Calculate weightings for neighbouring cells
 		const double,	// base for power-law (directional persistence or goal bias value)
 		const double	// direction in which lowest (unit) weighting is to be applied
-	);
+	) const;
 	array3x3f getHabMatrix( // Weight neighbouring cells on basis of (habitat) costs
 		Landscape*,		// pointer to Landscape
 		Species*,			// pointer to Species
@@ -278,11 +278,11 @@ public:
 		const int,		 	// species number
 		const int,		 	// landscape number
 		const bool	 		// output as cross table?
-	);
+	) const;
 #if RS_RCPP
 	void outMovePath( // Write records to movement paths file
 		const int		 	// year
-	);
+	) const;
 #endif
 
 private:

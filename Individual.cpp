@@ -481,7 +481,7 @@ void Individual::setGenes(Species* pSpecies, Individual* mother, Individual* fat
 
 // Identify whether an individual is a potentially breeding female -
 // if so, return her stage, otherwise return 0
-int Individual::breedingFem(void) {
+int Individual::breedingFem(void) const {
 	if (sex == 0) {
 		if (status == 0 || status == 4 || status == 5) return stage;
 		else return 0;
@@ -489,20 +489,20 @@ int Individual::breedingFem(void) {
 	else return 0;
 }
 
-int Individual::getId(void) { return indId; }
+int Individual::getId(void) const { return indId; }
 
-int Individual::getSex(void) { return sex; }
+int Individual::getSex(void) const { return sex; }
 
-int Individual::getStatus(void) { return status; }
+int Individual::getStatus(void) const { return status; }
 
-indStats Individual::getStats(void) {
+indStats Individual::getStats(void) const {
 	indStats s;
 	s.stage = stage; s.sex = sex; s.age = age; s.status = status; s.fallow = fallow;
 	s.isDeveloping = isDeveloping;
 	return s;
 }
 
-Cell* Individual::getLocn(const short option) {
+Cell* Individual::getLocn(const short option) const {
 	if (option == 0) { // return previous location
 		return pPrevCell;
 	}
@@ -511,7 +511,7 @@ Cell* Individual::getLocn(const short option) {
 	}
 }
 
-Patch* Individual::getNatalPatch(void) { return pNatalPatch; }
+Patch* Individual::getNatalPatch(void) const { return pNatalPatch; }
 
 void Individual::setYearSteps(int t) {
 	if (path != 0 && t >= 0) {
@@ -520,7 +520,7 @@ void Individual::setYearSteps(int t) {
 	}
 }
 
-pathSteps Individual::getSteps(void) {
+pathSteps Individual::getSteps(void) const {
 	pathSteps s;
 	if (path == 0) {
 		s.year = 0; s.total = 0; s.out = 0;
@@ -531,7 +531,7 @@ pathSteps Individual::getSteps(void) {
 	return s;
 }
 
-settlePatch Individual::getSettPatch(void) {
+settlePatch Individual::getSettPatch(void) const {
 	settlePatch s;
 	if (path == 0) {
 		s.pSettPatch = 0; s.settleStatus = 0;
@@ -616,7 +616,7 @@ void Individual::setEmigTraits(Species* pSpecies, short emiggenelocn, short nemi
 }
 
 // Get phenotypic emigration traits
-emigTraits Individual::getEmigTraits(void) {
+emigTraits Individual::getEmigTraits(void) const {
 	emigTraits e; e.d0 = e.alpha = e.beta = 0.0;
 	if (emigtraits != 0) {
 		e.d0 = emigtraits->d0;
@@ -693,7 +693,7 @@ void Individual::setKernTraits(Species* pSpecies, short kerngenelocn, short nker
 }
 
 // Get phenotypic emigration traits
-trfrKernTraits Individual::getKernTraits(void) {
+trfrKernTraits Individual::getKernTraits(void) const {
 	trfrKernTraits k; k.meanDist1 = k.meanDist2 = k.probKern1 = 0.0;
 	if (kerntraits != 0) {
 		k.meanDist1 = kerntraits->meanDist1;
@@ -772,7 +772,7 @@ void Individual::setSMSTraits(Species* pSpecies, short SMSgenelocn, short nSMStr
 }
 
 // Get phenotypic transfer by SMS traits
-trfrSMSTraits Individual::getSMSTraits(void) {
+trfrSMSTraits Individual::getSMSTraits(void) const {
 	trfrSMSTraits s; s.dp = s.gb = s.alphaDB = 1.0; s.betaDB = 1;
 	if (smsData != 0) {
 		s.dp = smsData->dp; s.gb = smsData->gb;
@@ -824,7 +824,7 @@ void Individual::setCRWTraits(Species* pSpecies, short CRWgenelocn, short nCRWtr
 }
 
 // Get phenotypic transfer by CRW traits
-trfrCRWTraits Individual::getCRWTraits(void) {
+trfrCRWTraits Individual::getCRWTraits(void) const {
 	trfrCRWTraits c; c.stepLength = c.rho = 0.0;
 	if (crw != 0) {
 		c.stepLength = crw->stepL;
@@ -882,7 +882,7 @@ void Individual::setSettTraits(Species* pSpecies, short settgenelocn, short nset
 }
 
 // Get phenotypic settlement traits
-settleTraits Individual::getSettTraits(void) {
+settleTraits Individual::getSettTraits(void) const {
 	settleTraits s; s.s0 = s.alpha = s.beta = 0.0;
 	if (setttraits != 0) {
 		s.s0 = setttraits->s0;
@@ -1535,7 +1535,7 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 }
 
 // Weight neighbouring cells on basis of current movement direction
-array3x3d Individual::getSimDir(const int x, const int y, const float dp)
+array3x3d Individual::getSimDir(const int x, const int y, const float dp) const
 {
 
 	array3x3d d;
@@ -1577,7 +1577,7 @@ array3x3d Individual::getSimDir(const int x, const int y, const float dp)
 
 // Weight neighbouring cells on basis of goal bias
 array3x3d Individual::getGoalBias(const int x, const int y,
-	const int goaltype, const float gb)
+	const int goaltype, const float gb) const
 {
 
 	array3x3d d;
@@ -1621,7 +1621,7 @@ array3x3d Individual::getGoalBias(const int x, const int y,
 }
 
 // Calculate weightings for neighbouring cells
-array3x3d Individual::calcWeightings(const double base, const double theta) {
+array3x3d Individual::calcWeightings(const double base, const double theta) const {
 
 	array3x3d d; // 3x3 array indexed from SW corner by xx and yy
 	int dx, dy, xx, yy;
@@ -1802,7 +1802,7 @@ array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
 //---------------------------------------------------------------------------
 // Write records to individuals file
 void Individual::outGenetics(const int rep, const int year, const int spnum,
-	const int landNr, const bool xtab)
+	const int landNr, const bool xtab) const
 {
 	if (landNr == -1) {
 		if (pGenome != 0) {
@@ -1822,7 +1822,7 @@ std::mutex outMovePaths_mutex;
 
 //---------------------------------------------------------------------------
 // Write records to movement paths file
-void Individual::outMovePath(const int year)
+void Individual::outMovePath(const int year) const
 {
 	locn loc, prev_loc;
 
