@@ -189,7 +189,7 @@ class Species {
 public:
 	Species(void);
 	~Species(void);
-	short getSpNum(void);
+	short getSpNum(void) const;
 
 	// demographic parameter functions
 
@@ -202,24 +202,24 @@ public:
 	);
 	float getHabK(
 		short		// habitat index no. (NB may differ from habitat no. supplied by user)
-	);
-	float getMaxK(void); // return highest carrying capacity over all habitats
+	) const;
+	float getMaxK(void) const; // return highest carrying capacity over all habitats
 	void deleteHabK(void); // Delete habitat carrying capacity table
 	void setStage( // Set stage structure parameters
 		const stageParams	// structure holding stage structure parameters
 	);
-	stageParams getStage(void); // Get stage structure parameters
+	stageParams getStage(void) const; // Get stage structure parameters
 	void setDemogr( // Set general demographic parameters
 		const demogrParams	// structure holding general demographic parameters
 	);
-	demogrParams getDemogr(void); // Get general demographic parameters
-	short getRepType(void);
-	bool stageStructured(void);
+	demogrParams getDemogr(void) const; // Get general demographic parameters
+	short getRepType(void) const;
+	bool stageStructured(void) const;
 	void setDensDep( // Set demographic density dependence coefficients
 		float,	// development coefficient
 		float		// survival coefficient
 	);
-	densDepParams getDensDep(void); // Get development and survival coefficients
+	densDepParams getDensDep(void) const; // Get development and survival coefficients
 
 	void setFec( // Set fecundity
 		short,	// stage (must be > 0)
@@ -229,7 +229,7 @@ public:
 	float getFec( // Get fecundity
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setDev( // Set development probability
 		short,	// stage
 		short,	// sex
@@ -238,7 +238,7 @@ public:
 	float getDev( // Get development probability
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setSurv( // Set survival probability
 		short,	// stage
 		short,	// sex
@@ -247,9 +247,9 @@ public:
 	float getSurv( // Get survival probability
 		short,	// stage
 		short		// sex
-	);
+	) const;
 
-	float getMaxFec(void); // Get highest fecundity of any stage
+	float getMaxFec(void) const; // Get highest fecundity of any stage
 	void setMinAge( // Set minimum age
 		short,	// stage
 		short,	// sex
@@ -258,7 +258,7 @@ public:
 	short getMinAge( // Get minimum age
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void createDDwtFec( // Create fecundity weights matrix
 		short		// matrix dimension - no. of stages * no. of sexes
 	);
@@ -270,7 +270,7 @@ public:
 	float getDDwtFec( // Get fecundity weights matrix element
 		short,	// row
 		short		// column
-	);
+	) const;
 	void deleteDDwtFec(void); // Delete fecundity weights matrix
 	void createDDwtDev( // Create development weights matrix
 		short		// matrix dimension - no. of stages * no. of sexes
@@ -283,7 +283,7 @@ public:
 	float getDDwtDev( // Get development weights matrix element
 		short,	// row
 		short		// column
-	);
+	) const;
 	void deleteDDwtDev(void); // Delete development weights matrix
 	void createDDwtSurv( // Create survival weights matrix
 		short		// matrix dimension - no. of stages * no. of sexes
@@ -296,7 +296,7 @@ public:
 	float getDDwtSurv( // Get survival weights matrix element
 		short,	// row
 		short		// column
-	);
+	) const;
 	void deleteDDwtSurv(void); // Delete survival weights matrix
 	// Functions to handle min/max R or K (under environmental stochasticity)
 	void setMinMax( // Set min and max values
@@ -305,49 +305,49 @@ public:
 	);
 	float getMinMax( // Get min/max value
 		short		// option: 0 = return minimum, otherwise = return maximum
-	);
+	) const;
 
 
 	// genome functions
 
 	void setGenomeData(genomeData);
-	genomeData getGenomeData(void);
-	bool isDiploid(void);
+	genomeData getGenomeData(void) const;
+	bool isDiploid(void) const;
 	void setNChromosomes( // Set no. of chromosomes
 		int // no. of chromosomes
 	);
-	int getNChromosomes(void);
+	int getNChromosomes(void) const;
 	void setNLoci(
 		const short,	// chromosome no.
 		const short		// locus no.
 	);
 	int getNLoci(
 		const short		// chromosome no.
-	);
+	) const;
 	void deleteLoci(void);
 	void set1ChromPerTrait( // Set 1:1 mapping of trait to chromosome
 		const int	// no. of loci on each chromosome
 	);
-	bool has1ChromPerTrait(void);
+	bool has1ChromPerTrait(void) const;
 	void setTraits(void); // Set trait attributes for the species
 	void setTraitNames(void);
 	void deleteTraitNames(void);
 	string getTraitName(
 		const int	// trait no.
-	);
-	int getNTraits(void);
+	) const;
+	int getNTraits(void) const;
 	void setTraitData(
 		const int	// no. of traits
 	);
 	void deleteTraitData(void);
-	int getNTraitMaps(void);
+	int getNTraitMaps(void) const;
 	void setTraitMap(
 		const short,	// trait no.
 		const short		// no. of alleles
 	);
 	int getNTraitAlleles(
 		const int		// trait no.
-	);
+	) const;
 	void setTraitAllele(
 		const short,	// trait no.
 		const short,	// trait allele no.
@@ -357,20 +357,20 @@ public:
 	traitAllele getTraitAllele(
 		const short,	// trait no.
 		const short		// trait allele no.
-	);
+	) const;
 	void setNeutralLoci(bool);
 	void deleteNeutralLoci(void);
-	int getNNeutralLoci(void);
+	int getNNeutralLoci(void) const;
 	traitAllele getNeutralAllele(
 		const short		// allele no.
-	);
+	) const;
 
 	// emigration parameter functions
 
 	void setEmig( // Set emigration rules
 		const emigRules	// structure holding emigration rules
 	);
-	emigRules getEmig(void); // Get emigration rules
+	emigRules getEmig(void) const; // Get emigration rules
 	void setEmigTraits( // Set emigration trait parameters
 		const short,			// stage
 		const short,			// sex
@@ -379,11 +379,11 @@ public:
 	emigTraits getEmigTraits( // Get emigration trait parameters
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	float getEmigD0( // Get (maximum) emigration probability
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setEmigParams( // Set emigration initialisation parameters
 		const short,			// stage (NB implemented for stage 0 only)
 		const short,			// sex
@@ -392,22 +392,22 @@ public:
 	emigParams getEmigParams( // Get emigration initialisation parameters
 		short,	// stage (NB implemented for stage 0 only)
 		short		// sex
-	);
+	) const;
 	void setEmigScales( // Set emigration mutation parameters
 		const emigScales	// structure holding emigration mutation parameters
 	);
-	emigScales getEmigScales(void); // Get emigration mutation parameters
+	emigScales getEmigScales(void) const; // Get emigration mutation parameters
 
 	// transfer parameter functions
 
 	void setTrfr( // Set transfer rules
 		const trfrRules	// structure holding transfer rules
 	);
-	trfrRules getTrfr(void); // Get transfer rules
+	trfrRules getTrfr(void) const; // Get transfer rules
 	void setFullKernel( // Set fullKernel condition
 		bool						// fullKernel value
 	);
-	bool useFullKernel(void);
+	bool useFullKernel(void) const;
 	void setKernTraits( // Set transfer by kernel parameters
 		const short,					// stage
 		const short,					// sex
@@ -417,17 +417,17 @@ public:
 	trfrKernTraits getKernTraits( // Get transfer by kernel parameters
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setMortParams( // Set transfer mortality parameters
 		const trfrMortParams	// structure holding transfer mortality parameters
 	);
-	trfrMortParams getMortParams(void); // Get transfer mortality parameters
+	trfrMortParams getMortParams(void) const; // Get transfer mortality parameters
 	void setMovtTraits( // Set transfer movement model parameters
 		const trfrMovtTraits	// structure holding transfer movement model parameters
 	);
-	trfrMovtTraits getMovtTraits(void); // Get transfer movement model traits
-	trfrCRWTraits getCRWTraits(void);		// Get CRW traits
-	trfrSMSTraits getSMSTraits(void);		// Get SMS traits
+	trfrMovtTraits getMovtTraits(void) const; // Get transfer movement model traits
+	trfrCRWTraits getCRWTraits(void) const;		// Get CRW traits
+	trfrSMSTraits getSMSTraits(void) const;		// Get SMS traits
 	void setKernParams( // Set initial transfer by kernel parameter limits
 		const short,					// stage (NB implemented for stage 0 only)
 		const short,					// sex
@@ -437,7 +437,7 @@ public:
 	trfrKernParams getKernParams( // Get initial transfer by kernel parameter limits
 		short,	// stage (NB implemented for stage 0 only)
 		short		// sex
-	);
+	) const;
 	void setSMSParams( // Set initial transfer by SMS parameter limits
 		const short,					// stage (NB implemented for stage 0 only)
 		const short,					// sex   (NB implemented for sex 0 only)
@@ -446,7 +446,7 @@ public:
 	trfrSMSParams getSMSParams( // Get initial transfer by SMS parameter limits
 		short,	// stage (NB implemented for stage 0 only)
 		short		// sex   (NB implemented for sex 0 only)
-	);
+	) const;
 	void setCRWParams( // Set initial transfer by CRW parameter limits
 		const short,					// stage (NB implemented for stage 0 only)
 		const short,					// sex   (NB implemented for sex 0 only)
@@ -455,13 +455,13 @@ public:
 	trfrCRWParams getCRWParams( // Get initial transfer by CRW parameter limits
 		short,	// stage (NB implemented for stage 0 only)
 		short		// sex   (NB implemented for sex 0 only)
-	);
+	) const;
 	void setTrfrScales( // Set transfer mutation parameters
 		const trfrScales	// structure holding transfer mutation parameters
 	);
-	trfrScales getTrfrScales(void); // Get transfer mutation parameters
+	trfrScales getTrfrScales(void) const; // Get transfer mutation parameters
 	// Return dimension of habitat-dependent step mortality and costs matrices
-	short getMovtHabDim(void);
+	short getMovtHabDim(void) const;
 	void createHabCostMort( // Create habitat-dependent costs and mortality matrices
 		short	// no. of habitats
 	);
@@ -475,10 +475,10 @@ public:
 	);
 	int getHabCost( // Get habitat-dependent cost
 		short		// habitat index no.
-	);
+	) const;
 	double getHabMort( // Get habitat-dependent per-step mortality
 		short		// habitat index no.
-	);
+	) const;
 	void deleteHabCostMort(void); // Delete habitat-dependent costs and mortality matrices
 
 	// settlement parameter functions
@@ -486,7 +486,7 @@ public:
 	void setSettle( // Set settlement type
 		const settleType	// structure holding settlement type (stage- and/or sex-dependent)
 	);
-	settleType getSettle(void); // Get settlement type
+	settleType getSettle(void) const; // Get settlement type
 	void setSettRules( // Set settlement rules
 		const short,			// stage
 		const short,			// sex
@@ -495,7 +495,7 @@ public:
 	settleRules getSettRules( // Get settlement rules
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setSteps( // Set path step limit parameters
 		const short,			// stage
 		const short,			// sex
@@ -504,7 +504,7 @@ public:
 	settleSteps getSteps( // Set path step limit parameters
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setSettTraits( // Set settlement density dependence traits
 		const short,					// stage
 		const short,					// sex
@@ -513,7 +513,7 @@ public:
 	settleTraits getSettTraits( // Get settlement density dependence traits
 		short,	// stage
 		short		// sex
-	);
+	) const;
 	void setSettParams( // Set settlement initialisation parameters
 		const short,			// stage (NB implemented for stage 0 only)
 		const short,			// sex
@@ -522,11 +522,11 @@ public:
 	settParams getSettParams( // Get settlement initialisation parameters
 		short,	// stage (NB implemented for stage 0 only)
 		short		// sex
-	);
+	) const;
 	void setSettScales( // Set settlement mutation parameters
 		const settScales	// structure holding settlement mutation parameters
 	);
-	settScales getSettScales(void); // Get settlement mutation parameters
+	settScales getSettScales(void) const; // Get settlement mutation parameters
 
 private:
 
