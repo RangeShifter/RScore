@@ -86,48 +86,48 @@ public:
 	);
 	int getHabIndex(
 		int		// landscape change number
-	);
-	int nHabitats(void);
+	) const;
+	int nHabitats(void) const;
 	void setHabitat(
 		float	// habitat proportions or cell quality score
 	);
 	float getHabitat( // Get habitat proportion / quality score
 		int		// habitat index number / landscape change number
-	);
+	) const;
 	void setPatch(
 		intptr		// pointer (cast as integer) to the Patch to which Cell belongs
 	);
-	intptr getPatch(void);
-	locn getLocn(void);
+	intptr getPatch(void) const;
+	locn getLocn(void) const;
 	void setEnvDev(
 		float	// local environmental deviation
 	);
-	float getEnvDev(void);
+	float getEnvDev(void) const;
 	void setEnvVal(
 		float	// environmental value
 	);
-	float getEnvVal(void);
+	float getEnvVal(void) const;
 	void updateEps( // Update local environmental stochasticity (epsilon)
 		float,	// autocorrelation coefficient
 		float		// random adjustment
 	);
-	float getEps(void);
+	float getEps(void) const;
 	void setCost(
 		int		// cost value for SMS
 	);
 #ifdef _OPENMP
 	std::unique_lock<std::mutex> lockCost(void);
 #endif
-	int getCost(void);
+	int getCost(void) const;
 	void resetCost(void);
-	array3x3f getEffCosts(void);
+	array3x3f getEffCosts(void) const;
 	void setEffCosts(
 		array3x3f	// 3 x 3 array of effective costs for neighbouring cells
 	);
 	void resetEffCosts(void); // Reset the effective cost, but not the cost, of the cell
 	void resetVisits(void);
 	void incrVisits(void);
-	unsigned long int getVisits(void);
+	unsigned long int getVisits(void) const;
 
 private:
 	int x,y;			// cell co-ordinates
@@ -171,9 +171,9 @@ public:
 	);
 	bool toInitialise(
 		locn	// structure holding co-ordinates of cell
-	);
-	bool selected(void);
-	locn getLocn(void);
+	) const;
+	bool selected(void) const;
+	locn getLocn(void) const;
 
 private:
 	int x,y;					// cell co-ordinates

@@ -77,13 +77,13 @@ if (ix >= 0 && ix < (short)habIxx.size() && hx >= 0) habIxx[ix] = hx;
 else habIxx[ix] = 0;
 }
 
-int Cell::getHabIndex(int ix) {
+int Cell::getHabIndex(int ix) const {
 if (ix < 0 || ix >= (int)habIxx.size())
 	// nodata cell OR should not occur, but treat as such
 	return -1;
 else return habIxx[ix];
 }
-int Cell::nHabitats(void) {
+int Cell::nHabitats(void) const {
 int nh = (int)habIxx.size();
 if ((int)habitats.size() > nh) nh = (int)habitats.size();
 return nh;
@@ -94,7 +94,7 @@ if (q >= 0.0 && q <= 100.0) habitats.push_back(q);
 else habitats.push_back(0.0);
 }
 
-float Cell::getHabitat(int ix) {
+float Cell::getHabitat(int ix) const {
 if (ix < 0 || ix >= (int)habitats.size())
 	// nodata cell OR should not occur, but treat as such
 	return -1.0;
@@ -104,28 +104,28 @@ else return habitats[ix];
 void Cell::setPatch(intptr p) {
 pPatch = p;
 }
-intptr Cell::getPatch(void)
+intptr Cell::getPatch(void) const
 {
 return pPatch;
 }
 
-locn Cell::getLocn(void) { locn q; q.x = x; q.y = y; return q; }
+locn Cell::getLocn(void) const { locn q; q.x = x; q.y = y; return q; }
 
 void Cell::setEnvDev(float d) { envDev = d; }
 
-float Cell::getEnvDev(void) { return envDev; }
+float Cell::getEnvDev(void) const { return envDev; }
 
 void Cell::setEnvVal(float e) {
 if (e >= 0.0) envVal = e;
 }
 
-float Cell::getEnvVal(void) { return envVal; }
+float Cell::getEnvVal(void) const { return envVal; }
 
 void Cell::updateEps(float ac,float randpart) {
 eps = eps*ac + randpart;
 }
 
-float Cell::getEps(void) { return eps; }
+float Cell::getEps(void) const { return eps; }
 
 // Functions to handle costs for SMS
 
@@ -135,7 +135,7 @@ return std::unique_lock<std::mutex>(cost_mutex);
 }
 #endif
 
-int Cell::getCost(void) {
+int Cell::getCost(void) const {
 int c;
 if (smsData == 0) c = 0; // costs not yet set up
 else c = smsData->cost;
@@ -156,7 +156,7 @@ if (smsData != 0) { resetEffCosts(); delete smsData; }
 smsData = 0;
 }
 
-array3x3f Cell::getEffCosts(void) {
+array3x3f Cell::getEffCosts(void) const {
 array3x3f a;
 if (smsData == 0 || smsData->effcosts == 0) { // effective costs have not been calculated
 	for (int i = 0; i < 3; i++) {
@@ -187,7 +187,7 @@ if (smsData != 0) {
 
 void Cell::resetVisits(void) { visits = 0; }
 void Cell::incrVisits(void) { visits++; }
-unsigned long int Cell::getVisits(void) { return visits; }
+unsigned long int Cell::getVisits(void) const { return visits; }
 
 //---------------------------------------------------------------------------
 
@@ -205,14 +205,14 @@ void DistCell::setCell(bool init) {
 initialise = init;
 }
 
-bool DistCell::toInitialise(locn loc) {
+bool DistCell::toInitialise(locn loc) const {
 if (loc.x == x && loc.y == y) return initialise;
 else return false;
 }
 
-bool DistCell::selected(void) { return initialise; }
+bool DistCell::selected(void) const { return initialise; }
 
-locn DistCell::getLocn(void) {
+locn DistCell::getLocn(void) const {
 locn loc; loc.x = x; loc.y = y; return loc;
 }
 
