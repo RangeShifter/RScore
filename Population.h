@@ -117,14 +117,14 @@ public:
 		int				// Landscape resolution
 	);
 	~Population(void);
-	traitsums getTraits(Species*);
-	popStats getStats(void);
-	Species* getSpecies(void);
-	int getNInds(void);
-	int totalPop(void);
+	traitsums getTraits(Species*) const;
+	popStats getStats(void) const;
+	Species* getSpecies(void) const;
+	int getNInds(void) const;
+	int totalPop(void) const;
 	int stagePop( // return no. of Individuals in a specified stage
 		int	// stage
-	);
+	) const;
 	void extirpate(void); // Remove all individuals
 	void reproduction(
 		const float,	// local carrying capacity
@@ -164,7 +164,7 @@ public:
 	bool matePresent(
 		Cell*,	// pointer to the Cell which the potential settler has reached
 		short		// sex of the required mate (0 = female, 1 = male)
-	);
+	) const;
 #else
 	int transfer( // Executed for the Population(s) in the matrix only
 		Landscape*,	// pointer to Landscape
@@ -175,7 +175,7 @@ public:
 	bool matePresent(
 		Cell*,	// pointer to the Cell which the potential settler has reached
 		short		// sex of the required mate (0 = female, 1 = male)
-	);
+	) const;
 #endif // RS_RCPP
 	// Determine survival and development and record in individual's status code
 	// Changes are NOT applied to the Population at this stage
@@ -193,7 +193,7 @@ public:
 	bool outPopHeaders( // Open population file and write header record
 		int,	// Landscape number (-999 to close the file)
 		bool	// TRUE for a patch-based model, FALSE for a cell-based model
-	);
+	) const;
 	void outPopulation( // Write record to population file
 		int,		// replicate
 		int,		// year
@@ -202,25 +202,25 @@ public:
 		bool,		// TRUE for a patch-based model, FALSE for a cell-based model
 		bool,		// TRUE to write environmental data
 		bool		// TRUE if there is a gradient in carrying capacity
-	);
+	) const;
 
 	void outIndsHeaders( // Open individuals file and write header record
 		int,	// replicate
 		int,	// Landscape number (-999 to close the file)
 		bool	// TRUE for a patch-based model, FALSE for a cell-based model
-	);
+	) const;
 	void outIndividual( // Write records to individuals file
 		Landscape*,	// pointer to Landscape
 		int,				// replicate
 		int,				// year
 		int,				// generation
 		int					// Patch number
-	);
+	) const;
 	void outGenetics( // Write records to genetics file
 		const int,		// replicate
 		const int,		// year
 		const int	 		// landscape number
-	);
+	) const;
 	void clean(void); // Remove zero pointers to dead or dispersed individuals
 
 private:

@@ -208,7 +208,7 @@ Population::~Population(void) {
 	juvs.clear();
 }
 
-traitsums Population::getTraits(Species* pSpecies) {
+traitsums Population::getTraits(Species* pSpecies) const {
 	int g;
 	traitsums ts;
 	for (int i = 0; i < NSEXES; i++) {
@@ -269,9 +269,9 @@ traitsums Population::getTraits(Species* pSpecies) {
 	return ts;
 }
 
-int Population::getNInds(void) { return (int)inds.size(); }
+int Population::getNInds(void) const { return (int)inds.size(); }
 
-popStats Population::getStats(void)
+popStats Population::getStats(void) const
 {
 	popStats p;
 	int ninds;
@@ -309,9 +309,9 @@ popStats Population::getStats(void)
 	return p;
 }
 
-Species* Population::getSpecies(void) { return pSpecies; }
+Species* Population::getSpecies(void) const { return pSpecies; }
 
-int Population::totalPop(void) {
+int Population::totalPop(void) const {
 	int t = 0;
 	for (int stg = 0; stg < nStages; stg++) {
 		for (int sex = 0; sex < nSexes; sex++) {
@@ -321,7 +321,7 @@ int Population::totalPop(void) {
 	return t;
 }
 
-int Population::stagePop(int stg) {
+int Population::stagePop(int stg) const {
 	int t = 0;
 	if (stg < 0 || stg >= nStages) return t;
 	for (int sex = 0; sex < nSexes; sex++) {
@@ -1089,7 +1089,7 @@ int Population::transfer(Landscape* pLandscape, short landIx)
 
 // Determine whether there is a potential mate present in a patch which a potential
 // settler has reached
-bool Population::matePresent(Cell* pCell, short othersex)
+bool Population::matePresent(Cell* pCell, short othersex) const
 {
 	int patch;
 	Patch* pPatch;
@@ -1324,7 +1324,7 @@ void Population::clean(void)
 
 //---------------------------------------------------------------------------
 // Open population file and write header record
-bool Population::outPopHeaders(int landNr, bool patchModel) {
+bool Population::outPopHeaders(int landNr, bool patchModel) const {
 
 	if (landNr == -999) { // close file
 		if (outPop.is_open()) outPop.close();
@@ -1382,7 +1382,7 @@ bool Population::outPopHeaders(int landNr, bool patchModel) {
 //---------------------------------------------------------------------------
 // Write record to population file
 void Population::outPopulation(int rep, int yr, int gen, float eps,
-	bool patchModel, bool writeEnv, bool gradK)
+	bool patchModel, bool writeEnv, bool gradK) const
 {
 	Cell* pCell;
 // NEED TO REPLACE CONDITIONAL COLUMNS BASED ON ATTRIBUTES OF ONE SPECIES TO COVER
@@ -1441,7 +1441,7 @@ void Population::outPopulation(int rep, int yr, int gen, float eps,
 
 //---------------------------------------------------------------------------
 // Open individuals file and write header record
-void Population::outIndsHeaders(int rep, int landNr, bool patchModel)
+void Population::outIndsHeaders(int rep, int landNr, bool patchModel) const
 {
 
 	if (landNr == -999) { // close file
@@ -1509,7 +1509,7 @@ void Population::outIndsHeaders(int rep, int landNr, bool patchModel)
 //---------------------------------------------------------------------------
 // Write records to individuals file
 void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
-	int patchNum)
+	int patchNum) const
 {
 	//int x, y, p_id;
 	bool writeInd;
@@ -1633,7 +1633,7 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 
 //---------------------------------------------------------------------------
 // Write records to genetics file
-void Population::outGenetics(const int rep, const int year, const int landNr)
+void Population::outGenetics(const int rep, const int year, const int landNr) const
 {
 
 	simParams sim = paramsSim->getSim();
