@@ -126,7 +126,7 @@ public:
 	);
 	void noGradient(void);
 	void noShifting(void);
-	envGradParams getGradient(void);
+	envGradParams getGradient(void) const;
 	void incrOptY(void);
 	void resetOptY(void);
 
@@ -163,8 +163,8 @@ public:
 	paramStoch(void);
 	~paramStoch(void);
 	void setStoch(envStochParams);
-	bool envStoch(void);
-	envStochParams getStoch(void);
+	bool envStoch(void) const;
+	envStochParams getStoch(void) const;
 
 private:
 	bool stoch;				// stochasticity applied
@@ -200,16 +200,16 @@ public:
 	paramInit(void);
 	~paramInit(void);
 	void setInit(initParams);
-	initParams getInit(void);
+	initParams getInit(void) const;
 	void setProp(
 		short,	// stage
 		float		// initial proportion
 	);
 	float getProp(
 		short		// stage
-	);
+	) const;
 	void addInitInd(initInd);
-	initInd getInitInd(int);
+	initInd getInitInd(int) const;
 	void resetInitInds(void);
 	int numInitInds(void);
 
@@ -289,15 +289,15 @@ public:
 	paramSim(void);
 	~paramSim(void);
 	void setSim(simParams);
-	simParams getSim(void);
-	int getSimNum(void);
+	simParams getSim(void) const;
+	int getSimNum(void) const;
 	void setViews(simView);
-	simView getViews(void);
+	simView getViews(void) const;
 	void setDir(string);
-	string getDir(int);
+	string getDir(int) const;
 #if RS_RCPP
-	bool getReturnPopRaster(void);
-	bool getCreatePopFile(void);
+	bool getReturnPopRaster(void) const;
+	bool getCreatePopFile(void) const;
 #endif
 
 private:

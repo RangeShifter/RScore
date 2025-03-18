@@ -64,7 +64,7 @@ void paramGrad::noGradient(void) { gradient = false; gradType = 0; }
 
 void paramGrad::noShifting(void) { shifting = false; }
 
-envGradParams paramGrad::getGradient(void) {
+envGradParams paramGrad::getGradient(void) const {
 	envGradParams g;
 	g.gradient = gradient; g.gradType = gradType; g.grad_inc = grad_inc;
 	g.opt_y = opt_y; g.factor = factor; g.extProbOpt = extProbOpt;
@@ -101,9 +101,9 @@ void paramStoch::setStoch(envStochParams e)
 	locExtProb = e.locExtProb;
 }
 
-bool paramStoch::envStoch(void) { return stoch; }
+bool paramStoch::envStoch(void) const { return stoch; }
 
-envStochParams paramStoch::getStoch(void)
+envStochParams paramStoch::getStoch(void) const
 {
 	envStochParams e;
 	e.stoch = stoch; e.local = local; e.inK = inK; e.localExt = localExt;
@@ -159,7 +159,7 @@ void paramInit::setInit(initParams i) {
 	indsFile = i.indsFile;
 }
 
-initParams paramInit::getInit(void) {
+initParams paramInit::getInit(void) const {
 	initParams i;
 	i.seedType = seedType; i.freeType = freeType; i.spDistType = spDistType;
 	i.initDens = initDens; i.initAge = initAge;
@@ -179,7 +179,7 @@ void paramInit::setProp(short stg, float p) {
 	if (stg >= 0 && stg < NSTAGES && p >= 0.0 && p <= 1.0) initProp[stg] = p;
 }
 
-float paramInit::getProp(short stg) {
+float paramInit::getProp(short stg) const {
 	float p = 0.0;
 	if (stg >= 0 && stg < NSTAGES) p = initProp[stg];
 	return p;
@@ -189,7 +189,7 @@ void paramInit::addInitInd(initInd iind) {
 	initinds.push_back(iind);
 }
 
-initInd paramInit::getInitInd(int ix) {
+initInd paramInit::getInitInd(int ix) const {
 	initInd iind;
 	if (ix >= 0 && ix < (int)initinds.size()) {
 		iind = initinds[ix];
@@ -279,7 +279,7 @@ void paramSim::setSim(simParams s) {
 #endif
 }
 
-simParams paramSim::getSim(void) {
+simParams paramSim::getSim(void) const {
 	simParams s;
 	s.batchNum = batchNum;
 	s.simulation = simulation; s.reps = reps; s.years = years;
@@ -310,7 +310,7 @@ simParams paramSim::getSim(void) {
 	return s;
 }
 
-int paramSim::getSimNum(void) { return simulation; }
+int paramSim::getSimNum(void) const { return simulation; }
 
 void paramSim::setViews(simView v) {
 	viewLand = v.viewLand; viewPatch = v.viewPatch;
@@ -320,7 +320,7 @@ void paramSim::setViews(simView v) {
 	if (v.slowFactor > 0) slowFactor = v.slowFactor;
 }
 
-simView paramSim::getViews(void) {
+simView paramSim::getViews(void) const {
 	simView v;
 	v.viewLand = viewLand; v.viewPatch = viewPatch;
 	v.viewGrad = viewGrad; v.viewCosts = viewCosts;
@@ -335,7 +335,7 @@ void paramSim::setDir(string s) {
 }
 
 // return directory name depending on option specified
-string paramSim::getDir(int option) {
+string paramSim::getDir(int option) const {
 	string s;
 	switch (option) {
 	case 0: // working directory
@@ -369,8 +369,8 @@ string paramSim::getDir(int option) {
 }
 
 #if RS_RCPP
-bool paramSim::getReturnPopRaster(void) { return ReturnPopRaster; }
-bool paramSim::getCreatePopFile(void) { return CreatePopFile; }
+bool paramSim::getReturnPopRaster(void) const { return ReturnPopRaster; }
+bool paramSim::getCreatePopFile(void) const { return CreatePopFile; }
 #endif
 
 //---------------------------------------------------------------------------
