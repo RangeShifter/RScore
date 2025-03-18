@@ -41,9 +41,9 @@ Chromosome::~Chromosome() {
 	}
 }
 
-short Chromosome::nLoci(void) { return nloci; }
+short Chromosome::nLoci(void) const { return nloci; }
 
-locus Chromosome::alleles(const int loc) { // return allele values at a specified locus
+locus Chromosome::alleles(const int loc) const { // return allele values at a specified locus
 	locus l; l.allele[0] = l.allele[1] = 0;
 	if (loc >= 0 && loc < nloci) {
 		l.allele[0] = pLoci[loc].allele[0]; l.allele[1] = pLoci[loc].allele[1];
@@ -51,7 +51,7 @@ locus Chromosome::alleles(const int loc) { // return allele values at a specifie
 	return l;
 }
 
-double Chromosome::additive(const bool diploid) {
+double Chromosome::additive(const bool diploid) const {
 	int sum = 0;
 	for (int i = 0; i < nloci; i++) {
 		sum += pLoci[i].allele[0];
@@ -60,7 +60,7 @@ double Chromosome::additive(const bool diploid) {
 	return (double)sum / INTBASE;
 }
 
-double Chromosome::meanvalue(const bool diploid) {
+double Chromosome::meanvalue(const bool diploid) const {
 	int sum = 0;
 	double mean;
 	for (int i = 0; i < nloci; i++) {
@@ -73,7 +73,7 @@ double Chromosome::meanvalue(const bool diploid) {
 	return  mean;
 }
 
-double Chromosome::additive(const short loc, const bool diploid) {
+double Chromosome::additive(const short loc, const bool diploid) const {
 	int sum = 0;
 	sum += pLoci[loc].allele[0];
 	if (diploid) sum += pLoci[loc].allele[1];
@@ -218,8 +218,8 @@ Genome::~Genome() {
 //---------------------------------------------------------------------------
 
 void Genome::setDiploid(bool dip) { diploid = dip; }
-bool Genome::isDiploid(void) { return diploid; }
-short Genome::getNChromosomes(void) { return nChromosomes; }
+bool Genome::isDiploid(void) const { return diploid; }
+short Genome::getNChromosomes(void) const { return nChromosomes; }
 
 //---------------------------------------------------------------------------
 
@@ -232,7 +232,7 @@ void Genome::inherit(const Genome* parent, const short posn, const short chr,
 
 }
 
-void Genome::outGenHeaders(const int rep, const int landNr, const bool xtab)
+void Genome::outGenHeaders(const int rep, const int landNr, const bool xtab) const
 {
 
 	if (landNr == -999) { // close file
@@ -277,7 +277,7 @@ void Genome::outGenHeaders(const int rep, const int landNr, const bool xtab)
 }
 
 void Genome::outGenetics(const int rep, const int year, const int spnum,
-	const int indID, const bool xtab)
+	const int indID, const bool xtab) const
 {
 	locus l;
 	if (xtab) {
@@ -372,7 +372,7 @@ void Genome::setNeutralLoci(Species* pSpecies, const double alleleSD)
 }
 
 // Return the expressed value of a gene when species has one chromosome per trait
-double Genome::express(short chr, short expr, short indsex)
+double Genome::express(short chr, short expr, short indsex) const
 {
 	double genevalue = 0.0;
 	genevalue = pChromosome[chr]->meanvalue(diploid);
@@ -380,7 +380,7 @@ double Genome::express(short chr, short expr, short indsex)
 }
 
 // Return the expressed value of a trait when genetic architecture is defined
-double Genome::express(Species* pSpecies, short traitnum)
+double Genome::express(const Species* pSpecies, short traitnum) const
 {
 	double genevalue = 0.0;
 
@@ -398,7 +398,7 @@ double Genome::express(Species* pSpecies, short traitnum)
 }
 
 
-locusOK Genome::getAlleles(short chr, short loc) {
+locusOK Genome::getAlleles(short chr, short loc) const {
 	locusOK l;
 	l.allele[0] = l.allele[1] = 0; l.ok = false;
 	if (chr >= 0 && chr < nChromosomes) {

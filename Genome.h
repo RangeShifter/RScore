@@ -40,20 +40,20 @@ class Chromosome {
 public:
 	Chromosome(int);
 	~Chromosome();
-	short nLoci(void);
+	short nLoci(void) const;
 	double additive( // Return trait value on normalised genetic scale
 		const bool	// diploid
-	);
+	) const;
 	double meanvalue( // Return trait value on normalised genetic scale
 		const bool	// diploid
-	);
+	) const;
 	double additive( // Return trait value on normalised genetic scale
 		const short,	// locus
 		const bool		// diploid
-	);
+	) const;
 	locus alleles(	// Return allele values at a specified locus
 		const int			// position of locus on chromosome
-	);
+	) const;
 	void initialise( // Set up chromosome at simulation initialisation
 		const double,	// normalised phenotypic trait value			
 		const double,	// s.d. of allelic variance (genetic scale)
@@ -113,19 +113,19 @@ public:
 		short,	// chromosome number
 		short,	// expression type (NOT CURRENTLY USED)
 		short		// individual's sex (NOT CURRENTLY USED)
-	);
+	) const;
 	double express(
 		// Return the expressed value of a trait when genetic architecture is defined
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		short			// trait number
-	);
+	) const;
 	locusOK getAlleles( // Get allele values at a specified locus
 		short,	// chromosome number
 		short		// locus position on chromosome
-	);
+	) const;
 	// SCFP NEW DECLARATIONS
 	void setDiploid(bool);
-	bool isDiploid(void);
+	bool isDiploid(void) const;
 	void inherit( // Inherit from specified parent
 		const Genome*,	// pointer to parent's genome
 		const short,		// position: 0 from mother, 1 from father
@@ -134,19 +134,19 @@ public:
 		const double,		// crossover probability
 		const double			// s.d. of mutation magnitude (genetic scale)
 	);
-	short getNChromosomes(void);
+	short getNChromosomes(void) const;
 	void outGenHeaders(
 		const int,	// replicate
 		const int,	// landscape number
 		const bool	// output as cross table?
-	);
+	) const;
 	void outGenetics(
 		const int,	// replicate
 		const int,	// year
 		const int,	// species number
 		const int, 	// individual ID
 		const bool 	// output as cross table?
-	);
+	) const;
 
 
 private:
