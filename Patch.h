@@ -93,13 +93,13 @@ public:
 		int		 // patch id number
 	);
 	~Patch();
-	int getSeqNum(void);
-	int getPatchNum(void);
-	int getNCells(void);
-	patchLimits getLimits(void); // Returns the minimum and maximum co-ordinates of the patch
+	int getSeqNum(void) const;
+	int getPatchNum(void) const;
+	int getNCells(void) const;
+	patchLimits getLimits(void) const; // Returns the minimum and maximum co-ordinates of the patch
 	bool withinLimits( // Does the patch fall (partially) within a specified rectangle?
 		patchLimits // structure holding the SW and NE co-ordinates of the rectangle
-	);
+	) const;
 	void resetLimits(void); // Reset minimum and maximum co-ordinates of the patch
 	void addCell(
 		Cell*,	// pointer to the Cell to be added to the Patch
@@ -107,19 +107,19 @@ public:
 	);
 	locn getCellLocn( // Return co-ordinates of a specified cell
 		int			// index no. of the Cell within the vector cells
-	);
+	) const;
 	Cell* getCell( // Return pointer to a specified cell
 		int			// index no. of the Cell within the vector cells
-	);
-	locn getCentroid(void); // Return co-ordinates of patch centroid
+	) const;
+	locn getCentroid(void) const; // Return co-ordinates of patch centroid
 	void removeCell(
 		Cell*	// pointer to the Cell to be removed from the Patch
 	);
-	Cell* getRandomCell(void);
+	Cell* getRandomCell(void) const;
 	void setSubComm(
 		intptr		// pointer to the Sub-community cast as an integer
 	);
-	intptr getSubComm(void);
+	intptr getSubComm(void) const;
 #ifdef _OPENMP
 	std::unique_lock<std::mutex> lockPopns(void);
 #endif
@@ -128,7 +128,7 @@ public:
 	);
 	intptr getPopn( // return pointer (cast as integer) to the Population of the Species
 		intptr // pointer to Species cast as integer
-	);
+	) const;
 	void resetPopn(void);
 	void resetPossSettlers(void);
 	void incrPossSettler( // Record the presence of a potential settler within the Patch
@@ -138,7 +138,7 @@ public:
 	int getPossSettlers( // Get number of a potential settlers within the Patch
 		Species*, // pointer to the Species
 		int       // sex of the settlers
-	);
+	) const;
 	void setCarryingCapacity( // Calculate total Patch carrying capacity (no. of inds)
 		Species*, 		// pointer to the Species
 		patchLimits,	// current min and max limits of landscape
@@ -148,7 +148,7 @@ public:
 		short,				// landscape change index (always zero if not dynamic)
 		bool					// TRUE if there is a gradient in carrying capacity across the Landscape
 	);
-	float getK(void);
+	float getK(void) const;
 
 	private:
 	int patchSeqNum;// sequential patch number - patch 0 is reserved for the inter-patch matrix

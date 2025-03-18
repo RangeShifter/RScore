@@ -44,20 +44,20 @@ cells.clear();
 popns.clear();
 }
 
-int Patch::getSeqNum(void) { return patchSeqNum; }
+int Patch::getSeqNum(void) const { return patchSeqNum; }
 
-int Patch::getPatchNum(void) { return patchNum; }
+int Patch::getPatchNum(void) const { return patchNum; }
 
-int Patch::getNCells(void) { return nCells; }
+int Patch::getNCells(void) const { return nCells; }
 
-patchLimits Patch::getLimits(void) {
+patchLimits Patch::getLimits(void) const {
 patchLimits p;
 p.xMin = xMin; p.xMax = xMax; p.yMin = yMin; p.yMax = yMax;
 return p;
 }
 
 // Does the patch fall (partially) within a specified rectangle?
-bool Patch::withinLimits(patchLimits rect){
+bool Patch::withinLimits(patchLimits rect) const {
 locn loc;
 if (xMin <= rect.xMax && xMax >= rect.xMin &&  yMin <= rect.yMax && yMax >= rect.yMin) {
 			// patch is within the rectangle UNLESS it is irregular in shape and lies at a corner
@@ -247,10 +247,10 @@ if (env.stoch && env.inK) { // environmental stochasticity in K
 }
 
 
-float Patch::getK(void) { return localK; }
+float Patch::getK(void) const { return localK; }
 
 // Return co-ordinates of a specified cell
-locn Patch::getCellLocn(int ix) {
+locn Patch::getCellLocn(int ix) const {
 locn loc; loc.x = -666; loc.y = -666;
 int ncells = (int)cells.size();
 if (ix >= 0 && ix < ncells) {
@@ -259,20 +259,20 @@ if (ix >= 0 && ix < ncells) {
 return loc;
 }
 // Return pointer to a specified cell
-Cell* Patch::getCell(int ix) {			
+Cell* Patch::getCell(int ix) const {
 int ncells = (int)cells.size();
 if (ix >= 0 && ix < ncells) return cells[ix];
 else return 0;
 }
 // Return co-ordinates of patch centroid
-locn Patch::getCentroid(void) {
+locn Patch::getCentroid(void) const {
 locn loc; loc.x = x; loc.y = y;
 return loc;
 }
 
 // Select a Cell within the Patch at random, and return pointer to it
 // For a cell-based model, this will be the only Cell
-Cell* Patch::getRandomCell(void) {
+Cell* Patch::getRandomCell(void) const {
 Cell *pCell = 0;
 int ix;
 int ncells = (int)cells.size();
@@ -300,7 +300,7 @@ void Patch::setSubComm(intptr sc)
 { subCommPtr = sc; }
 
 // Get pointer to corresponding Sub-community (cast as an integer)
-intptr Patch::getSubComm(void)
+intptr Patch::getSubComm(void) const
 { return subCommPtr; }
 
 #ifdef _OPENMP
@@ -314,7 +314,7 @@ popns.push_back(pop);
 }
 
 // Return pointer (cast as integer) to the Population of the specified Species
-intptr Patch::getPopn(intptr sp)
+intptr Patch::getPopn(intptr sp) const
 {
 int npops = (int)popns.size();
 for (int i = 0; i < npops; i++) {
@@ -346,7 +346,7 @@ if (sex >= 0 && sex < NSEXES) {
 }
 
 // Get number of a potential settlers within the Patch
-int Patch::getPossSettlers(Species *pSpecies,int sex) {
+int Patch::getPossSettlers(Species *pSpecies,int sex) const {
 #if RSDEBUG
 //DEBUGLOG << "Patch::getPossSettlers(): 5555: patchNum = " << patchNum
 //	<< " sex = " << sex << endl;
