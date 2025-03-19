@@ -48,11 +48,11 @@ SubCommunity::~SubCommunity() {
 	if (occupancy != 0) delete[] occupancy;
 }
 
-intptr SubCommunity::getNum(void) { return subCommNum; }
+intptr SubCommunity::getNum(void) const { return subCommNum; }
 
-Patch* SubCommunity::getPatch(void) { return pPatch; }
+Patch* SubCommunity::getPatch(void) const { return pPatch; }
 
-locn SubCommunity::getLocn(void) {
+locn SubCommunity::getLocn(void) const {
 	locn loc = pPatch->getCellLocn(0);
 	return loc;
 }
@@ -158,7 +158,7 @@ Population* SubCommunity::newPopn(Landscape* pLandscape, Species* pSpecies,
 	return popns[npopns];
 }
 
-popStats SubCommunity::getPopStats(void) {
+popStats SubCommunity::getPopStats(void) const {
 	popStats p, pop;
 	p.pSpecies = 0; p.spNum = 0; p.nInds = p.nAdults = p.nNonJuvs = 0; p.breeding = false;
 	p.pPatch = pPatch;
@@ -451,7 +451,7 @@ void SubCommunity::ageIncrement(void) {
 }
 
 // Find the population of a given species in a given patch
-Population* SubCommunity::findPop(Species* pSp, Patch* pPch) {
+Population* SubCommunity::findPop(Species* pSp, Patch* pPch) const {
 #if RSDEBUG
 	DEBUGLOG << "SubCommunity::findPop(): this=" << this
 		<< endl;
@@ -494,7 +494,7 @@ void SubCommunity::updateOccupancy(int row) {
 	}
 }
 
-int SubCommunity::getOccupancy(int row) {
+int SubCommunity::getOccupancy(int row) const {
 	if (row >= 0) return occupancy[row];
 	else return 0;
 }
@@ -506,7 +506,7 @@ void SubCommunity::deleteOccupancy(void) {
 
 //---------------------------------------------------------------------------
 // Open population file and write header record
-bool SubCommunity::outPopHeaders(Landscape* pLandscape, Species* pSpecies, int option)
+bool SubCommunity::outPopHeaders(Landscape* pLandscape, Species* pSpecies, int option) const
 {
 	bool fileOK;
 	Population* pPop;
@@ -530,7 +530,7 @@ bool SubCommunity::outPopHeaders(Landscape* pLandscape, Species* pSpecies, int o
 }
 
 // Write records to population file
-void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen)
+void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen) const
 {
 	landParams land = pLandscape->getLandParams();
 	envGradParams grad = paramsGrad->getGradient();
@@ -577,7 +577,7 @@ void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen)
 }
 
 // Write records to individuals file
-void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int landNr) {
+void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int landNr) const {
 	landParams ppLand = pLandscape->getLandParams();
 	if (landNr >= 0) { // open the file
 		popns[0]->outIndsHeaders(rep, landNr, ppLand.patchModel);
@@ -595,7 +595,7 @@ void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int 
 }
 
 // Write records to individuals file
-void SubCommunity::outGenetics(int rep, int yr, int gen, int landNr)
+void SubCommunity::outGenetics(int rep, int yr, int gen, int landNr) const
 {
 	if (landNr >= 0) { // open the file
 		popns[0]->outGenetics(rep, yr, landNr);
@@ -613,7 +613,7 @@ void SubCommunity::outGenetics(int rep, int yr, int gen, int landNr)
 }
 
 // Population size of a specified stage
-int SubCommunity::stagePop(int stage) {
+int SubCommunity::stagePop(int stage) const {
 	int popsize = 0;
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
@@ -623,7 +623,7 @@ int SubCommunity::stagePop(int stage) {
 }
 
 // Open traits file and write header record
-bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, int landNr)
+bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, int landNr) const
 {
 	landParams land = pLandscape->getLandParams();
 	if (landNr == -999) { // close file
@@ -732,7 +732,7 @@ bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, in
 }
 
 // Write records to traits file and return aggregated sums
-traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int gen, bool commlevel)
+traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int gen, bool commlevel) const
 {
 	int popsize, ngenes;
 	landParams land = pLandscape->getLandParams();

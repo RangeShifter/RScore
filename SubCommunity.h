@@ -62,12 +62,12 @@ class SubCommunity {
 public:
 	SubCommunity(Patch*,int);
 	~SubCommunity(void);
-	intptr getNum(void);
-	Patch* getPatch(void);
-	locn getLocn(void);
+	intptr getNum(void) const;
+	Patch* getPatch(void) const;
+	locn getLocn(void) const;
 
 	// functions to manage populations occurring in the SubCommunity
-	popStats getPopStats(void);
+	popStats getPopStats(void) const;
 	void setInitial(bool);
 	void initialise(Landscape*,Species*);
 	void initialInd(Landscape*,Species*,Patch*,Cell*,int);
@@ -134,7 +134,7 @@ public:
 	);
 	void ageIncrement(void);
 	// Find the population of a given species in a given patch
-	Population* findPop(Species*,Patch*);
+	Population* findPop(Species*,Patch*) const;
 	void createOccupancy(
 		int	// no. of rows = (no. of years / interval) + 1
 	);
@@ -143,20 +143,20 @@ public:
 	);
 	int getOccupancy(
 		int	// row = (no. of years / interval)
-	);
+	) const;
 	void deleteOccupancy(void);
 
 	bool outPopHeaders( // Open population file and write header record
 		Landscape*,	// pointer to Landscape
 		Species*,		// pointer to Species
 		int					// option: -999 to close the file
-	);
+	) const;
 	void outPop( // Write records to population file
 		Landscape*,	// pointer to Landscape
 		int,				// replicate
 		int,				// year
 		int					// generation
-	);
+	) const;
 
 	void outInds( // Write records to individuals file
 		Landscape*,	// pointer to Landscape
@@ -165,29 +165,29 @@ public:
 		int,				// generation
 		int					// Landscape number (>= 0 to open the file, -999 to close the file
 								//									 -1 to write data records)
-	);
+	) const;
 	void outGenetics( // Write records to genetics file
 		int,				// replicate
 		int,				// year
 		int,				// generation
 		int					// Landscape number (>= 0 to open the file, -999 to close the file
 								//									 -1 to write data records)
-	);
+	) const;
 	bool outTraitsHeaders( // Open traits file and write header record
 		Landscape*,	// pointer to Landscape
 		Species*,		// pointer to Species
 		int					// Landscape number (-999 to close the file)
-	);
+	) const;
 	traitsums outTraits( // Write records to traits file and return aggregated sums
 		Landscape*, 	// pointer to Landscape
 		int,					// replicate
 		int,					// year
 		int,					// generation
 		bool					// true if called to summarise data at community level
-	);
+	) const;
 	int stagePop( // Population size of a specified stage
 		int	// stage
-	);
+	) const;
 
 private:
 	intptr subCommNum;	// SubCommunity number
