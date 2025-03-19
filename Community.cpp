@@ -52,7 +52,7 @@ SubCommunity* Community::addSubComm(Patch* pPch, int num) {
 	return subComms[nsubcomms];
 }
 
-void Community::initialise(Species* pSpecies, int year)
+void Community::initialise(const Species* pSpecies, int year)
 {
 
 	int nsubcomms, npatches, ndistcells, spratio, patchnum, rr = 0;
@@ -471,12 +471,12 @@ void Community::dispersal(short landIx)
 	SubCommunity* matrix = subComms[0]; // matrix community is always the first
 	#pragma omp parallel
 	{
-	std::map<Species *,vector<Individual*>> inds_map;
+	std::map<const Species *,vector<Individual*>> inds_map;
 	#pragma omp for schedule(static,128) nowait
 	for (int i = 0; i < nsubcomms; i++) { // all populations
 		subComms[i]->initiateDispersal(inds_map);
 	}
-	for (std::pair<Species* const,std::vector<Individual*>> &item : inds_map) {
+	for (std::pair<const Species* const,std::vector<Individual*>> &item : inds_map) {
 		// add to matrix population
 		matrix->recruitMany(item.second, item.first);
 	}
@@ -540,7 +540,7 @@ int Community::totalInds(void) const {
 }
 
 // Find the population of a given species in a given patch
-Population* Community::findPop(Species* pSp, Patch* pPch) const {
+Population* Community::findPop(const Species* pSp, Patch* pPch) const {
 	Population* pPop = 0;
 	int nsubcomms = (int)subComms.size();
 	for (int i = 0; i < nsubcomms; i++) { // all communities (including in matrix)
@@ -631,7 +631,7 @@ commStats Community::getStats(void) const
 // Functions to control production of output files
 
 // Open population file and write header record
-bool Community::outPopHeaders(Species* pSpecies, int option) const {
+bool Community::outPopHeaders(const Species* pSpecies, int option) const {
 	return subComms[0]->outPopHeaders(pLandscape, pSpecies, option);
 }
 
@@ -684,7 +684,7 @@ void Community::outGenetics(int rep, int yr, int gen, int landNr) const {
 }
 
 // Open range file and write header record
-bool Community::outRangeHeaders(Species* pSpecies, int landNr) const
+bool Community::outRangeHeaders(const Species* pSpecies, int landNr) const
 {
 
 	if (landNr == -999) { // close the file
@@ -810,7 +810,7 @@ bool Community::outRangeHeaders(Species* pSpecies, int landNr) const
 }
 
 // Write record to range file
-void Community::outRange(Species* pSpecies, int rep, int yr, int gen) const
+void Community::outRange(const Species* pSpecies, int rep, int yr, int gen) const
 {
 #if RSDEBUG
 	DEBUGLOG << "Community::outRange(): rep=" << rep
@@ -1212,7 +1212,7 @@ void Community::outOccSuit(bool view) const {
 }
 
 // Open traits file and write header record
-bool Community::outTraitsHeaders(Species* pSpecies, int landNr) const {
+bool Community::outTraitsHeaders(const Species* pSpecies, int landNr) const {
 	return subComms[0]->outTraitsHeaders(pLandscape, pSpecies, landNr);
 }
 
@@ -1222,7 +1222,7 @@ only, this function relies on the fact that subcommunities are created in the sa
 sequence as patches, which is in asecending order of x nested within descending
 order of y
 */
-void Community::outTraits(Species* pSpecies, int rep, int yr, int gen) const
+void Community::outTraits(const Species* pSpecies, int rep, int yr, int gen) const
 {
 	simParams sim = paramsSim->getSim();
 	simView v = paramsSim->getViews();
@@ -1290,7 +1290,7 @@ void Community::outTraits(Species* pSpecies, int rep, int yr, int gen) const
 }
 
 // Write records to trait rows file
-void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int y,
+void Community::writeTraitsRows(const Species* pSpecies, int rep, int yr, int gen, int y,
 	traitsums ts) const
 {
 	emigRules emig = pSpecies->getEmig();
@@ -1439,7 +1439,7 @@ void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int
 }
 
 // Open trait rows file and write header record
-bool Community::outTraitsRowsHeaders(Species* pSpecies, int landNr) const {
+bool Community::outTraitsRowsHeaders(const Species* pSpecies, int landNr) const {
 
 	if (landNr == -999) { // close file
 		if (outtraitsrows.is_open()) outtraitsrows.close();

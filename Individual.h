@@ -135,7 +135,7 @@ public:
 	static int indCounter; // used to create ID, held by class, not members of class
 #endif
 	Individual( // Individual constructor
-		Species*, // pointer to species
+		const Species*, // pointer to species
 		Cell*,	// pointer to Cell
 		Patch*,	// pointer to patch
 		short,	// stage
@@ -147,17 +147,17 @@ public:
 	);
 	~Individual(void);
 	void setGenes( // Set genes for individual variation from species initialisation parameters
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		int						// Landscape resolution
 	);
 	void setGenes( // Inherit genome from parents
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		Individual*,	// pointer to mother
 		Individual*,	// pointer to father (must be 0 for an asexual Species)
 		int						// Landscape resolution
 	);
 	void setEmigTraits( // Set phenotypic emigration traits
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		short,		// location of emigration genes on genome
 		short,		// number of emigration genes
 		bool			// TRUE if emigration is sex-dependent
@@ -165,7 +165,7 @@ public:
 	emigTraits getEmigTraits(void) const; // Get phenotypic emigration traits
 
 	void setKernTraits( // Set phenotypic transfer by kernel traits
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		short,		// location of kernel genes on genome
 		short,		// number of kernel genes
 		int,			// Landscape resolution
@@ -174,14 +174,14 @@ public:
 	trfrKernTraits getKernTraits(void) const; // Get phenotypic transfer by kernel traits
 
 	void setSMSTraits( // Set phenotypic transfer by SMS traits
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		short,		// location of SMS genes on genome
 		short,		// number of SMS genes
 		bool			// TRUE if transfer is sex-dependent
 	);
 	trfrSMSTraits getSMSTraits(void) const; // Get phenotypic transfer by SMS traits
 	void setCRWTraits( // Set phenotypic transfer by CRW traits
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		short,		// location of CRW genes on genome
 		short,		// number of CRW genes
 		bool			// TRUE if transfer is sex-dependent
@@ -189,7 +189,7 @@ public:
 	trfrCRWTraits getCRWTraits(void) const; // Get phenotypic transfer by CRW traits
 
 	void setSettTraits( // Set phenotypic settlement traits
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		short,		// location of settlement genes on genome
 		short,		// number of settlement genes
 		bool			// TRUE if settlement is sex-dependent
@@ -227,7 +227,7 @@ public:
 	// Returns 1 if still dispersing (including having found a potential patch), otherwise 0
 	int moveKernel(
 		Landscape*,		// pointer to Landscape
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		const short,	// reproduction type (see Species)
 		const bool    // absorbing boundaries?
 	);
@@ -235,13 +235,13 @@ public:
 	// Returns 1 if still dispersing (including having found a potential patch), otherwise 0
 	int moveStep(
 		Landscape*,		// pointer to Landscape
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		const short,	// landscape change index
 		const bool    // absorbing boundaries?
 	);
 	movedata smsMove( // Move to a neighbouring cell according to the SMS algorithm
 		Landscape*,		// pointer to Landscape
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		const short,	// landscape change index
 		const bool,		// TRUE if still in (or returned to) natal patch
 		const bool,   // individual variability?
@@ -264,7 +264,7 @@ public:
 	) const;
 	array3x3f getHabMatrix( // Weight neighbouring cells on basis of (habitat) costs
 		Landscape*,		// pointer to Landscape
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		const int,		// current x co-ordinate
 		const int,		// current y co-ordinate
 		const short,	// perceptual range (cells)

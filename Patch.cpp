@@ -123,7 +123,7 @@ void Patch::addCell(Cell* pCell,int x,int y) {
 
 // Calculate the total carrying capacity (no. of individuals) and
 // centroid co-ordinates of the patch
-void Patch::setCarryingCapacity(Species *pSpecies,patchLimits landlimits,
+void Patch::setCarryingCapacity(const Species *pSpecies,patchLimits landlimits,
 	float epsGlobal,short nHab,short rasterType,short landIx,bool gradK) {
 envStochParams env = paramsStoch->getStoch();
 //Cell *pCell;
@@ -334,7 +334,7 @@ for (int sex = 0; sex < NSEXES; sex++) {
 }
 
 // Record the presence of a potential settler within the Patch
-void Patch::incrPossSettler(Species *pSpecies,int sex) {
+void Patch::incrPossSettler(const Species *pSpecies,int sex) {
 #if RSDEBUG
 //DEBUGLOG << "Patch::incrPossSettler(): 5555: patchNum = " << patchNum
 //	<< " sex = " << sex << endl;
@@ -346,7 +346,7 @@ if (sex >= 0 && sex < NSEXES) {
 }
 
 // Get number of a potential settlers within the Patch
-int Patch::getPossSettlers(Species *pSpecies,int sex) const {
+int Patch::getPossSettlers(const Species *pSpecies,int sex) const {
 #if RSDEBUG
 //DEBUGLOG << "Patch::getPossSettlers(): 5555: patchNum = " << patchNum
 //	<< " sex = " << sex << endl;

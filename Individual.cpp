@@ -107,7 +107,7 @@ int Individual::indCounter = 0;
 //---------------------------------------------------------------------------
 
 // Individual constructor
-Individual::Individual(Species* pSpecies, Cell* pCell, Patch* pPatch, short stg, short a, short repInt,
+Individual::Individual(const Species* pSpecies, Cell* pCell, Patch* pPatch, short stg, short a, short repInt,
 	float probmale, bool movt, short moveType):
 	memory(pSpecies->getSMSTraits().memSize)
 {
@@ -181,7 +181,7 @@ Individual::~Individual(void) {
 //---------------------------------------------------------------------------
 
 // Set genes for individual variation from species initialisation parameters
-void Individual::setGenes(Species* pSpecies, int resol) {
+void Individual::setGenes(const Species* pSpecies, int resol) {
 	demogrParams dem = pSpecies->getDemogr();
 	emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();
@@ -398,7 +398,7 @@ void Individual::setGenes(Species* pSpecies, int resol) {
 }
 
 // Inherit genome from parent(s)
-void Individual::setGenes(Species* pSpecies, Individual* mother, Individual* father,
+void Individual::setGenes(const Species* pSpecies, Individual* mother, Individual* father,
 	int resol)
 {
 	emigRules emig = pSpecies->getEmig();
@@ -555,7 +555,7 @@ void Individual::setSettPatch(const settlePatch s) {
 }
 
 // Set phenotypic emigration traits
-void Individual::setEmigTraits(Species* pSpecies, short emiggenelocn, short nemigtraits,
+void Individual::setEmigTraits(const Species* pSpecies, short emiggenelocn, short nemigtraits,
 	bool sexdep) {
 	emigTraits e; e.d0 = e.alpha = e.beta = 0.0;
 	if (pGenome != 0) {
@@ -627,7 +627,7 @@ emigTraits Individual::getEmigTraits(void) const {
 }
 
 // Set phenotypic transfer by kernel traits
-void Individual::setKernTraits(Species* pSpecies, short kerngenelocn, short nkerntraits,
+void Individual::setKernTraits(const Species* pSpecies, short kerngenelocn, short nkerntraits,
 	int resol, bool sexdep) {
 	trfrKernTraits k; k.meanDist1 = k.meanDist2 = k.probKern1 = 0.0;
 	if (pGenome != 0) {
@@ -704,7 +704,7 @@ trfrKernTraits Individual::getKernTraits(void) const {
 }
 
 // Set phenotypic transfer by SMS traits
-void Individual::setSMSTraits(Species* pSpecies, short SMSgenelocn, short nSMStraits,
+void Individual::setSMSTraits(const Species* pSpecies, short SMSgenelocn, short nSMStraits,
 	bool sexdep) {
 	trfrSMSTraits s = pSpecies->getSMSTraits();
 	double dp, gb, alphaDB, betaDB;
@@ -782,7 +782,7 @@ trfrSMSTraits Individual::getSMSTraits(void) const {
 }
 
 // Set phenotypic transfer by CRW traits
-void Individual::setCRWTraits(Species* pSpecies, short CRWgenelocn, short nCRWtraits,
+void Individual::setCRWTraits(const Species* pSpecies, short CRWgenelocn, short nCRWtraits,
 	bool sexdep) {
 	trfrCRWTraits c; c.stepLength = c.rho = 0.0;
 	if (pGenome != 0) {
@@ -834,7 +834,7 @@ trfrCRWTraits Individual::getCRWTraits(void) const {
 }
 
 // Set phenotypic settlement traits
-void Individual::setSettTraits(Species* pSpecies, short settgenelocn, short nsetttraits,
+void Individual::setSettTraits(const Species* pSpecies, short settgenelocn, short nsetttraits,
 	bool sexdep) {
 	settleTraits s; s.s0 = s.alpha = s.beta = 0.0;
 	if (pGenome != 0) {
@@ -941,7 +941,7 @@ void Individual::moveto(Cell* newCell) {
 // Move to a new cell by sampling a dispersal distance from a single or double
 // negative exponential kernel
 // Returns 1 if still dispersing (including having found a potential patch), otherwise 0
-int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
+int Individual::moveKernel(Landscape* pLandscape, const Species* pSpecies,
 	const short repType, const bool absorbing)
 {
 
@@ -1138,7 +1138,7 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies,
 //---------------------------------------------------------------------------
 // Make a single movement step according to a mechanistic movement model
 // Returns 1 if still dispersing (including having found a potential patch), otherwise 0
-int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
+int Individual::moveStep(Landscape* pLandscape, const Species* pSpecies,
 	const short landIx, const bool absorbing)
 {
 
@@ -1335,7 +1335,7 @@ int Individual::moveStep(Landscape* pLandscape, Species* pSpecies,
 // Functions to implement the SMS algorithm
 
 // Move to a neighbouring cell according to the SMS algorithm
-movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
+movedata Individual::smsMove(Landscape* pLand, const Species* pSpecies,
 	const short landIx, const bool natalPatch, const bool indvar, const bool absorbing)
 {
 
@@ -1670,7 +1670,7 @@ array3x3d Individual::calcWeightings(const double base, const double theta) cons
 }
 
 // Weight neighbouring cells on basis of (habitat) costs
-array3x3f Individual::getHabMatrix(Landscape* pLand, Species* pSpecies,
+array3x3f Individual::getHabMatrix(Landscape* pLand, const Species* pSpecies,
 	const int x, const int y, const short pr, const short prmethod, const short landIx,
 	const bool absorbing)
 {
@@ -1906,7 +1906,7 @@ double cauchy(double location, double scale) {
 
 void testIndividual() {
 
-	Species* pSpecies = new Species();
+	const Species* pSpecies = new Species();
 
 	Patch* pPatch = new Patch(0, 0);
 	int cell_x = 2;

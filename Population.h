@@ -67,7 +67,7 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 struct popStats {
-	Species *pSpecies; Patch *pPatch; int spNum,nInds,nNonJuvs,nAdults; bool breeding;
+	const Species *pSpecies; Patch *pPatch; int spNum,nInds,nNonJuvs,nAdults; bool breeding;
 };
 struct disperser {
 	Individual *pInd; Cell *pCell; bool yes;
@@ -111,15 +111,15 @@ class Population {
 public:
 	Population(void); // default constructor
 	Population( // constructor for a Population of a specified size
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		Patch*,		// pointer to Patch
 		int,			// no. of Individuals
 		int				// Landscape resolution
 	);
 	~Population(void);
-	traitsums getTraits(Species*) const;
+	traitsums getTraits(const Species*) const;
 	popStats getStats(void) const;
-	Species* getSpecies(void) const;
+	const Species* getSpecies(void) const;
 	int getNInds(void) const;
 	int totalPop(void) const;
 	int stagePop( // return no. of Individuals in a specified stage
@@ -226,7 +226,7 @@ public:
 private:
 	short nStages;
 	short nSexes;
-	Species *pSpecies;	// pointer to the species
+	const Species *pSpecies;	// pointer to the species
 	Patch *pPatch;			// pointer to the patch
 #ifdef _OPENMP
 	std::atomic<int> nInds[NSTAGES][NSEXES];		// no. of individuals in each stage/sex

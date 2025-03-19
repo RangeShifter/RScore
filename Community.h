@@ -73,7 +73,7 @@ public:
 	SubCommunity* addSubComm(Patch*,int);
 	// functions to manage populations occurring in the community
 	void initialise(
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		int				// year (relevent only for seedType == 2)
 	);
 	void addManuallySelected(void);
@@ -107,7 +107,7 @@ public:
 	void ageIncrement(void);
 	int totalInds(void) const;
 	Population* findPop( // Find the population of a given species in a given patch
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		Patch*		// pointer to Patch
 	) const;
 	commStats getStats(void) const;
@@ -124,17 +124,17 @@ public:
 	);
 
 	bool outRangeHeaders( // Open range file and write header record
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		int				// Landscape number (-999 to close the file)
 	) const;
 	void outRange( // Write record to range file
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		int,			// replicate
 		int,			// year
 		int				// generation
 	) const;
 	bool outPopHeaders( // Open population file and write header record
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		int       // option: -999 to close the file
 	) const;
 	void outPop( // Write records to population file
@@ -166,21 +166,21 @@ public:
 		bool	// TRUE if occupancy graph is to be viewed on screen
 	) const;
 	bool outTraitsHeaders( // Open traits file and write header record
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		int				// Landscape number (-999 to close the file)
 	) const;
 	bool outTraitsRowsHeaders( // Open trait rows file and write header record
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		int       // Landscape number (-999 to close the file)
 	) const;
 	void outTraits( // Write records to traits file
-		Species*,		// pointer to Species
+		const Species*,		// pointer to Species
 		int,				// replicate
 		int,				// year
 		int					// generation
 	) const;
 	void writeTraitsRows( // Write records to trait rows file
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		int,			// replicate
 		int,			// year
 		int,			// generation

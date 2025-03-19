@@ -69,11 +69,11 @@ public:
 	// functions to manage populations occurring in the SubCommunity
 	popStats getPopStats(void) const;
 	void setInitial(bool);
-	void initialise(Landscape*,Species*);
-	void initialInd(Landscape*,Species*,Patch*,Cell*,int);
+	void initialise(Landscape*,const Species*);
+	void initialInd(Landscape*,const Species*,Patch*,Cell*,int);
 	Population* newPopn( // Create a new population, and return its address
 		Landscape*,	// pointer to Landscape
-		Species*,		// pointer to Species
+		const Species*,		// pointer to Species
 		Patch*,			// pointer to Patch
 		int					// no. of Individuals
 	);
@@ -93,17 +93,17 @@ public:
 	void emigration(void);
 	// Remove emigrants from their natal patch and add to a map of vectors
 	void initiateDispersal(
-		std::map<Species*,std::vector<Individual*>>&
+		std::map<const Species*,std::vector<Individual*>>&
 	);
 // Add an individual into the local population of its species in the patch
 	void recruit(
 		Individual*,	// pointer to Individual
-		Species*			// pointer to Species
+		const Species*			// pointer to Species
 	);
 // Add individuals into the local population of their species in the patch
 	void recruitMany(
 		std::vector<Individual*>&,	// vector of pointers to Individuals
-		Species*			// pointer to Species
+		const Species*			// pointer to Species
 	);
 #if RS_RCPP
 	int transfer( // Transfer through matrix - run for matrix SubCommunity only
@@ -134,7 +134,7 @@ public:
 	);
 	void ageIncrement(void);
 	// Find the population of a given species in a given patch
-	Population* findPop(Species*,Patch*) const;
+	Population* findPop(const Species*,Patch*) const;
 	void createOccupancy(
 		int	// no. of rows = (no. of years / interval) + 1
 	);
@@ -148,7 +148,7 @@ public:
 
 	bool outPopHeaders( // Open population file and write header record
 		Landscape*,	// pointer to Landscape
-		Species*,		// pointer to Species
+		const Species*,		// pointer to Species
 		int					// option: -999 to close the file
 	) const;
 	void outPop( // Write records to population file
@@ -175,7 +175,7 @@ public:
 	) const;
 	bool outTraitsHeaders( // Open traits file and write header record
 		Landscape*,	// pointer to Landscape
-		Species*,		// pointer to Species
+		const Species*,		// pointer to Species
 		int					// Landscape number (-999 to close the file)
 	) const;
 	traitsums outTraits( // Write records to traits file and return aggregated sums

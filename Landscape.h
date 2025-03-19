@@ -96,7 +96,7 @@ using namespace std;
 
 class InitDist{
 public:
-	InitDist(Species*);
+	InitDist(const Species*);
 	~InitDist();
 	int readDistribution(
 		string // name of species distribution file
@@ -128,7 +128,7 @@ public:
 	void resetDistribution(void);
 
 private:
-	Species *pSpecies;		// pointer to species
+	const Species *pSpecies;		// pointer to species
 	int resol;						// species distribution cell size (m)
 	int maxX, maxY;				// dimensions
 	double minEast;				// ) real world min co-ordinates
@@ -231,7 +231,7 @@ public:
 	void setCellArray(void);
 	void addPatchNum(int);
 	void generatePatches(void); 		// create an artificial landscape
-	void allocatePatches(Species*);	// create patches for a cell-based landscape
+	void allocatePatches(const Species*);	// create patches for a cell-based landscape
 	Patch* newPatch(
 		int		// patch sequential no. (id no. is set to equal sequential no.)
 	);
@@ -288,7 +288,7 @@ public:
 	int checkTotalCover(void);
 	void resetPatchPopns(void);
 	void updateCarryingCapacity(
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		int,			// year
 		short			// landscape change index (always zero if not dynamic)
 	);
@@ -299,7 +299,7 @@ public:
 	int patchCount(void) const;
 	void updateHabitatIndices(void);
 	void setEnvGradient(
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		bool      // TRUE for initial instance that gradient is set
 	);
 	void setGlobalStoch(
@@ -358,19 +358,19 @@ public:
 	// functions to handle species distributions
 
 	int newDistribution(
-		Species*,	// pointer to Species
+		const Species*,	// pointer to Species
 		string		// name of initial distribution file
 	);
 	void setDistribution(
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		int				// no. of distribution squares to initialise
 	);
 	bool inInitialDist( // Specified cell matches one of the distn cells to be initialised?
-		Species*, // pointer to Species
+		const Species*, // pointer to Species
 		locn			// structure holding co-ordinates of Cell
 	) const;
 	void deleteDistribution(
-		Species*  // pointer to Species
+		const Species*  // pointer to Species
 	);
 	int distnCount(void) const;	// Return no. of initial distributions in the Landscape
 	int distCellCount(    // Return no. of distribution cells in an initial distribution
@@ -399,7 +399,7 @@ public:
 		bool  // value to be set
 	);
 	void resetDistribution(
-		Species*	// pointer to Species
+		const Species*	// pointer to Species
 	);
 
 	// functions to handle initialisation cells

@@ -39,7 +39,7 @@ Population::Population(void) {
 	return;
 }
 
-Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
+Population::Population(const Species* pSp, Patch* pPch, int ninds, int resol)
 {
 	// constructor for a Population of a specified size
 
@@ -208,7 +208,7 @@ Population::~Population(void) {
 	juvs.clear();
 }
 
-traitsums Population::getTraits(Species* pSpecies) const {
+traitsums Population::getTraits(const Species* pSpecies) const {
 	int g;
 	traitsums ts;
 	for (int i = 0; i < NSEXES; i++) {
@@ -309,7 +309,7 @@ popStats Population::getStats(void) const
 	return p;
 }
 
-Species* Population::getSpecies(void) const { return pSpecies; }
+const Species* Population::getSpecies(void) const { return pSpecies; }
 
 int Population::totalPop(void) const {
 	int t = 0;

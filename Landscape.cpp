@@ -37,7 +37,7 @@ ofstream outMovePaths;
 
 // Initial species distribution functions
 
-InitDist::InitDist(Species* pSp)
+InitDist::InitDist(const Species* pSp)
 {
 	pSpecies = pSp;
 	resol = 0;
@@ -638,7 +638,7 @@ void Landscape::generatePatches(void)
 //---------------------------------------------------------------------------
 /* Create a patch for each suitable cell of a cell-based landscape (all other
 habitat cells are added to the matrix patch) */
-void Landscape::allocatePatches(Species* pSpecies)
+void Landscape::allocatePatches(const Species* pSpecies)
 {
 	float habK;
 	Patch* pPatch;
@@ -852,7 +852,7 @@ void Landscape::resetPatchPopns(void) {
 	}
 }
 
-void Landscape::updateCarryingCapacity(Species* pSpecies, int yr, short landIx) {
+void Landscape::updateCarryingCapacity(const Species* pSpecies, int yr, short landIx) {
 	envGradParams grad = paramsGrad->getGradient();
 	bool gradK = false;
 	if (grad.gradient && grad.gradType == 1) gradK = true; // gradient in carrying capacity
@@ -955,7 +955,7 @@ void Landscape::updateHabitatIndices(void) {
 	habIndexed = true;
 }
 
-void Landscape::setEnvGradient(Species* pSpecies, bool initial)
+void Landscape::setEnvGradient(const Species* pSpecies, bool initial)
 {
 	float dist_from_opt, dev;
 	float habK;
@@ -1611,7 +1611,7 @@ void Landscape::deleteCostsChgMatrix(void) {
 
 // Species distribution functions
 
-int Landscape::newDistribution(Species* pSpecies, string distname) {
+int Landscape::newDistribution(const Species* pSpecies, string distname) {
 	int readcode;
 	int ndistns = (int)distns.size();
 	distns.push_back(new InitDist(pSpecies));
@@ -1624,14 +1624,14 @@ int Landscape::newDistribution(Species* pSpecies, string distname) {
 	return readcode;
 }
 
-void Landscape::setDistribution(Species* pSpecies, int nInit) {
+void Landscape::setDistribution(const Species* pSpecies, int nInit) {
 	// WILL NEED TO SELECT DISTRIBUTION FOR CORRECT SPECIES ...
 	// ... CURRENTLY IT IS THE ONLY ONE
 	distns[0]->setDistribution(nInit);
 }
 
 // Specified cell match one of the distribution cells to be initialised?
-bool Landscape::inInitialDist(Species* pSpecies, locn loc) const {
+bool Landscape::inInitialDist(const Species* pSpecies, locn loc) const {
 	// convert landscape co-ordinates to distribution co-ordinates
 	locn initloc;
 	initloc.x = loc.x * resol / spResol;
@@ -1641,7 +1641,7 @@ bool Landscape::inInitialDist(Species* pSpecies, locn loc) const {
 	return initialise;
 }
 
-void Landscape::deleteDistribution(Species* pSpecies) {
+void Landscape::deleteDistribution(const Species* pSpecies) {
 	// WILL NEED TO SELECT DISTRIBUTION FOR CORRECT SPECIES ...
 	// ... CURRENTLY IT IS THE ONLY ONE ...
 	// ... FOR MULTIPLE SPECIES IT MAY BE BETTER TO USE A DYNAMIC ARRAY FOR
@@ -1685,7 +1685,7 @@ locn Landscape::getDistnDimensions(int dist) const {
 }
 
 // Reset the distribution for a given species so that all cells are deselected
-void Landscape::resetDistribution(Species* pSp) {
+void Landscape::resetDistribution(const Species* pSp) {
 	// CURRENTLY WORKS FOR FIRST SPECIES ONLY ...
 	distns[0]->resetDistribution();
 }

@@ -89,8 +89,8 @@ class Genome {
 public:
 	Genome();
 	Genome(int, int, bool);
-	Genome(Species*);
-	Genome(Species*, Genome*, Genome*);
+	Genome(const Species*);
+	Genome(const Species*, Genome*, Genome*);
 	~Genome();
 	void setGene( // Set up new gene at initialisation for 1 chromosome per trait
 		const short,	// chromosome number
@@ -99,13 +99,13 @@ public:
 		const double		// s.d. of allelic variance
 	);
 	void setTrait( // Set up trait at initialisation for trait mapping
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		const int,		// trait number			
 		const double,	// normalised trait value		
 		const double		// s.d. of allelic variance
 	);
 	void setNeutralLoci( // Set up neutral loci at initialisation
-		Species*,			// pointer to Species
+		const Species*,			// pointer to Species
 		const double		// s.d. of allelic variance
 	);
 	double express(

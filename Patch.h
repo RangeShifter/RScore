@@ -132,15 +132,15 @@ public:
 	void resetPopn(void);
 	void resetPossSettlers(void);
 	void incrPossSettler( // Record the presence of a potential settler within the Patch
-		Species*,	// pointer to the Species
+		const Species*,	// pointer to the Species
 		int				// sex of the settler
 	);
 	int getPossSettlers( // Get number of a potential settlers within the Patch
-		Species*, // pointer to the Species
+		const Species*, // pointer to the Species
 		int       // sex of the settlers
 	) const;
 	void setCarryingCapacity( // Calculate total Patch carrying capacity (no. of inds)
-		Species*, 		// pointer to the Species
+		const Species*, 		// pointer to the Species
 		patchLimits,	// current min and max limits of landscape
 		float,				// global stochasticity value (epsilon) for the current year
 		short,				// no. of habitat classes in the Landscape

@@ -171,7 +171,7 @@ Genome::Genome(int nchromosomes, int nloci, bool d) {
 }
 
 // Set up new genome at initialisation for trait mapping
-Genome::Genome(Species* pSpecies) {
+Genome::Genome(const Species* pSpecies) {
 	int nloci;
 	nChromosomes = pSpecies->getNChromosomes();
 	diploid = pSpecies->isDiploid();
@@ -183,7 +183,7 @@ Genome::Genome(Species* pSpecies) {
 }
 
 // Inherit genome from parent(s)
-Genome::Genome(Species* pSpecies, Genome* mother, Genome* father)
+Genome::Genome(const Species* pSpecies, Genome* mother, Genome* father)
 {
 	genomeData gen = pSpecies->getGenomeData();
 
@@ -320,7 +320,7 @@ void Genome::setGene(const short chr, const short exp,
 }
 
 // Set up trait at initialisation for trait mapping
-void Genome::setTrait(Species* pSpecies, const int trait,
+void Genome::setTrait(const Species* pSpecies, const int trait,
 	const double traitval, const double alleleSD)
 {
 	traitAllele allele;
@@ -347,7 +347,7 @@ void Genome::setTrait(Species* pSpecies, const int trait,
 }
 
 // Set up trait at initialisation for trait mapping
-void Genome::setNeutralLoci(Species* pSpecies, const double alleleSD)
+void Genome::setNeutralLoci(const Species* pSpecies, const double alleleSD)
 {
 	traitAllele allele;
 	int nneutral = pSpecies->getNNeutralLoci();

@@ -59,7 +59,7 @@ locn SubCommunity::getLocn(void) const {
 
 void SubCommunity::setInitial(bool b) { initial = b; }
 
-void SubCommunity::initialise(Landscape* pLandscape, Species* pSpecies)
+void SubCommunity::initialise(Landscape* pLandscape, const Species* pSpecies)
 {
 	int ncells;
 	landParams ppLand = pLandscape->getLandParams();
@@ -99,7 +99,7 @@ void SubCommunity::initialise(Landscape* pLandscape, Species* pSpecies)
 }
 
 // initialise a specified individual
-void SubCommunity::initialInd(Landscape* pLandscape, Species* pSpecies,
+void SubCommunity::initialInd(Landscape* pLandscape, const Species* pSpecies,
 	Patch* pPatch, Cell* pCell, int ix)
 {
 
@@ -149,7 +149,7 @@ void SubCommunity::initialInd(Landscape* pLandscape, Species* pSpecies,
 }
 
 // Create a new population, and return its address
-Population* SubCommunity::newPopn(Landscape* pLandscape, Species* pSpecies,
+Population* SubCommunity::newPopn(Landscape* pLandscape, const Species* pSpecies,
 	Patch* pPatch, int nInds)
 {
 	landParams land = pLandscape->getLandParams();
@@ -219,7 +219,7 @@ void SubCommunity::localExtinction(int option) {
 // Action in event of patch becoming unsuitable owing to landscape change
 void SubCommunity::patchChange(void) {
 	if (subCommNum == 0) return; // no reproduction in the matrix
-	Species* pSpecies;
+	const Species* pSpecies;
 	float localK = 0.0;
 	int npops = (int)popns.size();
 	// THE FOLLOWING MAY BE MORE EFFICIENT WHILST THERE IS ONLY ONE SPECIES ...
@@ -300,7 +300,7 @@ void SubCommunity::emigration(void)
 }
 
 // Remove emigrants from their natal patch and add to a map of vectors
-void SubCommunity::initiateDispersal(std::map<Species*,std::vector<Individual *>> &inds_map) {
+void SubCommunity::initiateDispersal(std::map<const Species*,std::vector<Individual *>> &inds_map) {
 	if (subCommNum == 0) return; // no dispersal initiation in the matrix
 	popStats pop;
 	disperser disp;
@@ -308,7 +308,7 @@ void SubCommunity::initiateDispersal(std::map<Species*,std::vector<Individual *>
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
 		pop = popns[i]->getStats();
-		Species* pSpecies = popns[i]->getSpecies();
+		const Species* pSpecies = popns[i]->getSpecies();
 		for (int j = 0; j < pop.nInds; j++) {
 			disp = popns[i]->extractDisperser(j);
 			if (disp.yes) { // disperser - has already been removed from natal population
@@ -322,7 +322,7 @@ void SubCommunity::initiateDispersal(std::map<Species*,std::vector<Individual *>
 }
 
 // Add an individual into the local population of its species in the patch
-void SubCommunity::recruit(Individual* pInd, Species* pSpecies) {
+void SubCommunity::recruit(Individual* pInd, const Species* pSpecies) {
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
 		if (pSpecies == popns[i]->getSpecies()) {
@@ -332,7 +332,7 @@ void SubCommunity::recruit(Individual* pInd, Species* pSpecies) {
 }
 
 // Add individuals into the local population of their species in the patch
-void SubCommunity::recruitMany(std::vector<Individual*>& inds, Species* pSpecies) {
+void SubCommunity::recruitMany(std::vector<Individual*>& inds, const Species* pSpecies) {
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
 		if (pSpecies == popns[i]->getSpecies()) {
@@ -371,7 +371,7 @@ void SubCommunity::completeDispersal(Landscape* pLandscape, bool connect)
 {
 	int popsize;
 	disperser settler;
-	Species* pSpecies;
+	const Species* pSpecies;
 	Population* pPop;
 	Patch* pPrevPatch;
 	Patch* pNewPatch;
@@ -451,7 +451,7 @@ void SubCommunity::ageIncrement(void) {
 }
 
 // Find the population of a given species in a given patch
-Population* SubCommunity::findPop(Species* pSp, Patch* pPch) const {
+Population* SubCommunity::findPop(const Species* pSp, Patch* pPch) const {
 #if RSDEBUG
 	DEBUGLOG << "SubCommunity::findPop(): this=" << this
 		<< endl;
@@ -506,7 +506,7 @@ void SubCommunity::deleteOccupancy(void) {
 
 //---------------------------------------------------------------------------
 // Open population file and write header record
-bool SubCommunity::outPopHeaders(Landscape* pLandscape, Species* pSpecies, int option) const
+bool SubCommunity::outPopHeaders(Landscape* pLandscape, const Species* pSpecies, int option) const
 {
 	bool fileOK;
 	Population* pPop;
@@ -623,7 +623,7 @@ int SubCommunity::stagePop(int stage) const {
 }
 
 // Open traits file and write header record
-bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, Species* pSpecies, int landNr) const
+bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, const Species* pSpecies, int landNr) const
 {
 	landParams land = pLandscape->getLandParams();
 	if (landNr == -999) { // close file
@@ -759,7 +759,7 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 	// generate output for each population within the sub-community (patch)
 	// provided that the patch is suitable (i.e. non-zero carrying capacity)
 	int npops = (int)popns.size();
-	Species* pSpecies;
+	const Species* pSpecies;
 	float localK;
 
 	for (int i = 0; i < npops; i++) { // all populations
