@@ -114,17 +114,17 @@ public:
 	);
 	bool inInitialDist( // Specified location is within the initial distribution?
 		locn  // structure holding x (column) and y (row) co-ordinates
-	);
-	int cellCount(void);
+	) const;
+	int cellCount(void) const;
 	locn getCell( // Return the co-ordinates of a specified initial distribution cell
 		int  // index no. of DistCell in cells vector
-	);
+	) const;
 	locn getSelectedCell( // Return the co-ordinates of a specified initial distribution
 												// cell if it has been selected
 												// otherwise return negative co-ordinates
 		int  // index no. of DistCell in cells vector
-	);
-	locn getDimensions(void);
+	) const;
+	locn getDimensions(void) const;
 	void resetDistribution(void);
 
 private:
@@ -200,10 +200,10 @@ public:
 		landParams,	// structure holding landscape parameters
 		bool				// batch mode
 	);
-	landParams getLandParams(void);
-	landData getLandData(void);
+	landParams getLandParams(void) const;
+	landData getLandData(void) const;
 	void setGenLandParams(genLandParams);
-	genLandParams getGenLandParams(void);
+	genLandParams getGenLandParams(void) const;
 	void setLandLimits(
 		int,	// minimum available X
 		int,	// minimum available Y
@@ -213,17 +213,17 @@ public:
 	void resetLandLimits(void);
 	void setLandPix(landPix);
 
-	landPix getLandPix(void);
+	landPix getLandPix(void) const;
 	void setOrigin(landOrigin);
-	landOrigin getOrigin(void);
+	landOrigin getOrigin(void) const;
 
 	// functions to handle habitat codes
 
-	bool habitatsIndexed(void);
-	void listHabCodes(void);
+	bool habitatsIndexed(void) const;
+	void listHabCodes(void) const;
 	void addHabCode(int);
-	int findHabCode(int);
-	int getHabCode(int);
+	int findHabCode(int) const;
+	int getHabCode(int) const;
 	void clearHabitats(void);
 
 	// functions to handle patches and cells
@@ -278,13 +278,13 @@ public:
 	);
 	patchData getPatchData(
 		int		// index no. of Patch in patches vector
-	);
+	) const;
 	bool existsPatch(
 		int		// Patch id no.
-	);
+	) const;
 	Patch* findPatch(
 		int   // Patch id no.
-	);
+	) const;
 	int checkTotalCover(void);
 	void resetPatchPopns(void);
 	void updateCarryingCapacity(
@@ -295,8 +295,8 @@ public:
 	Cell* findCell(
 		int,		// x co-ordinate
 		int			// y co-ordinate
-	);
-	int patchCount(void);
+	) const;
+	int patchCount(void) const;
 	void updateHabitatIndices(void);
 	void setEnvGradient(
 		Species*, // pointer to Species
@@ -307,7 +307,7 @@ public:
 	);
 	float getGlobalStoch(
 		int		// year
-	);
+	) const;
 	void updateLocalStoch(void);
 	void resetCosts(void);
 	void resetEffCosts(void);
@@ -318,10 +318,10 @@ public:
 	void addLandChange(
 		landChange	// structure holding landscape change data
 	);
-	int numLandChanges(void);
+	int numLandChanges(void) const;
 	landChange getLandChange(
 		short	// change number
-	);
+	) const;
 	void deleteLandChanges(void);
 #if RS_RCPP && !R_CMD
 	int readLandChange(
@@ -343,17 +343,17 @@ public:
 	void createPatchChgMatrix(void);
 	void recordPatchChanges(int);
 	void deletePatchChgMatrix(void);
-	int numPatchChanges(void);
+	int numPatchChanges(void) const;
 	patchChange getPatchChange(
 		int	// patch change number
-	);
+	) const;
 	void createCostsChgMatrix(void);
 	void recordCostChanges(int);
 	void deleteCostsChgMatrix(void);
-	int numCostChanges(void);
+	int numCostChanges(void) const;
 	costChange getCostChange(
 		int	// cost change number
-	);
+	) const;
 
 	// functions to handle species distributions
 
@@ -368,26 +368,26 @@ public:
 	bool inInitialDist( // Specified cell matches one of the distn cells to be initialised?
 		Species*, // pointer to Species
 		locn			// structure holding co-ordinates of Cell
-	);
+	) const;
 	void deleteDistribution(
 		Species*  // pointer to Species
 	);
-	int distnCount(void);	// Return no. of initial distributions in the Landscape
+	int distnCount(void) const;	// Return no. of initial distributions in the Landscape
 	int distCellCount(    // Return no. of distribution cells in an initial distribution
 		int // index no. of InitDist in distns vector
-	);
+	) const;
 	locn getDistnCell( // Get co-ordinates of a specified cell in a specified initial distn
 		int,	// index no. of InitDist in distns vector
 		int		// index no. of DistCell in cells vector
-	);
+	) const;
 	locn getSelectedDistnCell(	// Get co-ordinates of a specified cell in a specified initial distn
 															// Returns negative co-ordinates if the cell is not selected
 		int,  // index no. of InitDist in distns vector
 		int   // index no. of DistCell in cells vector
-	);
+	) const;
 	locn getDistnDimensions(	// Get the dimensions of a specified initial distribution
 		int   // index no. of InitDist in distns vector
-	);
+	) const;
 	void setDistnCell( // Set a cell in a specified init distn (by posn in cells vector)
 		int,  // index no. of InitDist in distns vector
 		int,  // index no. of DistCell in cells vector
@@ -404,14 +404,14 @@ public:
 
 	// functions to handle initialisation cells
 
-	int initCellCount(void);
+	int initCellCount(void) const;
 	void addInitCell( // Create a new DistCell and add to the initcells vector
 		int,	// x co-ordinate
 		int   // y co-ordinate
 	);
 	locn getInitCell(
 		int   // index no. of DistCell in initcells vector
-	);
+	) const;
 	void clearInitCells(void);
 
 	// functions to handle connectivity matrix
@@ -425,14 +425,14 @@ public:
 	void deleteConnectMatrix(void);
 	bool outConnectHeaders( // Write connectivity file headers
 		int		// option - set to -999 to close the connectivity file
-	);
+	) const;
 #if RS_RCPP
-	void outPathsHeaders(int, int);
+	void outPathsHeaders(int, int) const;
 #endif
 	void outConnect(
 		int,	// replicate no.
 		int   // year
-	);
+	) const;
 
 	// functions to handle input and output
 
@@ -443,12 +443,12 @@ public:
 		string,	// patch file name
 		string	// cost file name (may be NULL)
 	);
-	void listPatches(void);
+	void listPatches(void) const;
 	int readCosts(
 		string	// costs file name
 	);
 	void resetVisits(void);
-	void outVisits(int,int);	// save SMS path visits map to raster text file
+	void outVisits(int,int) const;	// save SMS path visits map to raster text file
 
 private:
 	bool generated;				// artificially generated?

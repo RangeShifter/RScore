@@ -103,7 +103,7 @@ void InitDist::setDistCell(locn loc, bool init) {
 }
 
 // Specified location is within the initial distribution?
-bool InitDist::inInitialDist(locn loc) {
+bool InitDist::inInitialDist(locn loc) const {
 	int ncells = (int)cells.size();
 	for (int i = 0; i < ncells; i++) {
 		if (cells[i]->toInitialise(loc)) { // cell is to be initialised
@@ -113,12 +113,12 @@ bool InitDist::inInitialDist(locn loc) {
 	return false;
 }
 
-int InitDist::cellCount(void) {
+int InitDist::cellCount(void) const {
 	return (int)cells.size();
 }
 
 // Return the co-ordinates of a specified initial distribution cell
-locn InitDist::getCell(int ix) {
+locn InitDist::getCell(int ix) const {
 	locn loc;
 	if (ix >= 0 && ix < (int)cells.size()) {
 		loc = cells[ix]->getLocn();
@@ -131,7 +131,7 @@ locn InitDist::getCell(int ix) {
 
 // Return the co-ordinates of a specified initial distribution cell if it has been
 // selected - otherwise return negative co-ordinates
-locn InitDist::getSelectedCell(int ix) {
+locn InitDist::getSelectedCell(int ix) const {
 	locn loc; loc.x = loc.y = -666;
 	if (ix < (int)cells.size()) {
 		if (cells[ix]->selected()) {
@@ -141,7 +141,7 @@ locn InitDist::getSelectedCell(int ix) {
 	return loc;
 }
 
-locn InitDist::getDimensions(void) {
+locn InitDist::getDimensions(void) const {
 	locn d; d.x = maxX; d.y = maxY; return d;
 }
 
@@ -370,7 +370,7 @@ void Landscape::setLandParams(landParams ppp, bool batchMode)
 	}
 }
 
-landParams Landscape::getLandParams(void)
+landParams Landscape::getLandParams(void) const
 {
 	landParams ppp;
 	ppp.generated = generated; ppp.patchModel = patchModel; ppp.spDist = spDist;
@@ -385,7 +385,7 @@ landParams Landscape::getLandParams(void)
 	return ppp;
 }
 
-landData Landscape::getLandData(void) {
+landData Landscape::getLandData(void) const {
 	landData dd;
 	dd.resol = resol;
 	dd.dimX = dimX; dd.dimY = dimY;
@@ -405,7 +405,7 @@ void Landscape::setGenLandParams(genLandParams ppp)
 	if (ppp.maxCells > 0) maxCells = ppp.maxCells;
 }
 
-genLandParams Landscape::getGenLandParams(void)
+genLandParams Landscape::getGenLandParams(void) const
 {
 	genLandParams ppp;
 	ppp.fractal = fractal; ppp.continuous = continuous;
@@ -432,7 +432,7 @@ void Landscape::setLandPix(landPix p) {
 	if (p.gpix > 0.0) gpix = p.gpix;
 }
 
-landPix Landscape::getLandPix(void) {
+landPix Landscape::getLandPix(void) const {
 	landPix p;
 	p.pix = pix; p.gpix = gpix;
 	return p;
@@ -442,7 +442,7 @@ void Landscape::setOrigin(landOrigin origin) {
 	minEast = origin.minEast; minNorth = origin.minNorth;
 }
 
-landOrigin Landscape::getOrigin(void) {
+landOrigin Landscape::getOrigin(void) const {
 	landOrigin origin;
 	origin.minEast = minEast; origin.minNorth = minNorth;
 	return origin;
@@ -452,9 +452,9 @@ landOrigin Landscape::getOrigin(void) {
 
 // Functions to handle habitat codes
 
-bool Landscape::habitatsIndexed(void) { return habIndexed; }
+bool Landscape::habitatsIndexed(void) const { return habIndexed; }
 
-void Landscape::listHabCodes(void) {
+void Landscape::listHabCodes(void) const {
 	int nhab = (int)habCodes.size();
 #if RS_RCPP && !R_CMD
 	Rcpp::Rcout << endl;
@@ -483,7 +483,7 @@ void Landscape::addHabCode(int hab) {
 }
 
 // Get the index number of the specified habitat in the habitats vector
-int Landscape::findHabCode(int hab) {
+int Landscape::findHabCode(int hab) const {
 	int nhab = (int)habCodes.size();
 	for (int i = 0; i < nhab; i++) {
 		if (hab == habCodes[i]) return i;
@@ -492,7 +492,7 @@ int Landscape::findHabCode(int hab) {
 }
 
 // Get the specified habitat code
-int Landscape::getHabCode(int ixhab) {
+int Landscape::getHabCode(int ixhab) const {
 	if (ixhab < (int)habCodes.size()) return habCodes[ixhab];
 	else return -999;
 }
@@ -816,7 +816,7 @@ void Landscape::addCellToPatch(Cell* pCell, Patch* pPatch, int hab) {
 	pPatch->addCell(pCell, loc.x, loc.y);
 }
 
-patchData Landscape::getPatchData(int ix) {
+patchData Landscape::getPatchData(int ix) const {
 	patchData ppp;
 	ppp.pPatch = patches[ix]; ppp.patchNum = patches[ix]->getPatchNum();
 	ppp.nCells = patches[ix]->getNCells();
@@ -829,7 +829,7 @@ patchData Landscape::getPatchData(int ix) {
 	return ppp;
 }
 
-bool Landscape::existsPatch(int num) {
+bool Landscape::existsPatch(int num) const {
 	int npatches = (int)patches.size();
 	for (int i = 0; i < npatches; i++) {
 		if (num == patches[i]->getPatchNum()) return true;
@@ -837,7 +837,7 @@ bool Landscape::existsPatch(int num) {
 	return false;
 }
 
-Patch* Landscape::findPatch(int num) {
+Patch* Landscape::findPatch(int num) const {
 	int npatches = (int)patches.size();
 	for (int i = 0; i < npatches; i++) {
 		if (num == patches[i]->getPatchNum()) return patches[i];
@@ -869,16 +869,16 @@ void Landscape::updateCarryingCapacity(Species* pSpecies, int yr, short landIx) 
 
 }
 
-Cell* Landscape::findCell(int x, int y) {
+Cell* Landscape::findCell(int x, int y) const {
 	if (x >= 0 && x < dimX && y >= 0 && y < dimY) return cells[y][x];
 	else return 0;
 }
 
-int Landscape::patchCount(void) {
+int Landscape::patchCount(void) const {
 	return (int)patches.size();
 }
 
-void Landscape::listPatches(void) {
+void Landscape::listPatches(void) const {
 	patchLimits p;
 	int npatches = (int)patches.size();
 #if RS_RCPP && !R_CMD
@@ -1011,7 +1011,7 @@ void Landscape::setGlobalStoch(int nyears) {
 	}
 }
 
-float Landscape::getGlobalStoch(int yr) {
+float Landscape::getGlobalStoch(int yr) const {
 	if (epsGlobal != 0 && yr >= 0) {
 		return epsGlobal[yr];
 	}
@@ -1062,9 +1062,9 @@ void Landscape::addLandChange(landChange c) {
 	landchanges.push_back(c);
 }
 
-int Landscape::numLandChanges(void) { return (int)landchanges.size(); }
+int Landscape::numLandChanges(void) const { return (int)landchanges.size(); }
 
-landChange Landscape::getLandChange(short ix) {
+landChange Landscape::getLandChange(short ix) const {
 	landChange c; c.chgnum = c.chgyear = 0;
 	c.habfile = c.pchfile = c.costfile = "none";
 	int nchanges = (int)landchanges.size();
@@ -1510,9 +1510,9 @@ void Landscape::recordPatchChanges(int landIx) {
 
 }
 
-int Landscape::numPatchChanges(void) { return (int)patchchanges.size(); }
+int Landscape::numPatchChanges(void) const { return (int)patchchanges.size(); }
 
-patchChange Landscape::getPatchChange(int i) {
+patchChange Landscape::getPatchChange(int i) const {
 	patchChange c; c.chgnum = 99999999; c.x = c.y = c.oldpatch = c.newpatch = -1;
 	if (i >= 0 && i < (int)patchchanges.size()) c = patchchanges[i];
 	return c;
@@ -1587,9 +1587,9 @@ void Landscape::recordCostChanges(int landIx) {
 
 }
 
-int Landscape::numCostChanges(void) { return (int)costschanges.size(); }
+int Landscape::numCostChanges(void) const { return (int)costschanges.size(); }
 
-costChange Landscape::getCostChange(int i) {
+costChange Landscape::getCostChange(int i) const {
 	costChange c; c.chgnum = 99999999; c.x = c.y = c.oldcost = c.newcost = -1;
 	if (i >= 0 && i < (int)costschanges.size()) c = costschanges[i];
 	return c;
@@ -1631,7 +1631,7 @@ void Landscape::setDistribution(Species* pSpecies, int nInit) {
 }
 
 // Specified cell match one of the distribution cells to be initialised?
-bool Landscape::inInitialDist(Species* pSpecies, locn loc) {
+bool Landscape::inInitialDist(Species* pSpecies, locn loc) const {
 	// convert landscape co-ordinates to distribution co-ordinates
 	locn initloc;
 	initloc.x = loc.x * resol / spResol;
@@ -1650,11 +1650,11 @@ void Landscape::deleteDistribution(Species* pSpecies) {
 }
 
 // Return no. of initial distributions
-int Landscape::distnCount(void) {
+int Landscape::distnCount(void) const {
 	return (int)distns.size();
 }
 
-int Landscape::distCellCount(int dist) {
+int Landscape::distCellCount(int dist) const {
 	return distns[dist]->cellCount();
 }
 
@@ -1669,18 +1669,18 @@ void Landscape::setDistnCell(int dist, locn loc, bool init) {
 }
 
 // Get the co-ordinates of a specified cell in a specified initial distribution
-locn Landscape::getDistnCell(int dist, int ix) {
+locn Landscape::getDistnCell(int dist, int ix) const {
 	return distns[dist]->getCell(ix);
 }
 
 // Get the co-ordinates of a specified cell in a specified initial distribution
 // Returns negative co-ordinates if the cell is not selected
-locn Landscape::getSelectedDistnCell(int dist, int ix) {
+locn Landscape::getSelectedDistnCell(int dist, int ix) const {
 	return distns[dist]->getSelectedCell(ix);
 }
 
 // Get the dimensions of a specified initial distribution
-locn Landscape::getDistnDimensions(int dist) {
+locn Landscape::getDistnDimensions(int dist) const {
 	return distns[dist]->getDimensions();
 }
 
@@ -1694,7 +1694,7 @@ void Landscape::resetDistribution(Species* pSp) {
 
 // Initialisation cell functions
 
-int Landscape::initCellCount(void) {
+int Landscape::initCellCount(void) const {
 	return (int)initcells.size();
 }
 
@@ -1702,7 +1702,7 @@ void Landscape::addInitCell(int x, int y) {
 	initcells.push_back(new DistCell(x, y));
 }
 
-locn Landscape::getInitCell(int ix) {
+locn Landscape::getInitCell(int ix) const {
 	return initcells[ix]->getLocn();
 }
 
@@ -2441,7 +2441,7 @@ void Landscape::deleteConnectMatrix(void)
 }
 
 // Write connectivity file headers
-bool Landscape::outConnectHeaders(int option)
+bool Landscape::outConnectHeaders(int option) const
 {
 	if (option == -999) { // close the file
 		if (outConnMat.is_open()) outConnMat.close();
@@ -2468,7 +2468,7 @@ bool Landscape::outConnectHeaders(int option)
 
 #if RS_RCPP
 // Write movement paths file headers
-void Landscape::outPathsHeaders(int rep, int option)
+void Landscape::outPathsHeaders(int rep, int option) const
 {
 	if (option == -999) { // close the file
 		if (outMovePaths.is_open()) outMovePaths.close();
@@ -2504,7 +2504,7 @@ void Landscape::outPathsHeaders(int rep, int option)
 }
 #endif
 
-void Landscape::outConnect(int rep, int yr)
+void Landscape::outConnect(int rep, int yr) const
 {
 	int patchnum0, patchnum1;
 	int npatches = (int)patches.size();
@@ -2564,7 +2564,7 @@ void Landscape::resetVisits(void) {
 }
 
 // Save SMS path visits map to raster text file
-void Landscape::outVisits(int rep, int landNr) {
+void Landscape::outVisits(int rep, int landNr) const {
 
 	string name;
 	simParams sim = paramsSim->getSim();
