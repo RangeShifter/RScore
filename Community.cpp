@@ -528,7 +528,7 @@ void Community::ageIncrement(void) {
 }
 
 // Calculate total no. of individuals of all species
-int Community::totalInds(void) {
+int Community::totalInds(void) const {
 	popStats p;
 	int total = 0;
 	int nsubcomms = (int)subComms.size();
@@ -540,7 +540,7 @@ int Community::totalInds(void) {
 }
 
 // Find the population of a given species in a given patch
-Population* Community::findPop(Species* pSp, Patch* pPch) {
+Population* Community::findPop(Species* pSp, Patch* pPch) const {
 	Population* pPop = 0;
 	int nsubcomms = (int)subComms.size();
 	for (int i = 0; i < nsubcomms; i++) { // all communities (including in matrix)
@@ -595,7 +595,7 @@ void Community::deleteOccupancy(int nrows) {
 //---------------------------------------------------------------------------
 // Count no. of sub-communities (suitable patches) and those occupied (non-zero populations)
 // Determine range margins
-commStats Community::getStats(void)
+commStats Community::getStats(void) const
 {
 	commStats s;
 	landParams ppLand = pLandscape->getLandParams();
@@ -631,12 +631,12 @@ commStats Community::getStats(void)
 // Functions to control production of output files
 
 // Open population file and write header record
-bool Community::outPopHeaders(Species* pSpecies, int option) {
+bool Community::outPopHeaders(Species* pSpecies, int option) const {
 	return subComms[0]->outPopHeaders(pLandscape, pSpecies, option);
 }
 
 // Write records to population file
-void Community::outPop(int rep, int yr, int gen)
+void Community::outPop(int rep, int yr, int gen) const
 {
 	// generate output for each sub-community (patch) in the community
 	int nsubcomms = (int)subComms.size();
@@ -648,7 +648,7 @@ void Community::outPop(int rep, int yr, int gen)
 
 
 // Write records to individuals file
-void Community::outInds(int rep, int yr, int gen, int landNr) {
+void Community::outInds(int rep, int yr, int gen, int landNr) const {
 
 	if (landNr >= 0) { // open the file
 		subComms[0]->outInds(pLandscape, rep, yr, gen, landNr);
@@ -666,7 +666,7 @@ void Community::outInds(int rep, int yr, int gen, int landNr) {
 }
 
 // Write records to genetics file
-void Community::outGenetics(int rep, int yr, int gen, int landNr) {
+void Community::outGenetics(int rep, int yr, int gen, int landNr) const {
 	//landParams ppLand = pLandscape->getLandParams();
 	if (landNr >= 0) { // open the file
 		subComms[0]->outGenetics(rep, yr, gen, landNr);
@@ -684,7 +684,7 @@ void Community::outGenetics(int rep, int yr, int gen, int landNr) {
 }
 
 // Open range file and write header record
-bool Community::outRangeHeaders(Species* pSpecies, int landNr)
+bool Community::outRangeHeaders(Species* pSpecies, int landNr) const
 {
 
 	if (landNr == -999) { // close the file
@@ -810,7 +810,7 @@ bool Community::outRangeHeaders(Species* pSpecies, int landNr)
 }
 
 // Write record to range file
-void Community::outRange(Species* pSpecies, int rep, int yr, int gen)
+void Community::outRange(Species* pSpecies, int rep, int yr, int gen) const
 {
 #if RSDEBUG
 	DEBUGLOG << "Community::outRange(): rep=" << rep
@@ -1170,7 +1170,7 @@ bool Community::outOccupancyHeaders(int option)
 	return outsuit.is_open() && outoccup.is_open();
 }
 
-void Community::outOccupancy(void) {
+void Community::outOccupancy(void) const {
 	landParams ppLand = pLandscape->getLandParams();
 	simParams sim = paramsSim->getSim();
 	locn loc;
@@ -1192,7 +1192,7 @@ void Community::outOccupancy(void) {
 	}
 }
 
-void Community::outOccSuit(bool view) {
+void Community::outOccSuit(bool view) const {
 	double sum, ss, mean, sd, se;
 	simParams sim = paramsSim->getSim();
 	for (int i = 0; i < (sim.years / sim.outIntOcc) + 1; i++) {
@@ -1212,7 +1212,7 @@ void Community::outOccSuit(bool view) {
 }
 
 // Open traits file and write header record
-bool Community::outTraitsHeaders(Species* pSpecies, int landNr) {
+bool Community::outTraitsHeaders(Species* pSpecies, int landNr) const {
 	return subComms[0]->outTraitsHeaders(pLandscape, pSpecies, landNr);
 }
 
@@ -1222,7 +1222,7 @@ only, this function relies on the fact that subcommunities are created in the sa
 sequence as patches, which is in asecending order of x nested within descending
 order of y
 */
-void Community::outTraits(Species* pSpecies, int rep, int yr, int gen)
+void Community::outTraits(Species* pSpecies, int rep, int yr, int gen) const
 {
 	simParams sim = paramsSim->getSim();
 	simView v = paramsSim->getViews();
@@ -1291,7 +1291,7 @@ void Community::outTraits(Species* pSpecies, int rep, int yr, int gen)
 
 // Write records to trait rows file
 void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int y,
-	traitsums ts)
+	traitsums ts) const
 {
 	emigRules emig = pSpecies->getEmig();
 	trfrRules trfr = pSpecies->getTrfr();
@@ -1439,7 +1439,7 @@ void Community::writeTraitsRows(Species* pSpecies, int rep, int yr, int gen, int
 }
 
 // Open trait rows file and write header record
-bool Community::outTraitsRowsHeaders(Species* pSpecies, int landNr) {
+bool Community::outTraitsRowsHeaders(Species* pSpecies, int landNr) const {
 
 	if (landNr == -999) { // close file
 		if (outtraitsrows.is_open()) outtraitsrows.close();
@@ -1525,7 +1525,7 @@ bool Community::outTraitsRowsHeaders(Species* pSpecies, int landNr) {
 }
 
 #if RS_RCPP && !R_CMD
-Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) {  // TODO: define new simparams to control start and interval of output
+Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) const {  // TODO: define new simparams to control start and interval of output
 
 	landParams ppLand = pLandscape->getLandParams();
 	Rcpp::IntegerMatrix pop_map_year(ppLand.dimY, ppLand.dimX);

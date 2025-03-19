@@ -105,12 +105,12 @@ public:
 		//		  	 		1 - development and survival
 	);
 	void ageIncrement(void);
-	int totalInds(void);
+	int totalInds(void) const;
 	Population* findPop( // Find the population of a given species in a given patch
 		Species*, // pointer to Species
 		Patch*		// pointer to Patch
-	);
-	commStats getStats(void);
+	) const;
+	commStats getStats(void) const;
 	void createOccupancy(
 		int,	// no. of rows = (no. of years / interval) + 1
 		int		// no. of replicates
@@ -126,22 +126,22 @@ public:
 	bool outRangeHeaders( // Open range file and write header record
 		Species*,	// pointer to Species
 		int				// Landscape number (-999 to close the file)
-	);
+	) const;
 	void outRange( // Write record to range file
 		Species*, // pointer to Species
 		int,			// replicate
 		int,			// year
 		int				// generation
-	);
+	) const;
 	bool outPopHeaders( // Open population file and write header record
 		Species*, // pointer to Species
 		int       // option: -999 to close the file
-	);
+	) const;
 	void outPop( // Write records to population file
 		int,	// replicate
 		int,	// year
 		int		// generation
-	);
+	) const;
 
 	void outInds( // Write records to individuals file
 		int,	// replicate
@@ -149,36 +149,36 @@ public:
 		int,	// generation
 		int		// Landscape number (>= 0 to open the file, -999 to close the file
 					//									 -1 to write data records)
-	);
+	) const;
 	void outGenetics( // Write records to genetics file
 		int,	// replicate
 		int,	// year
 		int,	// generation
 		int		// Landscape number (>= 0 to open the file, -999 to close the file
 					//									 -1 to write data records)
-	);
+	) const;
 	// Open occupancy file, write header record and set up occupancy array
 	bool outOccupancyHeaders(
 		int		// option: -999 to close the file
 	);
-	void outOccupancy(void);
+	void outOccupancy(void) const;
 	void outOccSuit(
 		bool	// TRUE if occupancy graph is to be viewed on screen
-	);
+	) const;
 	bool outTraitsHeaders( // Open traits file and write header record
 		Species*,	// pointer to Species
 		int				// Landscape number (-999 to close the file)
-	);
+	) const;
 	bool outTraitsRowsHeaders( // Open trait rows file and write header record
 		Species*, // pointer to Species
 		int       // Landscape number (-999 to close the file)
-	);
+	) const;
 	void outTraits( // Write records to traits file
 		Species*,		// pointer to Species
 		int,				// replicate
 		int,				// year
 		int					// generation
-	);
+	) const;
 	void writeTraitsRows( // Write records to trait rows file
 		Species*,	// pointer to Species
 		int,			// replicate
@@ -186,9 +186,9 @@ public:
 		int,			// generation
 		int,			// row number (Y cell co-ordinate)
 		traitsums	// structure holding sums of trait genes for dispersal (see Population.h)
-	);
+	) const;
 #if RS_RCPP && !R_CMD
-    Rcpp::IntegerMatrix addYearToPopList(int,int);
+    Rcpp::IntegerMatrix addYearToPopList(int,int) const;
 #endif
 
 private:
