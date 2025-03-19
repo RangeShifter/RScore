@@ -69,10 +69,10 @@ public:
 	// functions to manage populations occurring in the SubCommunity
 	popStats getPopStats(void) const;
 	void setInitial(bool);
-	void initialise(Landscape*,const Species*);
-	void initialInd(Landscape*,const Species*,Patch*,Cell*,int);
+	void initialise(const Landscape*,const Species*);
+	void initialInd(const Landscape*,const Species*,Patch*,Cell*,int);
 	Population* newPopn( // Create a new population, and return its address
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		const Species*,		// pointer to Species
 		Patch*,			// pointer to Patch
 		int					// no. of Individuals
@@ -107,13 +107,13 @@ public:
 	);
 #if RS_RCPP
 	int transfer( // Transfer through matrix - run for matrix SubCommunity only
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		short,			// landscape change index
 		short				// season / year
 	);
 #else
 	int transfer( // Transfer through matrix - run for matrix SubCommunity only
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		short				// landscape change index
 	);
 #endif // RS_RCPP
@@ -147,19 +147,19 @@ public:
 	void deleteOccupancy(void);
 
 	bool outPopHeaders( // Open population file and write header record
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		const Species*,		// pointer to Species
 		int					// option: -999 to close the file
 	) const;
 	void outPop( // Write records to population file
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		int,				// replicate
 		int,				// year
 		int					// generation
 	) const;
 
 	void outInds( // Write records to individuals file
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		int,				// replicate
 		int,				// year
 		int,				// generation
@@ -174,12 +174,12 @@ public:
 								//									 -1 to write data records)
 	) const;
 	bool outTraitsHeaders( // Open traits file and write header record
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		const Species*,		// pointer to Species
 		int					// Landscape number (-999 to close the file)
 	) const;
 	traitsums outTraits( // Write records to traits file and return aggregated sums
-		Landscape*, 	// pointer to Landscape
+		const Landscape*, 	// pointer to Landscape
 		int,					// replicate
 		int,					// year
 		int,					// generation

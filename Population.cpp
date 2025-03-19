@@ -832,9 +832,9 @@ void Population::recruitMany(std::vector<Individual*>& new_inds) {
 
 // Transfer is run for populations in the matrix only
 #if RS_RCPP // included also SEASONAL
-int Population::transfer(Landscape* pLandscape, short landIx, short nextseason)
+int Population::transfer(const Landscape* pLandscape, short landIx, short nextseason)
 #else
-int Population::transfer(Landscape* pLandscape, short landIx)
+int Population::transfer(const Landscape* pLandscape, short landIx)
 #endif
 {
 	int ndispersers = 0;
@@ -1508,7 +1508,7 @@ void Population::outIndsHeaders(int rep, int landNr, bool patchModel) const
 
 //---------------------------------------------------------------------------
 // Write records to individuals file
-void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
+void Population::outIndividual(const Landscape* pLandscape, int rep, int yr, int gen,
 	int patchNum) const
 {
 	//int x, y, p_id;

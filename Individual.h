@@ -226,7 +226,7 @@ public:
 	// negative exponential kernel
 	// Returns 1 if still dispersing (including having found a potential patch), otherwise 0
 	int moveKernel(
-		Landscape*,		// pointer to Landscape
+		const Landscape*,		// pointer to Landscape
 		const Species*,			// pointer to Species
 		const short,	// reproduction type (see Species)
 		const bool    // absorbing boundaries?
@@ -234,13 +234,13 @@ public:
 	// Make a single movement step according to a mechanistic movement model
 	// Returns 1 if still dispersing (including having found a potential patch), otherwise 0
 	int moveStep(
-		Landscape*,		// pointer to Landscape
+		const Landscape*,		// pointer to Landscape
 		const Species*,			// pointer to Species
 		const short,	// landscape change index
 		const bool    // absorbing boundaries?
 	);
 	movedata smsMove( // Move to a neighbouring cell according to the SMS algorithm
-		Landscape*,		// pointer to Landscape
+		const Landscape*,		// pointer to Landscape
 		const Species*,			// pointer to Species
 		const short,	// landscape change index
 		const bool,		// TRUE if still in (or returned to) natal patch
@@ -263,7 +263,7 @@ public:
 		const double	// direction in which lowest (unit) weighting is to be applied
 	) const;
 	array3x3f getHabMatrix( // Weight neighbouring cells on basis of (habitat) costs
-		Landscape*,		// pointer to Landscape
+		const Landscape*,		// pointer to Landscape
 		const Species*,			// pointer to Species
 		const int,		// current x co-ordinate
 		const int,		// current y co-ordinate

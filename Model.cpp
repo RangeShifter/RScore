@@ -769,7 +769,7 @@ bool CheckDirectory(void)
 
 //---------------------------------------------------------------------------
 //For outputs and population visualisations pre-reproduction
-void PreReproductionOutput(Landscape* pLand, Community* pComm, int rep, int yr, int gen)
+void PreReproductionOutput(const Landscape* pLand, Community* pComm, int rep, int yr, int gen)
 {
 #if RSDEBUG
 	landParams ppLand = pLand->getLandParams();
@@ -812,7 +812,7 @@ void RangePopOutput(Community* pComm, int rep, int yr, int gen)
 }
 
 //---------------------------------------------------------------------------
-void OutParameters(Landscape* pLandscape)
+void OutParameters(const Landscape* pLandscape)
 {
 	double k;
 	//int nrows,ncols,nsexes,nstages;

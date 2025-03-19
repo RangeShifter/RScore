@@ -59,7 +59,7 @@ locn SubCommunity::getLocn(void) const {
 
 void SubCommunity::setInitial(bool b) { initial = b; }
 
-void SubCommunity::initialise(Landscape* pLandscape, const Species* pSpecies)
+void SubCommunity::initialise(const Landscape* pLandscape, const Species* pSpecies)
 {
 	int ncells;
 	landParams ppLand = pLandscape->getLandParams();
@@ -99,7 +99,7 @@ void SubCommunity::initialise(Landscape* pLandscape, const Species* pSpecies)
 }
 
 // initialise a specified individual
-void SubCommunity::initialInd(Landscape* pLandscape, const Species* pSpecies,
+void SubCommunity::initialInd(const Landscape* pLandscape, const Species* pSpecies,
 	Patch* pPatch, Cell* pCell, int ix)
 {
 
@@ -149,7 +149,7 @@ void SubCommunity::initialInd(Landscape* pLandscape, const Species* pSpecies,
 }
 
 // Create a new population, and return its address
-Population* SubCommunity::newPopn(Landscape* pLandscape, const Species* pSpecies,
+Population* SubCommunity::newPopn(const Landscape* pLandscape, const Species* pSpecies,
 	Patch* pPatch, int nInds)
 {
 	landParams land = pLandscape->getLandParams();
@@ -343,9 +343,9 @@ void SubCommunity::recruitMany(std::vector<Individual*>& inds, const Species* pS
 
 // Transfer through the matrix - run for the matrix sub-community only
 #if RS_RCPP
-int SubCommunity::transfer(Landscape* pLandscape, short landIx, short nextseason)
+int SubCommunity::transfer(const Landscape* pLandscape, short landIx, short nextseason)
 #else
-int SubCommunity::transfer(Landscape* pLandscape, short landIx)
+int SubCommunity::transfer(const Landscape* pLandscape, short landIx)
 #endif // RS_RCPP
 {
 	int ndispersers = 0;
@@ -506,7 +506,7 @@ void SubCommunity::deleteOccupancy(void) {
 
 //---------------------------------------------------------------------------
 // Open population file and write header record
-bool SubCommunity::outPopHeaders(Landscape* pLandscape, const Species* pSpecies, int option) const
+bool SubCommunity::outPopHeaders(const Landscape* pLandscape, const Species* pSpecies, int option) const
 {
 	bool fileOK;
 	Population* pPop;
@@ -530,7 +530,7 @@ bool SubCommunity::outPopHeaders(Landscape* pLandscape, const Species* pSpecies,
 }
 
 // Write records to population file
-void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen) const
+void SubCommunity::outPop(const Landscape* pLandscape, int rep, int yr, int gen) const
 {
 	landParams land = pLandscape->getLandParams();
 	envGradParams grad = paramsGrad->getGradient();
@@ -577,7 +577,7 @@ void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen) const
 }
 
 // Write records to individuals file
-void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int landNr) const {
+void SubCommunity::outInds(const Landscape* pLandscape, int rep, int yr, int gen, int landNr) const {
 	landParams ppLand = pLandscape->getLandParams();
 	if (landNr >= 0) { // open the file
 		popns[0]->outIndsHeaders(rep, landNr, ppLand.patchModel);
@@ -623,7 +623,7 @@ int SubCommunity::stagePop(int stage) const {
 }
 
 // Open traits file and write header record
-bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, const Species* pSpecies, int landNr) const
+bool SubCommunity::outTraitsHeaders(const Landscape* pLandscape, const Species* pSpecies, int landNr) const
 {
 	landParams land = pLandscape->getLandParams();
 	if (landNr == -999) { // close file
@@ -732,7 +732,7 @@ bool SubCommunity::outTraitsHeaders(Landscape* pLandscape, const Species* pSpeci
 }
 
 // Write records to traits file and return aggregated sums
-traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int gen, bool commlevel) const
+traitsums SubCommunity::outTraits(const Landscape* pLandscape, int rep, int yr, int gen, bool commlevel) const
 {
 	int popsize, ngenes;
 	landParams land = pLandscape->getLandParams();

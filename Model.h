@@ -77,7 +77,7 @@ int RunModel(
 #endif // RS_RCPP && !R_CMD
 bool CheckDirectory(void);
 void PreReproductionOutput(
-	Landscape*,	// pointer to Landscape
+	const Landscape*,	// pointer to Landscape
 	Community*, // pointer to Community
 	int,				// replicate
 	int,				// year
@@ -91,7 +91,7 @@ void RangePopOutput(
 );
 
 void OutParameters(
-	Landscape*	// pointer to Landscape
+	const Landscape*	// pointer to Landscape
 );
 
 extern paramGrad *paramsGrad;

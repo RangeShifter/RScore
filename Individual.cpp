@@ -941,7 +941,7 @@ void Individual::moveto(Cell* newCell) {
 // Move to a new cell by sampling a dispersal distance from a single or double
 // negative exponential kernel
 // Returns 1 if still dispersing (including having found a potential patch), otherwise 0
-int Individual::moveKernel(Landscape* pLandscape, const Species* pSpecies,
+int Individual::moveKernel(const Landscape* pLandscape, const Species* pSpecies,
 	const short repType, const bool absorbing)
 {
 
@@ -1138,7 +1138,7 @@ int Individual::moveKernel(Landscape* pLandscape, const Species* pSpecies,
 //---------------------------------------------------------------------------
 // Make a single movement step according to a mechanistic movement model
 // Returns 1 if still dispersing (including having found a potential patch), otherwise 0
-int Individual::moveStep(Landscape* pLandscape, const Species* pSpecies,
+int Individual::moveStep(const Landscape* pLandscape, const Species* pSpecies,
 	const short landIx, const bool absorbing)
 {
 
@@ -1335,7 +1335,7 @@ int Individual::moveStep(Landscape* pLandscape, const Species* pSpecies,
 // Functions to implement the SMS algorithm
 
 // Move to a neighbouring cell according to the SMS algorithm
-movedata Individual::smsMove(Landscape* pLand, const Species* pSpecies,
+movedata Individual::smsMove(const Landscape* pLand, const Species* pSpecies,
 	const short landIx, const bool natalPatch, const bool indvar, const bool absorbing)
 {
 
@@ -1670,7 +1670,7 @@ array3x3d Individual::calcWeightings(const double base, const double theta) cons
 }
 
 // Weight neighbouring cells on basis of (habitat) costs
-array3x3f Individual::getHabMatrix(Landscape* pLand, const Species* pSpecies,
+array3x3f Individual::getHabMatrix(const Landscape* pLand, const Species* pSpecies,
 	const int x, const int y, const short pr, const short prmethod, const short landIx,
 	const bool absorbing)
 {

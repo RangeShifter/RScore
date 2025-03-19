@@ -155,7 +155,7 @@ public:
 	);
 #if RS_RCPP
 	int transfer( // Executed for the Population(s) in the matrix only
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		short,				// landscape change index
 		short				// year
 	);
@@ -167,7 +167,7 @@ public:
 	) const;
 #else
 	int transfer( // Executed for the Population(s) in the matrix only
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		short				// landscape change index
 	);
 	// Determine whether there is a potential mate present in a patch which a potential
@@ -210,7 +210,7 @@ public:
 		bool	// TRUE for a patch-based model, FALSE for a cell-based model
 	) const;
 	void outIndividual( // Write records to individuals file
-		Landscape*,	// pointer to Landscape
+		const Landscape*,	// pointer to Landscape
 		int,				// replicate
 		int,				// year
 		int,				// generation
