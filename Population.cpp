@@ -27,6 +27,10 @@
 #include <algorithm>
 #include <H5Cpp.h>
 #include <cstring>
+#ifdef _OPENMP
+#include <mutex>
+#endif
+
 //---------------------------------------------------------------------------
 
 ofstream outPop;
@@ -1452,6 +1456,9 @@ class H5IndividualRecorder {
 			if (nb_inds == 0) {
 				return;
 			}
+#ifdef _OPENMP
+			const std::lock_guard<std::mutex> lock(recorder.file_mutex);
+#endif
 			H5::DataSpace fspace = recorder.dataset.getSpace();
 			int ndims = fspace.getSimpleExtentNdims();
 			assert(ndims == 1);
@@ -1725,6 +1732,9 @@ class H5IndividualRecorder {
 	H5::H5File file;
 	H5::DataSet dataset;
 	std::vector<unsigned char> fill_value;
+#ifdef _OPENMP
+	std::mutex file_mutex;
+#endif
 };
 
 template<>
