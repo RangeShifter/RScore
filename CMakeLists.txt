@@ -19,6 +19,13 @@ if(OMP)
 	endif()
 endif()
 
+if(POLICY CMP0074)
+	cmake_policy(SET CMP0074 NEW)
+endif()
+find_package(HDF5 REQUIRED COMPONENTS CXX)
+target_include_directories(RScore PUBLIC ${HDF5_INCLUDE_DIRS})
+target_link_libraries(RScore PUBLIC ${HDF5_LIBRARIES})
+
 # pass config definitions to compiler
 target_compile_definitions(RScore PRIVATE RSWIN64)
 
