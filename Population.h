@@ -106,6 +106,10 @@ struct traitsums { // sums of trait genes for dispersal
 	double ssqBetaS[NSEXES]; 	// sum of squares of inflection point of settlement reaction norm
 };
 
+class IndividualsBuffer;
+IndividualsBuffer* new_individuals_buffer();
+void delete_individuals_buffer(IndividualsBuffer*);
+
 class Population {
 
 public:
@@ -214,7 +218,8 @@ public:
 		int,				// replicate
 		int,				// year
 		int,				// generation
-		int					// Patch number
+		int,					// Patch number
+		IndividualsBuffer*
 	);
 	void outGenetics( // Write records to genetics file
 		const int,		// replicate

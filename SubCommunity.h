@@ -163,8 +163,9 @@ public:
 		int,				// replicate
 		int,				// year
 		int,				// generation
-		int					// Landscape number (>= 0 to open the file, -999 to close the file
+		int,					// Landscape number (>= 0 to open the file, -999 to close the file
 								//									 -1 to write data records)
+		IndividualsBuffer*
 	);
 	void outGenetics( // Write records to genetics file
 		int,				// replicate

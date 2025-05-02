@@ -25,10 +25,11 @@
 #include "Population.h"
 
 #include <algorithm>
+#include <H5Cpp.h>
+#include <cstring>
 //---------------------------------------------------------------------------
 
 ofstream outPop;
-ofstream outInds;
 
 //---------------------------------------------------------------------------
 
@@ -1432,80 +1433,437 @@ void Population::outPopulation(int rep, int yr, int gen, float eps,
 
 //---------------------------------------------------------------------------
 
+class H5IndividualRecorder {
+	public:
+	class H5Individual;
+
+	class H5Buffer {
+		public:
+		H5Buffer(H5IndividualRecorder& rec):
+			recorder(rec),
+			data()
+		{
+			assert(recorder.finalized_type);
+		}
+
+		void flush() {
+			assert(data.size() % recorder.size == 0);
+			size_t nb_inds = data.size() / recorder.size;
+			if (nb_inds == 0) {
+				return;
+			}
+			H5::DataSpace fspace = recorder.dataset.getSpace();
+			int ndims = fspace.getSimpleExtentNdims();
+			assert(ndims == 1);
+			hsize_t orig_dims[1];
+			fspace.getSimpleExtentDims(orig_dims);
+			hsize_t new_dims[1] = { orig_dims[0] + nb_inds };
+			recorder.dataset.extend(new_dims);
+			fspace = recorder.dataset.getSpace();
+			hsize_t extra_dims[1] = { nb_inds };
+			hsize_t offset[1] = { orig_dims[0] };
+			fspace.selectHyperslab(H5S_SELECT_SET, extra_dims, offset);
+			H5::DataSpace mspace(1, extra_dims);
+			recorder.dataset.write(data.data(), recorder.getH5Type(), mspace, fspace);
+			data.clear();
+		}
+
+		void flush_if_full() {
+			assert(data.size() % recorder.size == 0);
+			size_t nb_inds = data.size() / recorder.size;
+			if (nb_inds >= recorder.chunk_size) {
+				flush();
+			}
+		}
+
+		private:
+		std::vector<unsigned char> data;
+		H5IndividualRecorder& recorder;
+
+		size_t new_individual_offset() {
+			size_t off = data.size();
+			data.insert(data.end(), recorder.size, 0);
+			return off;
+		}
+
+		friend H5Individual;
+	};
+
+	class H5Individual {
+		public:
+		H5Individual(H5Buffer& buf):
+			buffer(buf),
+			offset(buf.new_individual_offset())
+		{ }
+
+		void write(const size_t member_offset, const void* data, const size_t size) {
+			const size_t off = offset + member_offset;
+			std::memcpy(&buffer.data[off], data, size);
+		}
+
+		private:
+		H5Buffer& buffer;
+		const size_t offset;
+	};
+
+	class H5BaseRecorder {
+		protected:
+		const std::string name;
+		const size_t size;
+		const H5::DataType& H5Type;
+		H5IndividualRecorder* pIndRec;
+		size_t offset;
+
+		H5BaseRecorder(const std::string& name, const H5::PredType& H5Type, const size_t size):
+			name(name),
+			size(size),
+			H5Type(H5Type),
+			pIndRec(nullptr),
+			offset(-1)
+		{
+			assert(size == H5Type.getSize());
+		}
+
+		void insert(H5IndividualRecorder& ind_rec) {
+			assert(!ind_rec.finalized_type);
+			assert(pIndRec == nullptr);
+			pIndRec = &ind_rec;
+			offset = ind_rec.fill_value.size();
+			ind_rec.fill_value.insert(ind_rec.fill_value.end(), size, 0);
+			write_default_value(ind_rec.fill_value);
+			ind_rec.H5IndividualType.insertMember(name, offset, H5Type);
+		}
+
+		virtual void write_default_value(std::vector<unsigned char>& buffer) = 0;
+
+		friend H5IndividualRecorder;
+	};
+
+	private:
+	template<typename T>
+	static const H5::PredType& H5type_getter();
+
+	public:
+	template<typename T>
+	class H5Recorder: public H5BaseRecorder {
+		public:
+		H5Recorder(const std::string& name, T default_value = T()):
+			H5BaseRecorder(name, H5type_getter<T>(), sizeof(T)),
+			default_value(default_value)
+		{ }
+
+		void set(H5Individual &ind, const T &val) const {
+			assert(pIndRec);
+			assert(pIndRec->finalized_type);
+			ind.write(offset, &val, size);
+		}
+
+		void write_default_value(std::vector<unsigned char>& buffer) {
+			std::memcpy(&buffer.data()[offset], &default_value, size);
+		}
+
+		private:
+		const T default_value;
+	};
+
+	public:
+	H5Recorder<int> Rep;
+	H5Recorder<int> Year;
+	H5Recorder<short> RepSeason;
+	H5Recorder<short> Species;
+	H5Recorder<int> IndID;
+	H5Recorder<short> Status;
+	H5Recorder<int> Natal_patch;
+	H5Recorder<int> PatchID;
+	H5Recorder<int> Natal_X;
+	H5Recorder<int> Natal_Y;
+	H5Recorder<int> X;
+	H5Recorder<int> Y;
+	H5Recorder<short> Sex;
+	H5Recorder<short> Age;
+	H5Recorder<short> Stage;
+	H5Recorder<float> D0;
+	H5Recorder<float> Alpha;
+	H5Recorder<float> Beta;
+	H5Recorder<float> EP;
+	H5Recorder<float> DP;
+	H5Recorder<float> GB;
+	H5Recorder<float> AlphaDB;
+	H5Recorder<float> BetaDB;
+	H5Recorder<float> StepLength;
+	H5Recorder<float> Rho;
+	H5Recorder<float> MeanDistI;
+	H5Recorder<float> MeanDistII;
+	H5Recorder<float> PKernelI;
+	H5Recorder<float> S0;
+	H5Recorder<float> AlphaS;
+	H5Recorder<float> BetaS;
+	H5Recorder<float> DistMoved;
+	H5Recorder<int> Nsteps;
+
+	H5IndividualRecorder():
+		size(0),
+		H5IndividualType((size_t)1024),
+		finalized_type(false),
+		file_open(false),
+		dataset_open(false),
+		Rep("Rep"),
+		Year("Year"),
+		RepSeason("RepSeason"),
+		Species("Species"),
+		IndID("IndID"),
+		Status("Status"),
+		Natal_patch("Natal_patch"),
+		PatchID("PatchID"),
+		Natal_X("Natal_X"),
+		Natal_Y("Natal_Y"),
+		X("X"),
+		Y("Y"),
+		Sex("Sex"),
+		Age("Age"),
+		Stage("Stage"),
+		D0("D0"),
+		Alpha("Alpha"),
+		Beta("Beta"),
+		EP("EP"),
+		DP("DP"),
+		GB("GB"),
+		AlphaDB("AlphaDB"),
+		BetaDB("BetaDB"),
+		StepLength("StepLength"),
+		Rho("Rho"),
+		MeanDistI("MeanDistI"),
+		MeanDistII("MeanDistII"),
+		PKernelI("PKernelI"),
+		S0("S0"),
+		AlphaS("AlphaS"),
+		BetaS("BetaS"),
+		DistMoved("Distmoved"),
+		Nsteps("Nsteps")
+	{ }
+
+	void insertMember(H5BaseRecorder& rec) {
+		rec.insert(*this);
+	}
+
+	void finalizeType() {
+		size = fill_value.size();
+		H5IndividualType.setSize(size);
+		finalized_type = true;
+	}
+
+	const H5::CompType& getH5Type() const {
+		assert(finalized_type);
+		return H5IndividualType;
+	}
+
+	void init(const int landNr) {
+		assert(!file_open);
+		simParams sim = paramsSim->getSim();
+		string filename;
+		if (sim.batchMode) {
+			filename = paramsSim->getDir(2)
+				+ "Batch" + to_string(sim.batchNum) + "_"
+				+ "Sim" + to_string(sim.simulation)
+				+ "_Land" + to_string(landNr) + "_Inds.h5";
+		}
+		else {
+			filename = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation)
+				+ "_Inds.h5";
+		}
+		file = H5::H5File(filename, H5F_ACC_TRUNC);
+		file_open = true;
+		file.createGroup("Reps");
+	}
+
+	void fini() {
+		assert(!dataset_open);
+		if (file_open) {
+			file.close();
+			file_open = false;
+		}
+	}
+
+	void initRep(const int rep) {
+		assert(finalized_type);
+		assert(file_open);
+		assert(!dataset_open);
+		file.createGroup("Reps/" + to_string(rep));
+		string name = "Reps/" + to_string(rep) + "/Inds";
+		// Create dataspace for unlimited dataset
+		const hsize_t dims[1] = {0};
+		const hsize_t maxdims[1] = {H5S_UNLIMITED};
+		H5::DataSpace dataspace(1, dims, maxdims);
+
+		// Set chunk size for optimal performance
+		H5::DSetCreatPropList cparms;
+		const hsize_t chunk_size_arr[1] = {chunk_size};
+		cparms.setChunk(1, chunk_size_arr);
+		// Set compression ZLIB
+		// cparms.setDeflate(4);
+		// Fill value
+		cparms.setFillValue(H5IndividualType, fill_value.data());
+
+		dataset = file.createDataSet(name, H5IndividualType, dataspace, cparms);
+		dataset_open = true;
+	}
+
+	void finiRep() {
+		if (dataset_open) {
+			dataset.close();
+			dataset_open = false;
+		}
+	}
+
+	private:
+	static const size_t chunk_size = 4096;
+	size_t size;
+	H5::CompType H5IndividualType;
+	bool finalized_type;
+	bool file_open;
+	bool dataset_open;
+	H5::H5File file;
+	H5::DataSet dataset;
+	std::vector<unsigned char> fill_value;
+};
+
+template<>
+const H5::PredType& H5IndividualRecorder::H5type_getter<short>() {
+	return H5::PredType::NATIVE_SHORT;
+}
+
+template<>
+const H5::PredType& H5IndividualRecorder::H5type_getter<int>() {
+	return H5::PredType::NATIVE_INT;
+}
+
+template<>
+const H5::PredType& H5IndividualRecorder::H5type_getter<float>() {
+	return H5::PredType::NATIVE_FLOAT;
+}
+
+H5IndividualRecorder* pH5IndividualRecorder;
+
+class IndividualsBuffer {
+	public:
+	H5IndividualRecorder::H5Buffer h5;
+
+	IndividualsBuffer():
+		h5(*pH5IndividualRecorder)
+	{ }
+
+	~IndividualsBuffer() {
+		h5.flush();
+	}
+};
+
+IndividualsBuffer* new_individuals_buffer() {
+	return new IndividualsBuffer;
+}
+
+void delete_individuals_buffer(IndividualsBuffer* buf) {
+	delete buf;
+}
+
 //---------------------------------------------------------------------------
 // Open individuals file and write header record
 void Population::outIndsHeaders(int rep, int landNr, bool patchModel)
 {
-
-	if (landNr == -999) { // close file
-		if (outInds.is_open()) {
-			outInds.close(); outInds.clear();
+	simParams sim = paramsSim->getSim();
+	if (landNr == -999) {
+		if (!pH5IndividualRecorder) return;
+		pH5IndividualRecorder->finiRep();
+		if (rep == sim.reps - 1) {
+			pH5IndividualRecorder->fini();
+			delete pH5IndividualRecorder;
+			pH5IndividualRecorder = nullptr;
 		}
 		return;
 	}
 
-	string name;
-	demogrParams dem = pSpecies->getDemogr();
-	emigRules emig = pSpecies->getEmig();
-	trfrRules trfr = pSpecies->getTrfr();
-	settleType sett = pSpecies->getSettle();
-	simParams sim = paramsSim->getSim();
+	if (rep == 0) {
+		pH5IndividualRecorder = new H5IndividualRecorder;
 
-	if (sim.batchMode) {
-		name = paramsSim->getDir(2)
-			+ "Batch" + to_string(sim.batchNum) + "_"
-			+ "Sim" + to_string(sim.simulation)
-			+ "_Land" + to_string(landNr) + "_Rep" + to_string(rep) + "_Inds.txt";
-	}
-	else {
-		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation)
-			+ "_Rep" + to_string(rep) + "_Inds.txt";
-	}
-	outInds.open(name.c_str());
+		// Check which columns need be written
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Rep);
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Year);
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->RepSeason);
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Species);
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->IndID);
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Status);
 
-	outInds << "Rep\tYear\tRepSeason\tSpecies\tIndID\tStatus";
-	if (patchModel) outInds << "\tNatal_patch\tPatchID";
-	else outInds << "\tNatal_X\tNatal_Y\tX\tY";
-	if (dem.repType != 0) outInds << "\tSex";
-	if (dem.stageStruct) outInds << "\tAge\tStage";
-	if (emig.indVar) {
-		if (emig.densDep) outInds << "\tD0\tAlpha\tBeta";
-		else outInds << "\tEP";
-	}
-	if (trfr.indVar) {
-		if (trfr.moveModel) {
-			if (trfr.moveType == 1) { // SMS
-				outInds << "\tDP\tGB\tAlphaDB\tBetaDB";
-			}
-			if (trfr.moveType == 2) { // CRW
-				outInds << "\tStepLength\tRho";
+		if (patchModel) {
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Natal_patch);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->PatchID);
+		} else {
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Natal_X);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Natal_Y);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->X);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Y);
+		}
+		if (pSpecies->getDemogr().repType != 0) {
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Sex);
+		}
+		if (pSpecies->getDemogr().stageStruct) {
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Age);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Stage);
+		}
+		if (pSpecies->getEmig().indVar) {
+			if (pSpecies->getEmig().densDep) {
+				pH5IndividualRecorder->insertMember(pH5IndividualRecorder->D0);
+				pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Alpha);
+				pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Beta);
+			} else {
+				pH5IndividualRecorder->insertMember(pH5IndividualRecorder->EP);
 			}
 		}
-		else { // kernel
-			outInds << "\tMeanDistI";
-			if (trfr.twinKern) outInds << "\tMeanDistII\tPKernelI";
+		if (pSpecies->getTrfr().indVar) {
+			if (pSpecies->getTrfr().moveModel) {
+				if (pSpecies->getTrfr().moveType == 1) { // SMS
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->DP);
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->GB);
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->AlphaDB);
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->BetaDB);
+				}
+				if (pSpecies->getTrfr().moveType == 2) { // CRW
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->StepLength);
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Rho);
+				}
+			} else { // kernel
+				pH5IndividualRecorder->insertMember(pH5IndividualRecorder->MeanDistI);
+				if (pSpecies->getTrfr().twinKern) {
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->MeanDistII);
+					pH5IndividualRecorder->insertMember(pH5IndividualRecorder->PKernelI);
+				}
+			}
 		}
-	}
-	if (sett.indVar) {
-		outInds << "\tS0\tAlphaS\tBetaS";
-	}
-	outInds << "\tDistMoved";
+		if (pSpecies->getSettle().indVar) {
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->S0);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->AlphaS);
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->BetaS);
+		}
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->DistMoved);
 #if RSDEBUG
-	// ALWAYS WRITE NO. OF STEPS
-	outInds << "\tNsteps";
+		// ALWAYS WRITE NO. OF STEPS
+		pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Nsteps);
 #else
-	if (trfr.moveModel) outInds << "\tNsteps";
+		if (pSpecies->getTrfr().moveModel) {
+			pH5IndividualRecorder->insertMember(pH5IndividualRecorder->Nsteps);
+		}
 #endif
-	outInds << endl;
+		pH5IndividualRecorder->finalizeType();
+
+		pH5IndividualRecorder->init(landNr);
+	}
+	pH5IndividualRecorder->initRep(rep);
 }
 
 //---------------------------------------------------------------------------
 // Write records to individuals file
 void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
-	int patchNum)
+	int patchNum, IndividualsBuffer* ind_buffer)
 {
 	//int x, y, p_id;
-	bool writeInd;
 	pathSteps steps;
 	Cell* pCell;
 
@@ -1516,32 +1874,42 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 	settleType sett = pSpecies->getSettle();
 	short spNum = pSpecies->getSpNum();
 
+	H5IndividualRecorder::H5Buffer& buffer = ind_buffer->h5;
 	int ninds = (int)inds.size();
-
 	for (int i = 0; i < ninds; i++) {
+		H5IndividualRecorder::H5Individual* writeInd = nullptr;
 		indStats ind = inds[i]->getStats();
 		if (yr == -1) { // write all initialised individuals
-			writeInd = true;
-			outInds << rep << "\t" << yr << "\t" << dem.repSeasons - 1;
+			writeInd = new H5IndividualRecorder::H5Individual(buffer);
+			pH5IndividualRecorder->Rep.set(*writeInd, rep);
+			pH5IndividualRecorder->Year.set(*writeInd, yr);
+			pH5IndividualRecorder->RepSeason.set(*writeInd, dem.repSeasons - 1);
 		}
 		else {
 			if (dem.stageStruct && gen < 0) { // write status 9 individuals only
 				if (ind.status == 9) {
-					writeInd = true;
-					outInds << rep << "\t" << yr << "\t" << dem.repSeasons - 1;
+					writeInd = new H5IndividualRecorder::H5Individual(buffer);
+					pH5IndividualRecorder->Rep.set(*writeInd, rep);
+					pH5IndividualRecorder->Year.set(*writeInd, yr);
+					pH5IndividualRecorder->RepSeason.set(*writeInd, dem.repSeasons - 1);
 				}
-				else writeInd = false;
+				else writeInd = nullptr;
 			}
 			else {
-				writeInd = true;
-				outInds << rep << "\t" << yr << "\t" << gen;
+				writeInd = new H5IndividualRecorder::H5Individual(buffer);
+				pH5IndividualRecorder->Rep.set(*writeInd, rep);
+				pH5IndividualRecorder->Year.set(*writeInd, yr);
+				pH5IndividualRecorder->RepSeason.set(*writeInd, gen);
 			}
 		}
 		if (writeInd) {
-			outInds << "\t" << spNum << "\t" << inds[i]->getId();
-			if (dem.stageStruct) outInds << "\t" << ind.status;
+			pH5IndividualRecorder->Species.set(*writeInd, spNum);
+			pH5IndividualRecorder->IndID.set(*writeInd, inds[i]->getId());
+			if (dem.stageStruct){
+				pH5IndividualRecorder->Status.set(*writeInd, ind.status);
+			}
 			else { // non-structured population
-				outInds << "\t" << ind.status;
+				pH5IndividualRecorder->Status.set(*writeInd, ind.status);
 			}
 			pCell = inds[i]->getLocn(1);
 			locn loc;
@@ -1550,24 +1918,37 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 			pCell = inds[i]->getLocn(0);
 			locn natalloc = pCell->getLocn();
 			if (ppLand.patchModel) {
-				outInds << "\t" << inds[i]->getNatalPatch()->getPatchNum();
-				if (loc.x == -1) outInds << "\t-1";
-				else outInds << "\t" << patchNum;
+				pH5IndividualRecorder->Natal_patch.set(*writeInd, inds[i]->getNatalPatch()->getPatchNum());
+				if (loc.x == -1){
+					pH5IndividualRecorder->PatchID.set(*writeInd, -1);
+				}
+				else{
+					pH5IndividualRecorder->PatchID.set(*writeInd, patchNum);
+				}
 			}
 			else { // cell-based model
-				outInds << "\t" << (float)natalloc.x << "\t" << natalloc.y;
-				outInds << "\t" << (float)loc.x << "\t" << (float)loc.y;
+				pH5IndividualRecorder->Natal_X.set(*writeInd, natalloc.x);
+				pH5IndividualRecorder->Natal_Y.set(*writeInd, natalloc.y);
+				pH5IndividualRecorder->X.set(*writeInd, loc.x);
+				pH5IndividualRecorder->Y.set(*writeInd, loc.y);
 			}
-			if (dem.repType != 0) outInds << "\t" << ind.sex;
-			if (dem.stageStruct) outInds << "\t" << ind.age << "\t" << ind.stage;
+			if (dem.repType != 0){
+				pH5IndividualRecorder->Sex.set(*writeInd, ind.sex);
+			}
+			if (dem.stageStruct){
+				pH5IndividualRecorder->Age.set(*writeInd, ind.age);
+				pH5IndividualRecorder->Stage.set(*writeInd, ind.stage);
+			}
 
 			if (emig.indVar) {
 				emigTraits e = inds[i]->getEmigTraits();
 				if (emig.densDep) {
-					outInds << "\t" << e.d0 << "\t" << e.alpha << "\t" << e.beta;
+					pH5IndividualRecorder->D0.set(*writeInd, e.d0);
+					pH5IndividualRecorder->Alpha.set(*writeInd, e.alpha);
+					pH5IndividualRecorder->Beta.set(*writeInd, e.beta);
 				}
 				else {
-					outInds << "\t" << e.d0;
+					pH5IndividualRecorder->EP.set(*writeInd, e.d0);
 				}
 			} // end of if (emig.indVar)
 
@@ -1575,51 +1956,61 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 				if (trfr.moveModel) {
 					if (trfr.moveType == 1) { // SMS
 						trfrSMSTraits s = inds[i]->getSMSTraits();
-						outInds << "\t" << s.dp << "\t" << s.gb;
-						outInds << "\t" << s.alphaDB << "\t" << s.betaDB;
+						pH5IndividualRecorder->DP.set(*writeInd, s.dp);
+						pH5IndividualRecorder->GB.set(*writeInd, s.gb);
+						pH5IndividualRecorder->AlphaDB.set(*writeInd, s.alphaDB);
+						pH5IndividualRecorder->BetaDB.set(*writeInd, s.betaDB);
 					} // end of SMS
 					if (trfr.moveType == 2) { // CRW
 						trfrCRWTraits c = inds[i]->getCRWTraits();
-						outInds << "\t" << c.stepLength << "\t" << c.rho;
+						pH5IndividualRecorder->StepLength.set(*writeInd, c.stepLength);
+						pH5IndividualRecorder->Rho.set(*writeInd, c.rho);
 					} // end of CRW
 				}
 				else { // kernel
-					trfrKernTraits k = inds[i]->getKernTraits();
+					trfrKernTraits kernel = inds[i]->getKernTraits();
 					if (trfr.twinKern)
 					{
-						outInds << "\t" << k.meanDist1 << "\t" << k.meanDist2 << "\t" << k.probKern1;
+						pH5IndividualRecorder->MeanDistI.set(*writeInd, kernel.meanDist1);
+						pH5IndividualRecorder->MeanDistII.set(*writeInd, kernel.meanDist2);
+						pH5IndividualRecorder->PKernelI.set(*writeInd, kernel.probKern1);
 					}
 					else {
-						outInds << "\t" << k.meanDist1;
+						pH5IndividualRecorder->MeanDistI.set(*writeInd, kernel.meanDist1);
 					}
 				}
 			}
 
 			if (sett.indVar) {
 				settleTraits s = inds[i]->getSettTraits();
-				outInds << "\t" << s.s0 << "\t" << s.alpha << "\t" << s.beta;
+				pH5IndividualRecorder->S0.set(*writeInd, s.s0);
+				pH5IndividualRecorder->AlphaS.set(*writeInd, s.alpha);
+				pH5IndividualRecorder->BetaS.set(*writeInd, s.beta);
 			}
 
 			// distance moved (metres)
-			if (loc.x == -1) outInds << "\t-1";
+			if (loc.x == -1){
+				pH5IndividualRecorder->DistMoved.set(*writeInd, (float)-1);
+			}
 			else {
 				float d = ppLand.resol * sqrt((float)((natalloc.x - loc.x) * (natalloc.x - loc.x)
 					+ (natalloc.y - loc.y) * (natalloc.y - loc.y)));
-				outInds << "\t" << d;
+				pH5IndividualRecorder->DistMoved.set(*writeInd, d);
 			}
 #if RSDEBUG
 			// ALWAYS WRITE NO. OF STEPS
 			steps = inds[i]->getSteps();
-			outInds << "\t" << steps.year;
+			pH5IndividualRecorder->Nsteps.set(*writeInd, steps.year);
 #else
 			if (trfr.moveModel) {
 				steps = inds[i]->getSteps();
-				outInds << "\t" << steps.year;
+				pH5IndividualRecorder->Nsteps.set(*writeInd, steps.year);
 			}
 #endif
-			outInds << endl;
+			delete writeInd;
 		} // end of writeInd condition
 	}
+	buffer.flush_if_full();
 }
 
 //---------------------------------------------------------------------------

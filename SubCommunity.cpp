@@ -576,7 +576,7 @@ void SubCommunity::outPop(Landscape* pLandscape, int rep, int yr, int gen)
 }
 
 // Write records to individuals file
-void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int landNr) {
+void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int landNr, IndividualsBuffer* ind_buf) {
 	landParams ppLand = pLandscape->getLandParams();
 	if (landNr >= 0) { // open the file
 		popns[0]->outIndsHeaders(rep, landNr, ppLand.patchModel);
@@ -589,7 +589,7 @@ void SubCommunity::outInds(Landscape* pLandscape, int rep, int yr, int gen, int 
 	// generate output for each population within the sub-community (patch)
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
-		popns[i]->outIndividual(pLandscape, rep, yr, gen, pPatch->getPatchNum());
+		popns[i]->outIndividual(pLandscape, rep, yr, gen, pPatch->getPatchNum(), ind_buf);
 	}
 }
 

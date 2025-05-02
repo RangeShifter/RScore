@@ -632,18 +632,20 @@ void Community::outPop(int rep, int yr, int gen)
 void Community::outInds(int rep, int yr, int gen, int landNr) {
 
 	if (landNr >= 0) { // open the file
-		subComms[0]->outInds(pLandscape, rep, yr, gen, landNr);
+		subComms[0]->outInds(pLandscape, rep, yr, gen, landNr, nullptr);
 		return;
 	}
 	if (landNr == -999) { // close the file
-		subComms[0]->outInds(pLandscape, rep, yr, gen, -999);
+		subComms[0]->outInds(pLandscape, rep, yr, gen, -999, nullptr);
 		return;
 	}
 	// generate output for each sub-community (patch) in the community
 	int nsubcomms = (int)subComms.size();
+	IndividualsBuffer* ind_buf = new_individuals_buffer();
 	for (int i = 0; i < nsubcomms; i++) { // all sub-communities
-		subComms[i]->outInds(pLandscape, rep, yr, gen, landNr);
+		subComms[i]->outInds(pLandscape, rep, yr, gen, landNr, ind_buf);
 	}
+	delete_individuals_buffer(ind_buf);
 }
 
 // Write records to genetics file
