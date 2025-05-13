@@ -1427,7 +1427,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 
 	// set any cells beyond the current landscape limits and any no-data cells
 	// to have zero probability
-	// increment total for re-scaling to sum to unity
 
 	for (y2 = 2; y2 > -1; y2--) {
 		for (x2 = 0; x2 < 3; x2++) {
@@ -1441,29 +1440,26 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 					if (pCell == 0) nbr.cell[x2][y2] = 0.0; // no-data cell
 				}
 			}
-
-			sum_nbrs += nbr.cell[x2][y2];
 		}
 	}
 
-	// scale effective costs as probabilities summing to 1
-	if (sum_nbrs > 0.0) { // should always be the case, but safest to check...
-		for (y2 = 2; y2 > -1; y2--) {
-			for (x2 = 0; x2 < 3; x2++) {
-				nbr.cell[x2][y2] = nbr.cell[x2][y2] / (float)sum_nbrs;
-			}
-		}
-	}
-
-	// set up cell selection probabilities
+	// sum up cell weights
 	double cumulative[9];
 	int j = 0;
-	cumulative[0] = nbr.cell[0][0];
 	for (y2 = 0; y2 < 3; y2++) {
 		for (x2 = 0; x2 < 3; x2++) {
-			if (j != 0) cumulative[j] = cumulative[j - 1] + nbr.cell[x2][y2];
+			sum_nbrs += nbr.cell[x2][y2];
+			cumulative[j] = sum_nbrs;
 			j++;
 		}
+	}
+
+	// scale cumulative weights to convert them to cumulative probabilities
+	if (sum_nbrs > 0.0) { // should always be the case, but safest to check...
+		for (j = 0; j < 9; j++) {
+			cumulative[j] /= sum_nbrs;
+		}
+		assert(cumulative[8] == 1.);
 	}
 
 	// select direction at random based on cell selection probabilities
