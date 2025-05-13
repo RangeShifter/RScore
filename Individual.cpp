@@ -1502,7 +1502,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		// unable to make a move or crossed absorbing boundary
 		// flag individual to die
 		move.dist = -123.0;
-		pCurrCell = pNewCell;
 	}
 	else {
 		newcellcost = pNewCell->getCost();
@@ -1512,8 +1511,8 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 			memory.pop(); // remove oldest memory element
 		}
 		memory.push(current); // record previous location in memory
-		pCurrCell = pNewCell;
 	}
+	pCurrCell = pNewCell;
 	return move;
 }
 
