@@ -1473,7 +1473,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 	// select direction at random based on cell selection probabilities
 	// landscape boundaries and no-data cells may be reflective or absorbing
 	cellcost = pCurrCell->getCost();
-	int loopsteps = 0; // new counter to prevent infinite loop added 14/8/15
 	double rnd = pRandom->Random();
 	assert(rnd < cumulative[8]);
 	j = 0;
@@ -1492,7 +1491,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 	assert((y2 == 1000) && (x2 == 1000));
 	assert(absorbing || (newX >= land.minX && newX <= land.maxX
 		&& newY >= land.minY && newY <= land.maxY));
-	loopsteps++;
 	if (newX < land.minX || newX > land.maxX
 		|| newY < land.minY || newY > land.maxY) {
 		pNewCell = 0;
@@ -1500,8 +1498,7 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
 	}
 	assert(absorbing || (pNewCell != 0));
-	if (loopsteps >= 1000) pNewCell = 0;
-	if (loopsteps >= 1000 || pNewCell == 0 || (newX == -9 || newY== -9)) { // if no cell was found
+	if (pNewCell == 0 || (newX == -9 || newY== -9)) { // if no cell was found
 		// unable to make a move or crossed absorbing boundary
 		// flag individual to die
 		move.dist = -123.0;
