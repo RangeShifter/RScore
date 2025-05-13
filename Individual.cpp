@@ -1448,6 +1448,7 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 	int j = 0;
 	for (y2 = 0; y2 < 3; y2++) {
 		for (x2 = 0; x2 < 3; x2++) {
+			assert(nbr.cell[x2][y2] >= 0);
 			sum_nbrs += nbr.cell[x2][y2];
 			cumulative[j] = sum_nbrs;
 			j++;
