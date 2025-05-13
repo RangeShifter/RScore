@@ -1474,35 +1474,33 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 	// landscape boundaries and no-data cells may be reflective or absorbing
 	cellcost = pCurrCell->getCost();
 	int loopsteps = 0; // new counter to prevent infinite loop added 14/8/15
-	do {
-		double rnd = pRandom->Random();
-		assert(rnd < cumulative[8]);
-		j = 0;
-		for (y2 = 0; y2 < 3; y2++) {
-			for (x2 = 0; x2 < 3; x2++) {
-				if (rnd < cumulative[j]) {
-					newX = current.x + x2 - 1;
-					newY = current.y + y2 - 1;
-					if (x2 == 1 || y2 == 1) move.dist = (float)(land.resol);
-					else move.dist = (float)(land.resol) * (float)SQRT2;
-					y2 = 999; x2 = 999; //to break out of x2 and y2 loops.
-				}
-				j++;
+	double rnd = pRandom->Random();
+	assert(rnd < cumulative[8]);
+	j = 0;
+	for (y2 = 0; y2 < 3; y2++) {
+		for (x2 = 0; x2 < 3; x2++) {
+			if (rnd < cumulative[j]) {
+				newX = current.x + x2 - 1;
+				newY = current.y + y2 - 1;
+				if (x2 == 1 || y2 == 1) move.dist = (float)(land.resol);
+				else move.dist = (float)(land.resol) * (float)SQRT2;
+				y2 = 999; x2 = 999; //to break out of x2 and y2 loops.
 			}
+			j++;
 		}
-		assert((y2 == 1000) && (x2 == 1000));
-		assert(absorbing || (newX >= land.minX && newX <= land.maxX
-			&& newY >= land.minY && newY <= land.maxY));
-		loopsteps++;
-		if (newX < land.minX || newX > land.maxX
-			|| newY < land.minY || newY > land.maxY) {
-			pNewCell = 0;
-		} else {
-			pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
-		}
-		assert(absorbing || (pNewCell != 0));
-		if (loopsteps >= 1000) pNewCell = 0;
-	} while (!absorbing && pNewCell == 0 && loopsteps < 1000); // no-data cell
+	}
+	assert((y2 == 1000) && (x2 == 1000));
+	assert(absorbing || (newX >= land.minX && newX <= land.maxX
+		&& newY >= land.minY && newY <= land.maxY));
+	loopsteps++;
+	if (newX < land.minX || newX > land.maxX
+		|| newY < land.minY || newY > land.maxY) {
+		pNewCell = 0;
+	} else {
+		pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
+	}
+	assert(absorbing || (pNewCell != 0));
+	if (loopsteps >= 1000) pNewCell = 0;
 	if (loopsteps >= 1000 || pNewCell == 0 || (newX == -9 || newY== -9)) { // if no cell was found
 		// unable to make a move or crossed absorbing boundary
 		// flag individual to die
