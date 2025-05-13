@@ -1498,11 +1498,11 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
 	}
 	assert(absorbing || (pNewCell != 0));
-	if (pNewCell == 0 || (newX == -9 || newY== -9)) { // if no cell was found
+	if (pNewCell == 0) { // if no cell was found
 		// unable to make a move or crossed absorbing boundary
 		// flag individual to die
 		move.dist = -123.0;
-		if (pNewCell == 0) pCurrCell = pNewCell;
+		pCurrCell = pNewCell;
 	}
 	else {
 		newcellcost = pNewCell->getCost();
