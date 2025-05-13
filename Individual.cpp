@@ -1462,6 +1462,13 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		}
 		assert(cumulative[8] == 1.);
 	}
+	else {
+		// unable to make a move
+		// flag individual to die
+		move.dist = -123.0;
+		pCurrCell = 0;
+		return move;
+	}
 
 	// select direction at random based on cell selection probabilities
 	// landscape boundaries and no-data cells may be reflective or absorbing
