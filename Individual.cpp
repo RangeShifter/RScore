@@ -1491,6 +1491,7 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 					j++;
 				}
 			}
+			assert((y2 == 1000) && (x2 == 1000));
 			loopsteps++;
 		} while (loopsteps < 1000
 			&& (!absorbing && (newX < land.minX || newX > land.maxX
