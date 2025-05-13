@@ -1494,15 +1494,14 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 		assert(absorbing || (newX >= land.minX && newX <= land.maxX
 			&& newY >= land.minY && newY <= land.maxY));
 		loopsteps++;
-		if (loopsteps >= 1000) pNewCell = 0;
-		else {
-			if (newX < land.minX || newX > land.maxX
-				|| newY < land.minY || newY > land.maxY) {
-				pNewCell = 0;
-			} else{
-			   pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
-			}
+		if (newX < land.minX || newX > land.maxX
+			|| newY < land.minY || newY > land.maxY) {
+			pNewCell = 0;
+		} else {
+			pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
 		}
+		assert(absorbing || (pNewCell != 0));
+		if (loopsteps >= 1000) pNewCell = 0;
 	} while (!absorbing && pNewCell == 0 && loopsteps < 1000); // no-data cell
 	if (loopsteps >= 1000 || pNewCell == 0 || (newX == -9 || newY== -9)) { // if no cell was found
 		// unable to make a move or crossed absorbing boundary
