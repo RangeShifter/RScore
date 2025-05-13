@@ -1473,6 +1473,7 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 	do {
 		do {
 			double rnd = pRandom->Random();
+			assert(rnd < cumulative[8]);
 			j = 0;
 			for (y2 = 0; y2 < 3; y2++) {
 				for (x2 = 0; x2 < 3; x2++) {
