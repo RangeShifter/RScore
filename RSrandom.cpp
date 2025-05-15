@@ -21,6 +21,7 @@
 
 
 #include "RSrandom.h"
+#include <limits>
 #ifdef _OPENMP
 #include <omp.h>
 #endif // _OPENMP
@@ -69,8 +70,6 @@ RSrandom::RSrandom()
     gens.emplace_back(RS_random_seed);
 #endif // _OPENMP
 
-    // Set up standard uniform distribution
-    pRandom01 = new uniform_real_distribution<double>(0.0, 1.0);
     // Set up standard normal distribution
     pNormal = new normal_distribution<double>(0.0, 1.0);
 }
@@ -78,8 +77,6 @@ RSrandom::RSrandom()
 RSrandom::~RSrandom(void)
 {
     gens.clear();
-    if(pRandom01 != 0)
-	delete pRandom01;
     if(pNormal != 0)
 	delete pNormal;
 }
@@ -96,11 +93,13 @@ mt19937 RSrandom::getRNG(void)
 double RSrandom::Random(void)
 {
     // return random number between 0 and 1
+    const size_t random_bits = std::numeric_limits<double>::digits;
 #ifdef _OPENMP
-    return pRandom01->operator()(gens[omp_get_thread_num() % gens.size()]);
+    mt19937& gen = gens[omp_get_thread_num() % gens.size()];
 #else // _OPENMP
-    return pRandom01->operator()(gens[0]);
+    mt19937& gen = gens[0];
 #endif // _OPENMP
+    return std::generate_canonical<double, random_bits>(gen);
 }
 
 int RSrandom::IRandom(int min, int max)

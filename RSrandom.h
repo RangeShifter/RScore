@@ -71,7 +71,6 @@ extern ofstream DEBUGLOG;
 
 	private:
 		std::vector<mt19937> gens;
-		std::uniform_real_distribution<>* pRandom01;
 		std::normal_distribution<>* pNormal;
 	};
 
