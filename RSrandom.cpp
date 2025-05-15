@@ -39,7 +39,9 @@ extern paramSim* paramsSim;
 int RS_random_seed = 0;
 
 // C'tor
-RSrandom::RSrandom()
+RSrandom::RSrandom():
+    // Set up standard normal distribution
+    normal(0.0, 1.0)
 {
 #if RSDEBUG
     // fixed seed
@@ -69,16 +71,11 @@ RSrandom::RSrandom()
     gens.reserve(1);
     gens.emplace_back(RS_random_seed);
 #endif // _OPENMP
-
-    // Set up standard normal distribution
-    pNormal = new normal_distribution<double>(0.0, 1.0);
 }
 
 RSrandom::~RSrandom(void)
 {
     gens.clear();
-    if(pNormal != 0)
-	delete pNormal;
 }
 
 mt19937 RSrandom::getRNG(void)
@@ -123,9 +120,9 @@ int RSrandom::Bernoulli(double p)
 double RSrandom::Normal(double mean, double sd)
 {
 #ifdef _OPENMP
-    return mean + sd * pNormal->operator()(gens[omp_get_thread_num() % gens.size()]);
+    return mean + sd * normal(gens[omp_get_thread_num() % gens.size()]);
 #else // _OPENMP
-    return mean + sd * pNormal->operator()(gens[0]);
+    return mean + sd * normal(gens[0]);
 #endif // _OPENMP
 }
 
