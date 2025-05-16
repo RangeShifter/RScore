@@ -70,6 +70,7 @@ extern ofstream DEBUGLOG;
 		mt19937 getRNG(void);
 
 	private:
+		mt19937& getGen();
 		std::vector<mt19937> gens;
 		std::normal_distribution<double> normal;
 	};

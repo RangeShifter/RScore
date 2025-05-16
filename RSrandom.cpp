@@ -78,7 +78,7 @@ RSrandom::~RSrandom(void)
     gens.clear();
 }
 
-mt19937 RSrandom::getRNG(void)
+inline mt19937& RSrandom::getGen()
 {
 #ifdef _OPENMP
     return gens[omp_get_thread_num() % gens.size()];
@@ -87,27 +87,23 @@ mt19937 RSrandom::getRNG(void)
 #endif // _OPENMP
 }
 
+mt19937 RSrandom::getRNG(void)
+{
+    return getGen();
+}
+
 double RSrandom::Random(void)
 {
     // return random number between 0 and 1
     const size_t random_bits = std::numeric_limits<double>::digits;
-#ifdef _OPENMP
-    mt19937& gen = gens[omp_get_thread_num() % gens.size()];
-#else // _OPENMP
-    mt19937& gen = gens[0];
-#endif // _OPENMP
-    return std::generate_canonical<double, random_bits>(gen);
+    return std::generate_canonical<double, random_bits>(getGen());
 }
 
 int RSrandom::IRandom(int min, int max)
 {
     // return random integer in the interval min <= x <= max
     uniform_int_distribution<int> unif(min, max);
-#ifdef _OPENMP
-    return unif(gens[omp_get_thread_num() % gens.size()]);
-#else // _OPENMP
-    return unif(gens[0]);
-#endif // _OPENMP
+    return unif(getGen());
 }
 
 int RSrandom::Bernoulli(double p)
@@ -119,21 +115,13 @@ int RSrandom::Bernoulli(double p)
 
 double RSrandom::Normal(double mean, double sd)
 {
-#ifdef _OPENMP
-    return mean + sd * normal(gens[omp_get_thread_num() % gens.size()]);
-#else // _OPENMP
-    return mean + sd * normal(gens[0]);
-#endif // _OPENMP
+    return mean + sd * normal(getGen());
 }
 
 int RSrandom::Poisson(double mean)
 {
     poisson_distribution<int> poiss(mean);
-#ifdef _OPENMP
-    return poiss(gens[omp_get_thread_num() % gens.size()]);
-#else // _OPENMP
-    return poiss(gens[0]);
-#endif // _OPENMP
+    return poiss(getGen());
 }
 
 
