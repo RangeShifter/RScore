@@ -22,6 +22,7 @@
 
 #include "RSrandom.h"
 #include <limits>
+#include <vector>
 #ifdef _OPENMP
 #include <omp.h>
 #endif // _OPENMP
@@ -36,39 +37,43 @@ extern paramSim* paramsSim;
 // ofstream RSRANDOMLOG;
 #endif
 
-int RS_random_seed = 0;
-
 // C'tor
 RSrandom::RSrandom():
     // Set up standard normal distribution
     normal(0.0, 1.0)
 {
+    std::vector<int> seed_data;
 #if RSDEBUG
     // fixed seed
-    RS_random_seed = 666;
+    seed_data.push_back(666);
 #else
     // random seed
 #if LINUX_CLUSTER
     std::random_device device;
-    RS_random_seed = device(); // old versions of g++ on Windows return a constant value within a given Windows
+    seed_data.push_back(device()); // old versions of g++ on Windows return a constant value within a given Windows
                                    // session; in this case better use time stamp
 #else
-    RS_random_seed = std::time(NULL);
+    seed_data.push_back(std::time(NULL));
 #endif
 #endif // RSDEBUG
 
 #if BATCH && RSDEBUG
-    DEBUGLOG << "RSrandom::RSrandom(): RS_random_seed=" << RS_random_seed << endl;
+    // DEBUGLOG << "RSrandom::RSrandom(): RS_random_seed=" << RS_random_seed << endl;
 #endif // RSDEBUG
 
     // set up Mersenne Twister RNG
 #ifdef _OPENMP
     int nb_generators = omp_get_max_threads();
     gens.reserve(nb_generators);
-    for (int i = 0; i < nb_generators; i++)
-        gens.emplace_back(RS_random_seed+i);
+    seed_data.push_back(0);
+    for (int i = 0; i < nb_generators; i++) {
+        seed_data.back() = i;
+        std::seed_seq RS_random_seed(seed_data.begin(), seed_data.end());
+        gens.emplace_back(RS_random_seed);
+    }
 #else // _OPENMP
     gens.reserve(1);
+    std::seed_seq RS_random_seed(seed_data.begin(), seed_data.end());
     gens.emplace_back(RS_random_seed);
 #endif // _OPENMP
 }
