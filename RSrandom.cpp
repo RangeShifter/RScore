@@ -48,13 +48,10 @@ RSrandom::RSrandom():
     seed_data.push_back(666);
 #else
     // random seed
-#if LINUX_CLUSTER
     std::random_device device;
     seed_data.push_back(device()); // old versions of g++ on Windows return a constant value within a given Windows
                                    // session; in this case better use time stamp
-#else
     seed_data.push_back(std::time(NULL));
-#endif
 #endif // RSDEBUG
 
 #if BATCH && RSDEBUG
