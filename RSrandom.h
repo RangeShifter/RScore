@@ -74,6 +74,7 @@ public:
 	double Gamma(double, double);
 	double NegExp(double);
 	int Poisson(double);
+	int negBinomial(double prob, int nbSuccesses);
 	mt19937 getRNG(void);
 	void fixNewSeed(int);
 	seed_t getSeed() const { return RS_random_seed; };
