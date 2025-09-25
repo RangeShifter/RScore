@@ -161,6 +161,7 @@ void Species::setDemogr(const demogrParams d) {
 	if (d.harem > 0.0) harem = d.harem;
 	if (d.bc > 0.0) bc = d.bc;
 	if (d.lambda > 0.0) lambda = d.lambda;
+	fecSD = d.fecSD;
 }
 
 demogrParams Species::getDemogrParams(void) {
@@ -172,6 +173,7 @@ demogrParams Species::getDemogrParams(void) {
 	d.harem = harem;
 	d.bc = bc;
 	d.lambda = lambda;
+	d.fecSD = fecSD;
 	return d;
 }
 
@@ -846,6 +848,7 @@ demogrParams createDefaultHaploidDemogrParams() {
 	d.harem = 1.0;
 	d.bc = 1.0;
 	d.lambda = 2.0;
+	d.fecSD = sqrt(2.0); // variance same as mean
 	return d;
 }
 
@@ -858,6 +861,7 @@ demogrParams createDefaultDiploidDemogrParams() {
 	d.harem = 1.0;
 	d.bc = 1.0;
 	d.lambda = 2.0;
+	d.fecSD = sqrt(2.0); // variance same as mean
 	return d;
 }
 

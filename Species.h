@@ -65,6 +65,7 @@ struct demogrParams {
 	float harem; 
 	float bc; 
 	float lambda;
+	float fecSD;
 	bool stageStruct;
 };
 struct stageParams {
@@ -497,7 +498,8 @@ private:
 	float propMales;    // proportion of males at birth in sexual model
 	float harem;        // max harem size in complex sexual model
 	float bc;						// competition coefficient for non-structured population
-	float lambda;       // max intrinsic growth rate for non-structured population
+	float lambda;       // maximum mean fecundity for non-structured populations
+	float fecSD;		// standard deviation of fecundity
 	float probRep; 			// probability of reproducing in subsequent seasons
 	short repSeasons;		// no. of reproductive seasons per year
 	short repInterval;	// no. of reproductive seasons between subsequent reproductions

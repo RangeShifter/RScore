@@ -524,7 +524,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 	int nsexes, stage, sex, njuvs, nj, nmales, nfemales;
 	Cell* pCell;
 	indStats ind;
-	double expected;
+	double meanFecundity;
 	bool skipbreeding;
 
 	envStochParams env = paramsStoch->getStoch();
@@ -533,6 +533,8 @@ void Population::reproduction(const float localK, const float envval, const int 
 	emigRules emig = pSpecies->getEmigRules();
 	transferRules trfr = pSpecies->getTransferRules();
 	settleType sett = pSpecies->getSettle();
+
+	float fecStdDev = dem.fecSD;
 
 	if (dem.repType == 0)
 		nsexes = 1; 
@@ -647,10 +649,11 @@ void Population::reproduction(const float localK, const float envval, const int 
 				}
 				else { // attempt to breed
 					inds[i]->resetFallow();
-					expected = fec[stage][0];
-					if (expected <= 0.0) njuvs = 0;
-					else njuvs = pRandom->Poisson(expected);
-					nj = (int)juvs.size();
+
+					meanFecundity = fec[stage][0];
+					// Draw number offspring, truncated and bounded to positive values
+					njuvs = max(0, static_cast<int>(pRandom->Normal(meanFecundity, fecStdDev)));
+
 					pCell = pPatch->getRandomCell();
 					for (int j = 0; j < njuvs; j++) {
 
@@ -716,20 +719,19 @@ void Population::reproduction(const float localK, const float envval, const int 
 						// NOTE: FOR COMPLEX SEXUAL MODEL, NO. OF FEMALES *ACTUALLY* BREEDING DOES NOT
 						// NECESSARILY EQUAL THE EXPECTED NO. FROM EQN. 7 IN THE MANUAL...
 						if (pRandom->Bernoulli(propBreed)) {
-							expected = fec[stage][0]; // breeds
+							meanFecundity = fec[stage][0]; // breeds
+							// Draw the nb of offspring, truncated and bounded to positive values
+							njuvs = max(0, static_cast<int>(pRandom->Normal(meanFecundity, fecStdDev)));
 						}
-						else expected = 0.0; // fails to breed
-						if (expected <= 0.0) njuvs = 0;
-						else njuvs = pRandom->Poisson(expected);
+						else njuvs = 0;
 
-						if (njuvs > 0)
-						{
-							nj = (int)juvs.size();
+						if (njuvs > 0) {
 							// select father at random from breeding males ...
 							int rrr = 0;
 							if (nmales > 1) rrr = pRandom->IRandom(0, nmales - 1);
 							father = fathers[rrr];
 							pCell = pPatch->getRandomCell();
+
 							for (int j = 0; j < njuvs; j++) {
 								Individual* newJuv;
 
