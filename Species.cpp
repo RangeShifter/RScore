@@ -825,7 +825,7 @@ void Species::setSamplePatchList(const set<int>& samplePatchList) {
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-#ifndef NDEBUG
+#ifdef UNIT_TESTS
 // For testing purposes only
 
 Species* createDefaultSpecies() {
@@ -837,6 +837,16 @@ Species* createDefaultSpecies() {
 	short movtType = 1;
 	Species* pSpecies = new Species(repType, repSeasons, stagestruct, nStages, usesMovtProc, movtType);
 	return pSpecies;
+}
+
+// Set kernel parameters, but ignore constraints on values
+// Used to test dispersal with values < resolution
+void Species::overrideKernels(const short stg, const short sex,
+	const trfrKernelParams k)
+{
+	meanDist1[stg][sex] = k.meanDist1;
+	meanDist2[stg][sex] = k.meanDist2;
+	probKern1[stg][sex] = k.probKern1;
 }
 
 demogrParams createDefaultHaploidDemogrParams() {
@@ -865,4 +875,4 @@ demogrParams createDefaultDiploidDemogrParams() {
 	return d;
 }
 
-#endif // NDEBUG
+#endif // UNIT_TESTS

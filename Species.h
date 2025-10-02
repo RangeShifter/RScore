@@ -400,6 +400,13 @@ public:
 		const trfrKernelParams,	// structure holding transfer by kernel parameters
 		const int							// Landscape resolution
 	);
+
+#ifdef UNIT_TESTS
+	// Testing: set dispersal but ignore resolution
+	void overrideKernels(const short stg, const short sex,
+		const trfrKernelParams k);
+# endif // UNIT_TESTS
+
 	trfrKernelParams getSpKernTraits( // Get transfer by kernel parameters
 		short,	// stage
 		short		// sex
@@ -629,12 +636,12 @@ private:
 
 //---------------------------------------------------------------------------
 
-#ifndef NDEBUG
+#ifdef UNIT_TESTS
 // For testing purposes only
 Species* createDefaultSpecies();
 demogrParams createDefaultHaploidDemogrParams();
 demogrParams createDefaultDiploidDemogrParams();
-#endif // NDEBUG
+#endif // UNIT_TESTS
 
 //---------------------------------------------------------------------------
 #endif
