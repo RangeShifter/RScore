@@ -871,7 +871,7 @@ demogrParams createDefaultDiploidDemogrParams() {
 	d.harem = 1.0;
 	d.bc = 1.0;
 	d.lambda = 2.0;
-	d.fecSD = sqrt(2.0); // variance same as mean
+	d.fecSD = sqrt(d.lambda); // var = mean
 	return d;
 }
 
