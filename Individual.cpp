@@ -1426,7 +1426,6 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 
 	// set any cells beyond the current landscape limits and any no-data cells
 	// to have zero probability
-	// increment total for re-scaling to sum to unity
 
 	for (y2 = 2; y2 > -1; y2--) {
 		for (x2 = 0; x2 < 3; x2++) {
@@ -1440,70 +1439,68 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 					if (pCell == 0) nbr.cell[x2][y2] = 0.0; // no-data cell
 				}
 			}
-
-			sum_nbrs += nbr.cell[x2][y2];
 		}
 	}
 
-	// scale effective costs as probabilities summing to 1
-	if (sum_nbrs > 0.0) { // should always be the case, but safest to check...
-		for (y2 = 2; y2 > -1; y2--) {
-			for (x2 = 0; x2 < 3; x2++) {
-				nbr.cell[x2][y2] = nbr.cell[x2][y2] / (float)sum_nbrs;
-			}
-		}
-	}
-
-	// set up cell selection probabilities
+	// sum up cell weights
 	double cumulative[9];
 	int j = 0;
-	cumulative[0] = nbr.cell[0][0];
 	for (y2 = 0; y2 < 3; y2++) {
 		for (x2 = 0; x2 < 3; x2++) {
-			if (j != 0) cumulative[j] = cumulative[j - 1] + nbr.cell[x2][y2];
+			assert(nbr.cell[x2][y2] >= 0);
+			sum_nbrs += nbr.cell[x2][y2];
+			cumulative[j] = sum_nbrs;
 			j++;
 		}
+	}
+
+	// scale cumulative weights to convert them to cumulative probabilities
+	if (sum_nbrs > 0.0) { // should always be the case, but safest to check...
+		for (j = 0; j < 9; j++) {
+			cumulative[j] /= sum_nbrs;
+		}
+		assert(cumulative[8] == 1.);
+	}
+	else {
+		// unable to make a move
+		// flag individual to die
+		move.dist = -123.0;
+		pCurrCell = 0;
+		return move;
 	}
 
 	// select direction at random based on cell selection probabilities
 	// landscape boundaries and no-data cells may be reflective or absorbing
 	cellcost = pCurrCell->getCost();
-	int loopsteps = 0; // new counter to prevent infinite loop added 14/8/15
-	do {
-		do {
-			double rnd = pRandom->Random();
-			j = 0;
-			for (y2 = 0; y2 < 3; y2++) {
-				for (x2 = 0; x2 < 3; x2++) {
-					if (rnd < cumulative[j]) {
-						newX = current.x + x2 - 1;
-						newY = current.y + y2 - 1;
-						if (x2 == 1 || y2 == 1) move.dist = (float)(land.resol);
-						else move.dist = (float)(land.resol) * (float)SQRT2;
-						y2 = 999; x2 = 999; //to break out of x2 and y2 loops.
-					}
-					j++;
-				}
+	double rnd = pRandom->Random();
+	assert(rnd < cumulative[8]);
+	j = 0;
+	for (y2 = 0; y2 < 3; y2++) {
+		for (x2 = 0; x2 < 3; x2++) {
+			if (rnd < cumulative[j]) {
+				newX = current.x + x2 - 1;
+				newY = current.y + y2 - 1;
+				if (x2 == 1 || y2 == 1) move.dist = (float)(land.resol);
+				else move.dist = (float)(land.resol) * (float)SQRT2;
+				y2 = 999; x2 = 999; //to break out of x2 and y2 loops.
 			}
-			loopsteps++;
-		} while (loopsteps < 1000
-			&& (!absorbing && (newX < land.minX || newX > land.maxX
-				|| newY < land.minY || newY > land.maxY)));
-		if (loopsteps >= 1000) pNewCell = 0;
-		else {
-			if (newX < land.minX || newX > land.maxX
-				|| newY < land.minY || newY > land.maxY) {
-				pNewCell = 0;
-			} else{
-			   pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
-			}
+			j++;
 		}
-	} while (!absorbing && pNewCell == 0 && loopsteps < 1000); // no-data cell
-	if (loopsteps >= 1000 || pNewCell == 0 || (newX == -9 || newY== -9)) { // if no cell was found
+	}
+	assert((y2 == 1000) && (x2 == 1000));
+	assert(absorbing || (newX >= land.minX && newX <= land.maxX
+		&& newY >= land.minY && newY <= land.maxY));
+	if (newX < land.minX || newX > land.maxX
+		|| newY < land.minY || newY > land.maxY) {
+		pNewCell = 0;
+	} else {
+		pNewCell = pLand->findCell(newX, newY); // would also return 0 if outside boundary
+	}
+	assert(absorbing || (pNewCell != 0));
+	if (pNewCell == 0) { // if no cell was found
 		// unable to make a move or crossed absorbing boundary
 		// flag individual to die
 		move.dist = -123.0;
-		if (pNewCell == 0) pCurrCell = pNewCell;
 	}
 	else {
 		newcellcost = pNewCell->getCost();
@@ -1513,8 +1510,8 @@ movedata Individual::smsMove(Landscape* pLand, Species* pSpecies,
 			memory.pop(); // remove oldest memory element
 		}
 		memory.push(current); // record previous location in memory
-		pCurrCell = pNewCell;
 	}
+	pCurrCell = pNewCell;
 	return move;
 }
 
