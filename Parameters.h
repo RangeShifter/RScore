@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, ThÃ©o Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -20,30 +20,30 @@
  --------------------------------------------------------------------------*/
 
 
- /*------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Parameters
+RangeShifter v2.0 Parameters
 
- Implements the following classes:
+Implements the following classes:
 
- paramGrad  - Environmental gradient parameters
- paramInit  - Initialisation (seeding) parameters
- paramSim   - Simulation parameters
- paramStoch - Environmental stochasticity parameters
+paramGrad  - Environmental gradient parameters
+paramInit  - Initialisation (seeding) parameters
+paramSim   - Simulation parameters
+paramStoch - Environmental stochasticity parameters
 
- Also declares some structures and functions used throughout the program.
+Also declares some structures and functions used throughout the program.
 
- For full details of RangeShifter, please see:
- Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
- and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
- eco-evolutionary dynamics and species’ responses to environmental changes.
- Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
+For full details of RangeShifter, please see:
+ Bocedi G., Palmer S.C.F., Peâ€™er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+ eco-evolutionary dynamics and speciesâ€™ responses to environmental changes.
+Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
- Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
 
- Last updated: 25 June 2021 by Steve Palmer
+Last updated: 25 June 2021 by Steve Palmer
 
- ------------------------------------------------------------------------------*/
+------------------------------------------------------------------------------*/
 
 #ifndef ParametersH
 #define ParametersH
@@ -65,6 +65,7 @@ constexpr int gAbsorbingNoDataCost = 100; // cost to use in place of nodata valu
 // when boundaries are absorbing
 constexpr int gMaxNbStages = 10;		// maximum number of stages permitted
 constexpr int gMaxNbSexes = 2;			// maximum number of sexes permitted
+constexpr int gMaxNbLayers = 3*gMaxNbSexes*gMaxNbStages; // maximum number of demographic scaling layers permitted
 
 #if RS_RCPP
 typedef intptr_t intptr;
@@ -73,13 +74,14 @@ typedef unsigned long long intptr;
 #endif // RS_RCPP
 
 #if RS_RCPP
-#ifndef R_EXT_CONSTANTS_H_  // the R headers define PI as a macro, so that the 'else' line results in an error
-#define M_2PI 6.283185307179586
-const double PI = 3.141592653589793238462643383279502884197169399375;
-#endif
+    #ifndef R_EXT_CONSTANTS_H_  // the R headers define PI as a macro, so that the 'else' line results in an error
+        #define M_2PI 6.283185307179586
+        const double PI = 3.141592653589793238462643383279502884197169399375;
+    #endif
+#include <RcppArmadillo.h>
 #else
-#define M_2PI 6.283185307179586
-const double PI = 3.141592654;
+    #define M_2PI 6.283185307179586
+    const double PI = 3.141592654;
 #endif
 
 const double SQRT2 = std::sqrt(double(2.0)); // more efficient than calculating every time
@@ -94,7 +96,7 @@ struct locn { int x; int y; };
 /** Trait types **/
 
 enum TraitType {
-	NEUTRAL, 
+	NEUTRAL,
 	GENETIC_LOAD, GENETIC_LOAD1, GENETIC_LOAD2, GENETIC_LOAD3, GENETIC_LOAD4, GENETIC_LOAD5,
 
 	E_D0, E_ALPHA, E_BETA,
@@ -176,7 +178,7 @@ private:
 	bool gradient;		// there a gradient
 	bool shifting;		// the gradient is shifting
 	int gradType;			// 0 = none, 1  = carrying capacity,
-	// 2 = growth rate, 3 = local extinction probability
+										// 2 = growth rate, 3 = local extinction probability
 	float grad_inc;		// gradient steepness
 	float opt_y;			// optimum row (Y dimension)
 	float opt_y0;			// optimum row at year 0 (internal use only)
@@ -213,7 +215,7 @@ private:
 	bool local;				// applied locally (if not, application is global)
 	bool inK;					// in carrying capacity (if not, in growth rate)
 	bool localExt;		// local extinction applied
-	float ac;					// temporal autocorrelation coefficient		
+	float ac;					// temporal autocorrelation coefficient
 	float std;				// amplitude of fluctuations: sampled from N(0,std)
 	float locExtProb;	// local extinction probability
 };
@@ -233,7 +235,7 @@ struct initParams {
 };
 
 struct initInd {
-	int year, patchID, x, y; 
+	int year, patchID, x, y;
 	short species, sex, age, stage;
 };
 
@@ -258,23 +260,23 @@ public:
 
 private:
 	short seedType;		 	// initialisation type: 0 = free, 1 = from species distn,
-	// 2 = initial individuals, 3 = from file
+											// 2 = initial individuals, 3 = from file
 	short freeType;		 	// free initialisation type:
-	// 0 = random (given no.)
-	// 1 = all suitable cells/patches
-	// 2 = manually selected cells/patches
+											// 0 = random (given no.)
+											// 1 = all suitable cells/patches
+											// 2 = manually selected cells/patches
 	short spDistType;	 	// species distribution initialisation type:
-	// 0 = all suitable cells/patches,
-	// 1 = some randomly chosen suitable cells/patches,
-	// 2 = all cells/patches within selected sp. dist. cells
+											// 0 = all suitable cells/patches,
+											// 1 = some randomly chosen suitable cells/patches,
+											// 2 = all cells/patches within selected sp. dist. cells
 	short initDens;		 	// initialisation density:
-	// 0 = at carrying capacity
-	// 1 = at half carrying capacity
-	// 2 = specified no. per cell or density
+											// 0 = at carrying capacity
+											// 1 = at half carrying capacity
+											// 2 = specified no. per cell or density
 	short initAge;		 	// initial age distribution within each stage:
-	// 0 = lowest possible age
-	// 1 = randomised
-	// 2 = quasi-equilibrium
+											// 0 = lowest possible age
+											// 1 = randomised
+											// 2 = quasi-equilibrium
 	int initFrzYr;		 	// year until which initial range is frozen
 	bool restrictRange;	// restrict range to northern front
 	int restrictRows;		// no. of rows to retain behind front
@@ -329,13 +331,17 @@ struct simParams {
 	bool outConnect;
 #if RS_RCPP
 	int outStartPaths; int outIntPaths;
-	bool outPaths;	bool ReturnPopRaster; bool CreatePopFile;
+	bool outPaths;	bool ReturnPopMatrix; bool ReturnPopDataFrame; bool CreatePopFile;
+	Rcpp::LogicalVector ReturnStages;
 #endif
 	bool fixReplicateSeed;
 	string patchSamplingOption;
-	bool outputGeneValues;
-	bool outputWeirCockerham, outputWeirHill;
-	int outputGeneticInterval, outStartGenetics;
+	bool outputGenes;
+	bool outputGlobalFst, outPairwiseFst;
+	bool outputPerLocusFst;
+	int outputGenesStart, outputGenesInterval;
+	int outputGlobalFstStart, outputGlobalFstInterval;
+	int outputPairwiseFstStart, outputPairwiseFstInterval;
 };
 
 struct simView {
@@ -350,7 +356,8 @@ public:
 	paramSim(const string& pathToProjDir = "");
 	~paramSim(void);
 	void setSim(simParams);
-	void setGeneticSim(string patchSamplingOption, bool outputGeneticValues, bool outputWeirCockerham, bool outputWeirHill, int outputStartGenetics, int outputGeneticInterval);
+	void setGeneticSim(string patchSamplingOption, bool outputGenes, int outputGenesStart, int outputGenesInterval, bool outPairwiseFst,
+		int outputGlobalFst, int outputStartGlobalFst, int outputGlobalFstInterval, int outputStartPairwiseFst, int outputPairwiseFstIntervals, bool outputPerLocusFst);
 	simParams getSim(void);
 	int getSimNum(void);
 	string getDir(int);
@@ -359,7 +366,8 @@ public:
 		batchMode = true;
 	}
 #if RS_RCPP
-	bool getReturnPopRaster(void);
+	bool getReturnPopDataFrame(void);
+	bool getReturnPopMatrix(void);
 	bool getCreatePopFile(void);
 #endif
 
@@ -395,17 +403,24 @@ private:
 	int outStartPaths;
 	int outIntPaths;
 	bool outPaths;
-	bool ReturnPopRaster;
+	bool ReturnPopMatrix;
+	bool ReturnPopDataFrame;
 	bool CreatePopFile;
+	Rcpp::LogicalVector ReturnStages;
 #endif
 	string dir;					// full name of working directory
 	bool fixReplicateSeed;
 	string patchSamplingOption;
 	bool outputGenes;
-	bool outputWeirCockerham;
-	bool outputWeirHill;
-	int outputStartGenetics;
-	int outputGeneticInterval;
+	int outputGenesStart;
+	int outputGenesInterval;
+	bool outputGlobalFst;
+	bool outPairwiseFst;
+	bool outputPerLocusFst;
+	int outputPairwiseFstStart;
+	int outputGlobalFstStart;
+	int outputPairwiseFstInterval;
+	int outputGlobalFstInterval;
 };
 
 extern RSrandom* pRandom;

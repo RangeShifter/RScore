@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, ThÃ©o Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -20,31 +20,31 @@
  --------------------------------------------------------------------------*/
 
 
- /*------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Community
+RangeShifter v2.0 Community
 
- Implements the Community class
+Implements the Community class
 
- There is ONLY ONE instance of a Community in an individual replicate simulation.
- It holds a SubCommunity for each Patch in the Landscape (including the matrix),
- and is thus the highest-level entity accessed for most processing concerned with
- simulated populations.
+There is ONLY ONE instance of a Community in an individual replicate simulation.
+It holds a SubCommunity for each Patch in the Landscape (including the matrix),
+and is thus the highest-level entity accessed for most processing concerned with
+simulated populations.
 
- Optionally, the Community maintains a record of the occupancy of suitable cells
- or patches during the course of simulation of multiple replicates.
+Optionally, the Community maintains a record of the occupancy of suitable cells
+or patches during the course of simulation of multiple replicates.
 
- For full details of RangeShifter, please see:
- Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
- and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
- eco-evolutionary dynamics and species’ responses to environmental changes.
- Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
+For full details of RangeShifter, please see:
+ Bocedi G., Palmer S.C.F., Peâ€™er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+ eco-evolutionary dynamics and speciesâ€™ responses to environmental changes.
+Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
- Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
 
- Last updated: 25 June 2021 by Anne-Kathleen Malchow
+Last updated: 25 June 2021 by Anne-Kathleen Malchow
 
- ------------------------------------------------------------------------------*/
+------------------------------------------------------------------------------*/
 
 #ifndef CommunityH
 #define CommunityH
@@ -64,16 +64,24 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 struct commStats {
-	int ninds, nnonjuvs, suitable, occupied;
-	int minX, maxX, minY, maxY;
+int ninds,nnonjuvs,suitable,occupied;
+int minX,maxX,minY,maxY;
 };
+
+#if RS_RCPP// For raster output only: which type of population output should be stored?
+enum class PopOutType {
+    NInd,    // total abundance
+    Stage,   // specific stages
+    Juvs     // juvenile stage
+};
+#endif
 
 class Community {
 
 public:
 	Community(Landscape*);
 	~Community(void);
-	SubCommunity* addSubComm(Patch*, int);
+	SubCommunity* addSubComm(Patch*,int);
 	// functions to manage populations occurring in the community
 	void initialise(
 		Species*,	// pointer to Species
@@ -187,7 +195,9 @@ public:
 		traitsums	// structure holding sums of trait genes for dispersal (see Population.h)
 	);
 #if RS_RCPP && !R_CMD
-	Rcpp::IntegerMatrix addYearToPopList(int, int);
+    Rcpp::IntegerMatrix addYearToPopList(int,int,PopOutType,int);
+
+    Rcpp::IntegerMatrix addYearToPopListPatchBased(int,int,Rcpp::LogicalVector);
 #endif
 
 	//sample individuals for genetics (or could be used for anything)
@@ -197,7 +207,10 @@ public:
 	void outputGeneValues(const int& year, const int& gen, Species* pSpecies);
 
 	//control neutral stat output
-	void outNeutralGenetics(Species* pSpecies, int rep, int yr, int gen, bool outWeirCockerham, bool outWeirHill);
+
+	void calculateNeutralGenetics(Species* pSpecies, int rep, int yr, int gen, bool outPairwiseFst, int outputPairwiseFstStart, int outputPairwiseFstInterval,
+		bool outputGlobalFst, int outputGlobalFstStart, int outputGlobalFstInterval, bool outputPerLocusFst);
+
 
 	//file openers
 	bool openNeutralOutputFile(Species* pSpecies, const int landNr);
@@ -205,22 +218,22 @@ public:
 	bool openPairwiseFstFile(Species* pSpecies, Landscape* pLandscape, const int landNr, const int rep);
 
 	//file writers
-	void writeNeutralOutputFile(int rep, int yr, int gen, bool outWeirCockerham, bool outWeirHill);
+	void writeNeutralOutputFile(int rep, int yr, int gen);
 	void writePerLocusFstatFile(Species* pSpecies, const int yr, const int gen, const int nLoci, set<int> const& patchList);
-	void writePairwiseFstFile(Species* pSpecies, const int yr, const int gen, const  int nAlleles, const int nLoci, set<int> const& patchList);
+	void writePairwiseFstFile(Species* pSpecies, const int yr, const int gen, set<int> const& patchList);
 	float getPatchHet(Species* pSpecies, int patchId, int whichLocus) const;
 private:
-	Landscape* pLandscape;
+	Landscape *pLandscape;
 	int indIx;				// index used to apply initial individuals
-	float** occSuit;	// occupancy of suitable cells / patches
+	float **occSuit;	// occupancy of suitable cells / patches
 	std::vector <SubCommunity*> subComms;
 
 	//below won't work for multispecies
 	unique_ptr<NeutralStatsManager> pNeutralStatistics;
 };
 
-extern paramSim* paramsSim;
-extern paramInit* paramsInit;
+extern paramSim *paramsSim;
+extern paramInit *paramsInit;
 
 
 //---------------------------------------------------------------------------

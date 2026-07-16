@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -26,6 +26,12 @@
 #ifndef NDEBUG
 #include "Parameters.h"
 extern paramSim* paramsSim;
+#endif
+
+#if RS_RCPP
+std::uint32_t RS_random_seed = 0;
+#else
+int RS_random_seed = 0;
 #endif
 
 // C'tor
@@ -77,7 +83,7 @@ RSrandom::RSrandom() {
 
 #ifndef NDEBUG
 	// fixed seed
-	RS_random_seed = 155;
+	RS_random_seed = 11011;
 #else
 	// random seed
 #if LINUX_CLUSTER

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -77,7 +77,7 @@ using namespace std;
 #include <mutex>
 #endif
 
-//---------------------------------------------------------------------------
+ //---------------------------------------------------------------------------
 
 class Population;
 class SubCommunity;
@@ -154,18 +154,22 @@ public:
 	);
 	float getK(void);
 	bool speciesIsPresent(Species* pSpecies);
+	void setDemoScaling(std::vector <float>);
+	std::vector <float> getDemoScaling(void);
+	void setPatchDemoScaling(short, patchLimits); // calculate demog. scalings of patch from its cells //TODO arguments
 
 private:
 	int patchSeqNum;// sequential patch number - patch 0 is reserved for the inter-patch matrix
 	int patchNum; 	// patch number as supplied by the user (not forced to be sequential)
 	int nCells;			// no. of cells in the patch
-	int xMin,xMax,yMin,yMax; 	// min and max cell co-ordinates
-	int x,y;				// centroid co-ordinates (approx.)
+	int xMin, xMax, yMin, yMax; 	// min and max cell co-ordinates
+	int x, y;				// centroid co-ordinates (approx.)
 	SubCommunity *subCommPtr; // pointer to sub-community associated with the patch
 	// NOTE: FOR MULTI-SPECIES MODEL, PATCH WILL NEED TO STORE K FOR EACH SPECIES
 	float localK;		// patch carrying capacity (individuals)
+	std::vector <float> localDemoScaling;
 	bool changed;
-// NOTE: THE FOLLOWING ARRAY WILL NEED TO BE MADE SPECIES-SPECIFIC...
+	// NOTE: THE FOLLOWING ARRAY WILL NEED TO BE MADE SPECIES-SPECIFIC...
 #ifdef _OPENMP
 	std::atomic<short> nTemp[gMaxNbSexes];						// no. of potential settlers in each sex
 #else
@@ -184,5 +188,7 @@ private:
 
 extern paramStoch* paramsStoch;
 extern RSrandom* pRandom;
+
+extern short nDSlayer;
 
 #endif

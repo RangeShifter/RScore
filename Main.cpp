@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -38,6 +38,7 @@
 #include "Landscape.h"
 #include "Species.h"
 #include "SubCommunity.h"
+#include "Management.h"
 
 using namespace std;
 
@@ -64,8 +65,10 @@ paramStoch* paramsStoch;
 paramInit* paramsInit;
 paramSim* paramsSim;
 RSrandom* pRandom;
+Management* pManagement; // pointer to management routines
 Species* pSpecies;
 Community* pComm;
+short nDSlayer=gMaxNbLayers;
 
 #if LINUX_CLUSTER || RS_RCPP
 int main(int argc, char* argv[])

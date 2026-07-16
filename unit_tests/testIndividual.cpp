@@ -203,7 +203,7 @@ void testTransferKernels() {
 	trfr.distMort = true;
 	sp.setTrfrRules(trfr);
 	mort.mortAlpha = 1000.0; // very steep threshold
-	mort.mortBeta = 0.5; // very small distance 
+	mort.mortBeta = 0.001; // very small distance 
 	sp.setMortParams(mort);
 	kern.meanDist1 = 5; // very likely to go over threshold
 	absorbing_boundaries = true;
@@ -300,7 +300,7 @@ void testTransferCRW() {
 	// Test per-step mortality
 	//---------------------//
 
-	m.stepMort = 1.0; // should die 
+	m.stepMort = 1.0; // should die
 	sp.setSpMovtTraits(m);
 	Individual ind1(&sp, init_cell, init_patch, 0, 0, 0, 0.0, true, 2);
 	// force-set path bc for some reason path gets deallocated upon exiting constructor??
@@ -536,7 +536,7 @@ void testGenetics() {
 			for (int i = 0; i < genomeSz; i++) {
 				valMotherAllele = dispTrChild.getAlleleValueAtLocus(0, i);
 				assert(valMotherAllele == (i <= site ? valAlleleA : valAlleleB));
-				// don't check other chromosome, empty bc we did not resolve father inheritance 
+				// don't check other chromosome, empty bc we did not resolve father inheritance
 			}
 		}
 	}
@@ -603,7 +603,7 @@ void testGenetics() {
 			// Most likely (~96%) to sample a mutation > 1
 			const float gammaMutShapeParam = 5.0;
 			const float gammaMutScaleParam = 1.0;
-			//  Normal centered on 0 : ~50% of sampling negative dominance coefficient 
+			//  Normal centered on 0 : ~50% of sampling negative dominance coefficient
 			const float dominanceMeanParam = 0.0;
 			const float dominanceSdParam = 1.0;
 
@@ -719,7 +719,7 @@ void testIndividual() {
 	// We simulate 100 inheritance + recombination processes and expect that:
 		// 1. freq(A,B have same alleles) >> freq(A,C have same alleles)
 		// 2. 0.65 > freq(C,D have same alleles) > 0.35 despite being adjacent because of chrom. break
-		// (both freq. have p < 0.001 from a binomial with p 0.5 and 100 trials) 
+		// (both freq. have p < 0.001 from a binomial with p 0.5 and 100 trials)
 	{
 		Patch* pPatch = new Patch(0, 0);
 		Cell* pCell = new Cell(0, 0, pPatch, 0);
@@ -743,7 +743,7 @@ void testIndividual() {
 		const bool isDiploid{ true };
 		SpeciesTrait* spTr = createTestEmigSpTrait(genePositions, isDiploid);
 		pSpecies->addTrait(TraitType::E_D0, *spTr);
-		
+
 		Individual indMother = Individual(pSpecies, pCell, pPatch, 0, 0, 0, 0.0, false, 0);
 		Individual indFather = Individual(pSpecies, pCell, pPatch, 0, 0, 0, 1.0, false, 0);
 		indMother.setUpGenes(pSpecies, 1.0);
@@ -792,7 +792,7 @@ void testIndividual() {
 			set<int>{}, "none", set<int>{}, 0 // no output so no sampling
 		);
 		emigRules emig;
-		emig.indVar = true; 
+		emig.indVar = true;
 		emig.sexDep = true;
 		emig.densDep = false;
 		pSpecies->setEmigRules(emig);
@@ -860,7 +860,7 @@ void testIndividual() {
 		indMale.setUpGenes(pSpecies, 1.0);
 		indFemale.triggerMutations(pSpecies);
 		indMale.triggerMutations(pSpecies);
-		
+
 		// Male should use male trait, still 1
 		// Female should use female trait, has mutated
 		emigTraits femaleEmig = indFemale.getIndEmigTraits();
@@ -888,7 +888,7 @@ void testIndividual() {
 			set<int>{}, "none", set<int>{}, 0 // no output so no sampling
 		);
 		emigRules emig;
-		emig.indVar = false; 
+		emig.indVar = false;
 		emig.stgDep = false; emig.sexDep = false; emig.densDep = false;
 		pSpecies->setEmigRules(emig);
 
@@ -928,7 +928,7 @@ void testIndividual() {
 		assert(ind.getStatus() == 0);
 		pop.emigration(100.0);
 
-		// Individual is using the species-wide emigration prob, 
+		// Individual is using the species-wide emigration prob,
 		// so should be selected to emigrate (status 1)
 		assert(ind.getStatus() == 1);
 
@@ -1272,7 +1272,7 @@ void testIndividual() {
 			ind.overrideGenotype(CRW_STEPCORRELATION, crwCorrGenoType);
 
 			ind.triggerMutations(pSpecies); // no mutations, but trigger expression
-			
+
 			crwData trfrTr = *(static_cast<crwData*>(ind.getTrfrData()));
 			assert(trfrTr.stepLength >= 0.0);
 			assert(trfrTr.rho <= 1.0);
@@ -1400,7 +1400,7 @@ void testIndividual() {
 			assert(trfrTr.alphaDB > 0.0);
 		}
 	}
-	
+
 }
 
 #endif // UNIT_TESTS

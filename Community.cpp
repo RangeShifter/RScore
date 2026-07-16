@@ -1,6 +1,7 @@
+#include "Community.h"
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -1575,8 +1576,13 @@ bool Community::outTraitsRowsStartLandscape(Species* pSpecies, int landNr) {
 }
 
 #if RS_RCPP && !R_CMD
-Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) {  // TODO: define new simparams to control start and interval of output
-
+Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr, PopOutType type, int stage) {  // TODO: define new simparams to control start and interval of output
+   /* Rcpp::Rcout << "Calling addYearToPopList: "
+                << "rep=" << rep
+                << " yr=" << yr
+                << " type=" << (int)type
+                << " stage=" << stage << endl;
+*/
 	landParams ppLand = pLandscape->getLandParams();
 	Rcpp::IntegerMatrix pop_map_year(ppLand.dimY, ppLand.dimX);
 	Patch* pPatch = 0;
@@ -1602,7 +1608,21 @@ Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) {  // TODO: def
 					}
 					else {
 						pop = pSubComm->getPopStats();
-						pop_map_year(ppLand.dimY - 1 - y, x) = pop.nInds; // use indices like this because matrix gets transposed upon casting it into a raster on R-level
+
+					    switch (type) {
+					    case PopOutType::NInd:
+					        pop_map_year(ppLand.dimY - 1 - y, x) = pop.nInds;
+					        break;
+
+					    case PopOutType::Stage:
+					        pop_map_year(ppLand.dimY - 1 - y, x) = pSubComm->getNbInds(stage); // check if function is correct?
+					        break;
+
+					    case PopOutType::Juvs:
+					        pop_map_year(ppLand.dimY - 1 - y, x) = pSubComm->getNbInds(0);
+					        break;
+					    }
+						// pop_map_year(ppLand.dimY - 1 - y, x) = pop.nInds; // use indices like this because matrix gets transposed upon casting it into a raster on R-level
 						//pop_map_year(ppLand.dimY-1-y,x) = pop.nAdults;
 					}
 				}
@@ -1612,6 +1632,97 @@ Rcpp::IntegerMatrix Community::addYearToPopList(int rep, int yr) {  // TODO: def
 	//list_outPop.push_back(pop_map_year, "rep" + std::to_string(rep) + "_year" + std::to_string(yr));
 	return pop_map_year;
 }
+
+// write a similar function for patch-based models;
+// Instead of a spatial x,y raster, the output should also be a Rcpp::IntegerMatrix with PatchID and population size (or stage-specific population size) for each patch.
+// The number of columns is determined by what the user specified in ReturnStages:
+// As default its 2 columns: 1st column is the patch ID, 2nd column is the total abundance.
+// Depending on the user specification the columns 3 to maximal (number of stages + 2)
+// can contain the abundance of each stage (e.g. column 3 is abundance of juveniles (stage 0), column 4 is abundance of stage 1 etc).
+// But only selected stages are included, so if the user only wants to output juveniles and adults,
+// then column 3 is abundance of juveniles (stage 0) and column 4 is abundance of adults (stage 1), and no other stages are included in the output.
+// After the runtime, the user can create a spatial raster in R by joining it with the patch coordinates.
+// be aware: the output is then not a spatial raster, but a table
+Rcpp::IntegerMatrix Community::addYearToPopListPatchBased(int rep, int yr, Rcpp::LogicalVector stages) {
+    /* Rcpp::Rcout << "Calling addYearToPopListPatchBased: "
+                << "rep=" << rep
+                << " yr=" << yr << endl;*/
+    int nrows=pLandscape->getPatchNbs().size();
+    int ncols = 2; // for patchID + total abundance
+    std::vector<int> stageIndices;
+
+    for (int i = 0; i < stages.length(); i++) {
+        if (stages[i]) {
+            stageIndices.push_back(i);
+        }
+    }
+    ncols += stageIndices.size();
+
+
+	Rcpp::IntegerMatrix pop_map_year(nrows, ncols); // 2 columns: 1st column is the patch ID, 2nd column is the total abundance (or stage-specific abundance depending on user specification)
+	Patch* pPatch = nullptr;
+	SubCommunity* pSubComm = nullptr;
+	int currentRow = 0;
+
+	for (auto patchId : pLandscape->getPatchNbs()) {
+		// pPatch = pLandscape->findPatch(patchId);
+		// if (pPatch == nullptr) { // check if patch exists
+		// 	continue; // skip to next patch
+		// } else{
+		//     pSubComm = pPatch->getSubComm();
+		// 	if (pSubComm == nullptr) { // check if sub-community exists
+		// 	    pop = pSubComm->getPopStats();
+		// 	    pop_map_year(patchId, 0) = patchId; // 1st column is patch ID
+		// 	    pop_map_year(patchId, 1) = 0; // 2nd column is total abundance
+		// 	    // additional columns for stage-specific abundances depending on user specification
+		// 	    for(int i = 0; i < stages.length(); i++) {
+		// 	        int ncol = 0;
+		// 	        if(stages[i]) {
+		// 	            pop_map_year(patchId, 2 + ncol) = 0; // all following columns are stage specific columns depending on the users specifications
+		// 	            ncol++;
+		// 	        }
+		// 	    }
+		// 	} else {
+		// 		pop = pSubComm->getPopStats();
+		// 		pop_map_year(patchId, 0) = patchId; // 1st column is patch ID
+		// 		pop_map_year(patchId, 1) = pop.nInds; // 2nd column is total abundance
+		// 		// additional columns for stage-specific abundances depending on user specification
+		// 		for (int i = 0; i < stages.length(); i++) {
+		// 		    int ncol = 0;
+		// 		    if(stages[i]) {
+		// 		        pop_map_year(patchId, 2 + ncol) = pSubComm->getNbInds(stages[i]); // all following columns are stage specific columns depending on the users specifications
+		// 		        ncol++;
+		// 		    }
+		// 		}
+		// 	}
+		// }
+		pop_map_year(currentRow, 0) = patchId; // 1st column: patch ID
+	    // loop over ncols to fill default to 0
+	    for(int i = 1; i < ncols; i++) {
+	        pop_map_year(currentRow, i) = 0; // 2nd column: default total abundance
+	    }
+
+		pPatch = pLandscape->findPatch(patchId);
+	    if (pPatch != nullptr) { // Valid patch
+		    pSubComm = pPatch->getSubComm();
+	        if (pSubComm != nullptr) { // Valid sub-community
+	            popStats pop = pSubComm->getPopStats();
+	            pop_map_year(currentRow, 1) = pop.nInds; // Actual total abundance
+
+	            for (int idx = 0; idx < stageIndices.size(); ++idx) {
+	                int stage = stageIndices[idx];
+	                pop_map_year(currentRow, 2 + idx) = pSubComm->getNbInds(stage);
+			        }
+			    }
+				    }
+	    currentRow++;
+				}
+
+	return pop_map_year;
+	// }
+	// return pop_map_year;
+}
+
 #endif
 
 bool Community::openOutGenesFile(const bool& isDiploid, const int landNr, const int rep)
@@ -1714,7 +1825,7 @@ bool Community::openNeutralOutputFile(Species* pSpecies, int landNr)
 		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation) + "_neutralGenetics.txt";
 	}
 	outwcfstat.open(name.c_str());
-	outwcfstat << "Rep\tYear\tRepSeason\tnExtantPatches\tnIndividuals\tFstWC\tFisWC\tFitWC\tFstWH\tmeanAllelePerLocus\tmeanAllelePerLocusPatches\tmeanFixedLoci\tmeanFixedLociPatches\tmeanObHeterozygosity";
+	outwcfstat << "Rep\tYear\tRepSeason\tnExtantPatches\tnIndividuals\tFstWC\tFisWC\tFitWC\tmeanAllelePerLocus\tmeanAllelePerLocusPatches\tmeanFixedLoci\tmeanFixedLociPatches\tmeanObHeterozygosity";
 	outwcfstat << endl;
 
 	return outwcfstat.is_open();
@@ -1738,7 +1849,7 @@ bool Community::openPerLocusFstFile(Species* pSpecies, Landscape* pLandscape, co
 		// then sampled patches may change every year, 
 		// so produce an entry for all patches
 		patchList = pLandscape->getPatchNbs();
-	}
+		}
 
 	if (landNr == -999) { // close the file
 		if (outperlocusfstat.is_open()) outperlocusfstat.close();
@@ -1800,7 +1911,7 @@ bool Community::openPairwiseFstFile(Species* pSpecies, Landscape* pLandscape, co
 		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation) + "_Rep" + to_string(rep) + "_pairwisePatchNeutralGenetics.txt";
 	}
 	outpairwisefst.open(name.c_str());
-	outpairwisefst << "Year\tRepSeason\tpatchA\tpatchB\tFst";
+	outpairwisefst << "Year\tRepSeason\tpatchA\tpatchA_x\tpatchA_y\tpatchB\tpatchB_x\tpatchB_y\tFst";
 	outpairwisefst << endl;
 
 	return outpairwisefst.is_open();
@@ -1810,21 +1921,18 @@ bool Community::openPairwiseFstFile(Species* pSpecies, Landscape* pLandscape, co
 // Write population level FST results file
 // ----------------------------------------------------------------------------------------
 
-void Community::writeNeutralOutputFile(int rep, int yr, int gen, bool outWeirCockerham, bool outWeirHill) {
+void Community::writeNeutralOutputFile(int rep, int yr, int gen) {
 
 	outwcfstat << rep << "\t" << yr << "\t" << gen << "\t";
 	outwcfstat << pNeutralStatistics->getNbPopulatedSampledPatches() 
 		<< "\t" << pNeutralStatistics->getTotalNbSampledInds() << "\t";
 
-	if (outWeirCockerham) {
-		outwcfstat << pNeutralStatistics->getFstWC() << "\t"
+	
+	outwcfstat << pNeutralStatistics->getFstWC() << "\t"
 			<< pNeutralStatistics->getFisWC() << "\t"
 			<< pNeutralStatistics->getFitWC() << "\t";
-	}
-	else outwcfstat << "NA" << "\t" << "NA" << "\t" << "NA" << "\t";
 
-	if (outWeirHill) outwcfstat << pNeutralStatistics->getWeightedFst() << "\t";
-	else outwcfstat << "NA" << "\t";
+
 	
 	outwcfstat << pNeutralStatistics->getMeanNbAllPerLocus() << "\t"
 		<< pNeutralStatistics->getMeanNbAllPerLocusPerPatch() << "\t"
@@ -1860,16 +1968,16 @@ void Community::writePerLocusFstatFile(Species* pSpecies, const int yr, const in
 			<< pNeutralStatistics->getPerLocusHo(thisLocus);
 
 		if (samplingFixed) { // then safe to output sampled patches in order
-			for (int patchId : patchList) {
+		for (int patchId : patchList) {
 				float het = getPatchHet(pSpecies, patchId, thisLocus);
 				if (het < 0) // patch empty
 					outperlocusfstat << "\t" << "NA";
 				else outperlocusfstat << "\t" << het;
-			}
-		}
+				}
+					}
 		else { // sampling may change between generations, must produce output for all patches in Landscape
 			for (auto patchId : pLandscape->getPatchNbs()) {
-				if (patchList.contains(patchId)) {
+				if (patchList.find(patchId) != patchList.end()) {
 					float het = getPatchHet(pSpecies, patchId, thisLocus);
 					if (het < 0) // patch empty
 						outperlocusfstat << "\t" << "NA";
@@ -1877,7 +1985,7 @@ void Community::writePerLocusFstatFile(Species* pSpecies, const int yr, const in
 				}
 				else { // patch not sampled
 					outperlocusfstat << "\t" << "NA";
-				}
+			}
 			}
 		}
 		++thisLocus;
@@ -1911,31 +2019,36 @@ float Community::getPatchHet(Species* pSpecies, int patchId, int whichLocus) con
 // ----------------------------------------------------------------------------------------
 // Write pairwise FST results file
 // ----------------------------------------------------------------------------------------
-void Community::writePairwiseFstFile(Species* pSpecies, const int yr, const int gen, const  int nAlleles, const int nLoci, set<int> const& patchList) {
+void Community::writePairwiseFstFile(Species* pSpecies, const int yr, const int gen, set<int> const& patchList) {
 
-	// within patch fst (diagonal of matrix)
-	int i = 0;
-	for (int patchId : patchList) {
-		outpairwisefst << yr << "\t" << gen << "\t";
-		outpairwisefst << patchId << "\t" << patchId << "\t" 
-			<< pNeutralStatistics->getPairwiseFst(i, i) 
-			<< endl;
-		++i;
-	}
+	const int nPatches = static_cast<int>(patchList.size());
+	// Convert set to vector for index-based access
+	vector<int> patchVect;
+	copy(patchList.begin(), patchList.end(), back_inserter(patchVect));
 
-	// between patch fst
-	i = 0;
-	for (int patchIdA : patchList | std::views::take(patchList.size() - 1)) {
-		int j = i + 1;
-		for (int patchIdB : patchList | std::views::drop(j)) {
-			outpairwisefst << yr << "\t" << gen << "\t";
-			outpairwisefst << patchIdA << "\t" << patchIdB << "\t" 
-				<< pNeutralStatistics->getPairwiseFst(i, j) 
-				<< endl;
-			++j;
+	for (int i = 0; i < nPatches; ++i)
+	{
+		const auto patchA = pLandscape->findPatch(patchVect[i]);
+
+		for (int j = i; j < nPatches; ++j)
+		{
+
+			const auto patchB = pLandscape->findPatch(patchVect[j]);
+
+			outpairwisefst << yr << "\t"
+				<< gen << "\t"
+				<< patchVect[i] << "\t"
+				<< patchA->getSubComm()->getLocn().x << "\t"
+				<< patchA->getSubComm()->getLocn().y << "\t"
+				<< patchVect[j] << "\t"
+				<< patchB->getSubComm()->getLocn().x << "\t"
+				<< patchB->getSubComm()->getLocn().y << "\t"
+				<< pNeutralStatistics->getPairwiseFst(i, j)
+				<< "\n";
 		}
-		++i;
 	}
+
+
 }
 
 
@@ -1944,7 +2057,8 @@ void Community::writePairwiseFstFile(Species* pSpecies, const int yr, const int 
 // ----------------------------------------------------------------------------------------
 
 
-void Community::outNeutralGenetics(Species* pSpecies, int rep, int yr, int gen, bool outWeirCockerham, bool outWeirHill) {
+void Community::calculateNeutralGenetics(Species* pSpecies, int rep, int yr, int gen, bool outPairwiseFst, int outputPairwiseFstStart, int outputPairwiseFstInterval,
+	bool outputGlobalFst, int outputGlobalFstStart, int outputGlobalFstInterval, bool outputPerLocusFst) {
 
 	const int maxNbNeutralAlleles = pSpecies->getSpTrait(NEUTRAL)->getNbNeutralAlleles();
 	const int nLoci = (int)pSpecies->getNPositionsForTrait(NEUTRAL);
@@ -1971,22 +2085,25 @@ void Community::outNeutralGenetics(Species* pSpecies, int rep, int yr, int gen, 
 	pNeutralStatistics->calculatePerLocusHo(patchList, nInds, nLoci, pSpecies, pLandscape);
 	pNeutralStatistics->calcAllelicDiversityMetrics(patchList, nInds, pSpecies, pLandscape);
 
-	if (outWeirCockerham) {
-		pNeutralStatistics->calculateFstatWC(patchList, nInds, nLoci, maxNbNeutralAlleles, pSpecies, pLandscape);
+	if (outPairwiseFst) {
+		pNeutralStatistics->calculatePairwiseFst(patchList, nLoci, maxNbNeutralAlleles, pSpecies, pLandscape);
+
+		if (yr >= outputPairwiseFstStart && yr % outputPairwiseFstInterval == 0) {
+			writePairwiseFstFile(pSpecies, yr, gen, patchList);
+		}
 	}
-	if (outWeirHill) {
-		pNeutralStatistics->calcPairwiseWeightedFst(patchList, nInds, nLoci, pSpecies, pLandscape);
+	if (outputGlobalFst) {
+		pNeutralStatistics->calculateFstatWC(patchList, nInds, nLoci, maxNbNeutralAlleles, pSpecies, pLandscape, false);
+
+		if (yr >= outputGlobalFstStart && yr % outputGlobalFstInterval == 0) {
+			writeNeutralOutputFile(rep, yr, gen);
+			if (outputPerLocusFst)
+				writePerLocusFstatFile(pSpecies, yr, gen, nLoci, patchList);
+		}
 	}
 
-	writeNeutralOutputFile(rep, yr, gen, outWeirCockerham, outWeirHill);
-
-	if (outWeirCockerham) {
-		writePerLocusFstatFile(pSpecies, yr, gen, nLoci, patchList);
-	}
-	if (outWeirHill) {
-		writePairwiseFstFile(pSpecies, yr, gen, maxNbNeutralAlleles, nLoci, patchList);
-	}
 }
+
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

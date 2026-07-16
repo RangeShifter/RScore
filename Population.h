@@ -1,49 +1,49 @@
 /*----------------------------------------------------------------------------
- *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
- *
+ *	
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, ThÃ©o Pannetier, Jette Wolff, Damaris Zurell
+ *	
  *	This file is part of RangeShifter.
- *
+ *	
  *	RangeShifter is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation, either version 3 of the License, or
  *	(at your option) any later version.
- *
+ *	
  *	RangeShifter is distributed in the hope that it will be useful,
  *	but WITHOUT ANY WARRANTY; without even the implied warranty of
  *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *	GNU General Public License for more details.
- *
+ *	
  *	You should have received a copy of the GNU General Public License
  *	along with RangeShifter. If not, see <https://www.gnu.org/licenses/>.
- *
+ *	
  --------------------------------------------------------------------------*/
+ 
+ 
+/*------------------------------------------------------------------------------
 
+RangeShifter v2.0 Population
 
- /*------------------------------------------------------------------------------
+Implements the Population class
 
- RangeShifter v2.0 Population
+There is ONE instance of a Population for each Species within each SubCommunity
+(including the matrix). The Population holds a list of all the Individuals in
+the Population.
 
- Implements the Population class
+The matrix Population(s) hold(s) Individuals which are currently in the process
+of transfer through the matrix.
 
- There is ONE instance of a Population for each Species within each SubCommunity
- (including the matrix). The Population holds a list of all the Individuals in
- the Population.
+For full details of RangeShifter, please see:
+Bocedi G., Palmer S.C.F., Peâ€™er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
+eco-evolutionary dynamics and speciesâ€™ responses to environmental changes.
+Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
- The matrix Population(s) hold(s) Individuals which are currently in the process
- of transfer through the matrix.
-
- For full details of RangeShifter, please see:
- Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
- and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
- eco-evolutionary dynamics and species’ responses to environmental changes.
- Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
-
- Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
+Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
 
  Last updated: 25 June 2021 by Steve Palmer
 
- ------------------------------------------------------------------------------*/
+------------------------------------------------------------------------------*/
 
 #ifndef PopulationH
 #define PopulationH
@@ -68,10 +68,10 @@ using namespace std;
 //---------------------------------------------------------------------------
 
 struct popStats {
-	Species* pSpecies; Patch* pPatch; int spNum, nInds, nNonJuvs, nAdults; bool breeding;
+	Species *pSpecies; Patch *pPatch; int spNum,nInds,nNonJuvs,nAdults; bool breeding;
 };
 struct disperser {
-	Individual* pInd; Cell* pCell; bool yes;
+	Individual *pInd; Cell *pCell; bool yes;
 };
 struct zombie {
 	Individual* pInd;
@@ -124,7 +124,9 @@ public:
 	);
 	~Population(void);
 	traitsums getIndTraitsSums(Species*);
-	popStats getStats(void);
+	popStats getStats(
+			std::vector <float>
+	);
 	Species* getSpecies(void);
 	int getNbInds() const;
 	int getNbInds(int stg) const ;
@@ -133,7 +135,8 @@ public:
 	void reproduction(
 		const float,	// local carrying capacity
 		const float,	// effect of environmental gradient and/or stochasticty
-		const int			// Landscape resolution
+		const int,			// Landscape resolution
+		std::vector <float>    // local demographic scaling
 	);
 	// Following reproduction of ALL species, add juveniles to the population
 	void fledge(void);
@@ -165,17 +168,18 @@ public:
 	void recruitMany( // Add specified individuals to the population
 		std::vector<Individual*>&	// vector of pointers to Individuals
 	);
-	
+
 	// Determine survival and development and record in individual's status code
 	// Changes are NOT applied to the Population at this stage
 	void survival0(
 		float,	// local carrying capacity
 		short,	// option0:	0 - stage 0 (juveniles) only
-		//	  			1 - all stages
-		//					2 - stage 1 and above (all non-juveniles)
-		short 	// option1:	0 - development only (when survival is annual)
+						//	  			1 - all stages
+						//					2 - stage 1 and above (all non-juveniles)
+		short, 	// option1:	0 - development only (when survival is annual)
 						//	  	 		1 - development and survival
 						//	  	 		2 - survival only (when survival is annual)
+		std::vector <float> // local demographic scaling
 	);
 	void survival1(void); // Apply survival changes to the population
 	void ageIncrement(void);
@@ -217,6 +221,40 @@ public:
 	int countHeterozygoteLoci();
 	vector<int> countNbHeterozygotesEachLocus();
 	double computeHs();
+	std::vector<Individual*> getIndsWithCharacteristics( // Return a set of individuals with specified characteristics
+		int,	// min age
+		int,    // max age
+		int,    // stage
+		int     //sex
+	);
+	void cleanSampledInds(
+	    Individual* // individual to remove from sampled individuals vector
+	); // clean sampled individuals vector
+
+	int sampleIndividuals( // Select a set of individuals with specified characteristics; return the number of individuals with those characteristics
+	// void sampleIndividuals( // Select a set of individuals with specified characteristics; return the number of individuals with those characteristics
+	        int, //number of individuals to sample
+        	int,	// min age (0 if not set)
+        	int,    // max age (max age if not set)
+        	int,    // stage
+        	int     //sex
+	);
+
+	Individual* catchIndividual(
+	    double, // catching rate
+	    int
+	);
+
+	// void completeTranslocation(
+	//         std::vector <Individual*> // catched individuals
+	// );
+
+	// void recruitTranslocated(
+	//         Individual*
+	// );
+
+	bool getSizeSampledInds(
+	);
 
 #ifdef UNIT_TESTS
 	// Testing only
@@ -237,9 +275,10 @@ private:
 
 	vector <Individual*> inds; // all individuals in population except ...
 	vector <Individual*> juvs; // ... juveniles until reproduction of ALL species
-	// has been completed
+																	// has been completed
 
 	vector<Individual*> sampledInds;
+	//std::vector <Individual*> sampledInds; // individuals with specified characteristics from translocation!!! 
 	vector<NeutralCountsTable> popNeutralCountTables;
 	void resetPopNeutralTables();
 #ifdef _OPENMP
@@ -249,11 +288,11 @@ private:
 
 //---------------------------------------------------------------------------
 
-extern paramGrad* paramsGrad;
-extern paramStoch* paramsStoch;
-extern paramInit* paramsInit;
-extern paramSim* paramsSim;
-extern RSrandom* pRandom;
+extern paramGrad *paramsGrad;
+extern paramStoch *paramsStoch;
+extern paramInit *paramsInit;
+extern paramSim *paramsSim;
+extern RSrandom *pRandom;
 
 //---------------------------------------------------------------------------
 #endif

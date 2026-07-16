@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -218,17 +218,18 @@ paramSim::paramSim(const string& pathToProjDir) :
 	outIntRange = 1;
 	outStartPop = outStartInd = 0;
 	outStartTraitCell = outStartTraitRow = outStartConn = 0;
-	outIntOcc = outIntPop = outIntInd = outputGeneticInterval = 10;
+	outputGlobalFstStart = outputPairwiseFstStart = 0;
+	outIntOcc = outIntPop = outIntInd = outputGlobalFstInterval  = outputPairwiseFstInterval= 10;
 	outIntTraitCell = outIntTraitRow = outIntConn = 10;
 	traitInt = 10;
 	batchMode = absorbing = false;
 	outRange = outOccup = outPop = outInds = false;
 	outTraitsCells = outTraitsRows = outConnect = false;
-	outputGenes = outputWeirCockerham = outputWeirHill = false;
+	outputGenes = outputGlobalFst = outPairwiseFst = outputPerLocusFst = false;
 	saveVisits = false;
 #if RS_RCPP
 	outStartPaths = 0; outIntPaths = 0;
-	outPaths = false; ReturnPopRaster = false; CreatePopFile = true;
+	outPaths = false; ReturnPopMatrix = false; ReturnPopDataFrame = false; CreatePopFile = true;
 #endif
 }
 
@@ -262,19 +263,27 @@ void paramSim::setSim(simParams s) {
 	outStartPaths = s.outStartPaths;
 	outIntPaths = s.outIntPaths;
 	outPaths = s.outPaths;
-	ReturnPopRaster = s.ReturnPopRaster;
+	ReturnPopMatrix = s.ReturnPopMatrix;
+	ReturnPopDataFrame = s.ReturnPopDataFrame;
+	ReturnStages = s.ReturnStages;
 	CreatePopFile = s.CreatePopFile;
 #endif
 	fixReplicateSeed = s.fixReplicateSeed;
 }
 
-void paramSim::setGeneticSim(string patchSamplingOption, bool outputGeneticValues, bool outputWeirCockerham, bool outputWeirHill, int outputStartGenetics, int outputGeneticInterval) {
+void paramSim::setGeneticSim(string patchSamplingOption, bool outputGenes, int outputGenesStart, int outputGenesInterval,  bool outPairwiseFst,
+	int outputGlobalFst, int outputStartGlobalFst, int outputGlobalFstInterval, int outputStartPairwiseFst, int outputPairwiseFstIntervals, bool outputPerLocusFst) {
 	this->patchSamplingOption = patchSamplingOption;
-	this->outputGenes = outputGeneticValues;
-	this->outputWeirCockerham = outputWeirCockerham;
-	this->outputWeirHill = outputWeirHill;
-	this->outputStartGenetics = outputStartGenetics;
-	this->outputGeneticInterval = outputGeneticInterval;
+	this->outputGenes = outputGenes;
+	this->outputGenesStart = outputGenesStart;
+	this->outputGenesInterval = outputGenesInterval;
+	this->outputGlobalFst = outputGlobalFst;
+	this->outputGlobalFstStart = outputStartGlobalFst;
+	this->outputGlobalFstInterval = outputGlobalFstInterval;
+	this->outPairwiseFst = outPairwiseFst;
+	this->outputPairwiseFstStart = outputStartPairwiseFst;
+	this->outputPairwiseFstInterval = outputPairwiseFstIntervals;
+	this->outputPerLocusFst = outputPerLocusFst;
 }
 
 simParams paramSim::getSim() {
@@ -296,18 +305,30 @@ simParams paramSim::getSim() {
 	s.absorbing = absorbing;
 	s.traitInt = traitInt;
 #if RS_RCPP
+	s.saveVisits = saveVisits;
 	s.outStartPaths = outStartPaths;
 	s.outIntPaths = outIntPaths;
 	s.outPaths = outPaths;
-	s.ReturnPopRaster = ReturnPopRaster;
+	s.ReturnPopMatrix = ReturnPopMatrix;
+	s.ReturnPopDataFrame = ReturnPopDataFrame;
+	s.ReturnStages = ReturnStages;
 	s.CreatePopFile = CreatePopFile;
 #endif
 	s.patchSamplingOption = patchSamplingOption;
-	s.outputGeneValues = outputGenes;
-	s.outputWeirCockerham = outputWeirCockerham;
-	s.outputWeirHill = outputWeirHill;
-	s.outStartGenetics = outputStartGenetics;
-	s.outputGeneticInterval = outputGeneticInterval;
+
+	s.outputGenes = outputGenes;
+	s.outputGenesStart = outputGenesStart;
+	s.outputGenesInterval = outputGenesInterval;
+	
+	s.outputGlobalFst = outputGlobalFst;
+	s.outputGlobalFstStart = outputGlobalFstStart;
+	s.outputGlobalFstInterval = outputGlobalFstInterval;
+	
+	s.outPairwiseFst = outPairwiseFst;
+	s.outputPairwiseFstStart = outputPairwiseFstStart;
+	s.outputPairwiseFstInterval = outputPairwiseFstInterval;
+
+	s.outputPerLocusFst = outputPerLocusFst;
 
 	return s;
 }
@@ -441,11 +462,10 @@ string to_string(const ExpressionType& expr) {
 }
 
 #if RS_RCPP
-bool paramSim::getReturnPopRaster(void) { return ReturnPopRaster; }
+bool paramSim::getReturnPopMatrix(void) { return ReturnPopMatrix; }
+bool paramSim::getReturnPopDataFrame(void) { return ReturnPopDataFrame; }
 bool paramSim::getCreatePopFile(void) { return CreatePopFile; }
 #endif
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

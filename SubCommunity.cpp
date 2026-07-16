@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -162,7 +162,7 @@ popStats SubCommunity::getPopStats(void) {
 	// FOR SINGLE SPECIES IMPLEMENTATION, THERE IS ONLY ONE POPULATION IN THE PATCH
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
-		pop = popns[i]->getStats();
+		pop = popns[i]->getStats(pPatch->getDemoScaling());
 		p.pSpecies = pop.pSpecies;
 		p.spNum = pop.spNum;
 		p.nInds += pop.nInds;
@@ -242,6 +242,7 @@ void SubCommunity::reproduction(int resol, float epsGlobal, short rasterType, bo
 {
 	if (subCommNum == 0) return; // no reproduction in the matrix
 	float localK, envval;
+	std::vector <float> localDemoScaling;
 	Cell* pCell;
 	envGradParams grad = paramsGrad->getGradient();
 	envStochParams env = paramsStoch->getStoch();
@@ -251,6 +252,7 @@ void SubCommunity::reproduction(int resol, float epsGlobal, short rasterType, bo
 	if (npops < 1) return;
 
 	localK = pPatch->getK();
+	localDemoScaling = pPatch->getDemoScaling();
 	if (localK > 0.0) {
 		if (patchModel) {
 			envval = 1.0; // environmental gradient is currently not applied for patch-based model
@@ -275,7 +277,7 @@ void SubCommunity::reproduction(int resol, float epsGlobal, short rasterType, bo
 			}
 		}
 		for (int i = 0; i < npops; i++) { // all populations
-			popns[i]->reproduction(localK, envval, resol);
+			popns[i]->reproduction(localK, envval, resol, localDemoScaling);
 			popns[i]->fledge();
 		}
 	}
@@ -302,7 +304,7 @@ void SubCommunity::recruitDispersers(std::map<Species*,std::vector<Individual *>
 
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) { // all populations
-		pop = popns[i]->getStats();
+		pop = popns[i]->getStats(pPatch->getDemoScaling());
 		Species* pSpecies = popns[i]->getSpecies();
 		for (int j = 0; j < pop.nInds; j++) {
 			disp = popns[i]->extractDisperser(j);
@@ -322,13 +324,13 @@ void SubCommunity::disperseMatrix(std::map<Species*,std::vector<Individual *>> &
 
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) {
-		pop = popns[i]->getStats();
+		pop = popns[i]->getStats(pPatch->getDemoScaling());
 		Species* pSpecies = popns[i]->getSpecies();
 #pragma omp for schedule(static)
 		for (int j = 0; j < pop.nInds; j++) {
 			Individual *pInd = popns[i]->extractIndividual(j);
 			inds_map[pSpecies].push_back(pInd);
-		}
+}
 #pragma omp single
 		popns[i]->clean();
 	}
@@ -523,7 +525,7 @@ int SubCommunity::resolveSettlement(std::map<Species*, vector<Individual*>>& dis
 									// make settlement decision
 									if (settletype.indVar) settDD = pInd->getIndSettTraits();
 #if RS_RCPP
-									else settDD = pSpecies->getSettTraits(ind.stage, ind.sex);
+									else settDD = pSpecies->getSpSettTraits(ind.stage, ind.sex);
 #else
 									else {
 										if (settletype.sexDep) {
@@ -601,7 +603,7 @@ int SubCommunity::resolveSettlement(std::map<Species*, vector<Individual*>>& dis
 			}
 #if RS_RCPP
 			// write each individuals current movement step and status to paths file
-			if (trfr.moveModel && sim.outPaths) {
+			if (trfr.usesMovtProc && sim.outPaths) {
 				if (nextseason >= sim.outStartPaths && nextseason % sim.outIntPaths == 0) {
 					pInd->outMovePath(nextseason);
 				}
@@ -724,9 +726,11 @@ void SubCommunity::completeDispersal(std::map<Species*,vector<Individual*>>& ind
 void SubCommunity::survival0(short option0, short option1)
 {
 	int npops = (int)popns.size();
+    std::vector <float> localDemoScaling;
+		localDemoScaling = pPatch->getDemoScaling();
 	float localK = pPatch->getK();
 	for (int i = 0; i < npops; i++) { // all populations
-		popns[i]->survival0(localK, option0, option1);
+			popns[i]->survival0(localK, option0, option1, localDemoScaling);
 	}
 }
 
@@ -742,7 +746,7 @@ void SubCommunity::survival(short part, short option0, short option1
 ) {
 	if (part == 0) {
 		return survival0(option0, option1);
-	}
+}
 	else {
 		return survival1();
 	}
@@ -763,7 +767,7 @@ Population* SubCommunity::findPop(Species* pSp, Patch* pPch) {
 	int npops = (int)popns.size();
 
 	for (int i = 0; i < npops; i++) { // all populations
-		pop = popns[i]->getStats();
+		pop = popns[i]->getStats(pPatch->getDemoScaling());
 		if (pop.pSpecies == pSp && pop.pPatch == pPch) { // population located
 			pPop = popns[i];
 			break;
@@ -787,7 +791,7 @@ void SubCommunity::updateOccupancy(int row) {
 	popStats pop;
 	int npops = (int)popns.size();
 	for (int i = 0; i < npops; i++) {
-		pop = popns[i]->getStats();
+		pop = popns[i]->getStats(pPatch->getDemoScaling());
 		if (pop.nInds > 0 && pop.breeding) {
 			occupancy[row]++;
 			i = npops;
@@ -889,7 +893,7 @@ void SubCommunity::outIndsFinishReplicate() {
 	Population* pPop = new Population();
 	pPop->outIndsFinishReplicate();
 	delete pPop;
-	return;
+		return;
 }
 
 // Open individuals file and write header record
@@ -1125,32 +1129,32 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 					outtraits << "\t" << loc.x << "\t" << loc.y;
 				}
 
-				if (emig.indVar) {
+			if (emig.indVar) {
 					if (emig.sexDep) {
 						vector<double> mnD0(2, 0.0), mnAlpha(2, 0.0), mnBeta(2, 0.0), sdD0(2, 0.0), sdAlpha(2, 0.0), sdBeta(2, 0.0);
 						for (int sex = 0; sex < gMaxNbSexes; sex++) {
 
 							double popsize = static_cast<double>(indTraitsSums.ninds[sex]);
 
-							if (popsize > 0) {
+					if (popsize > 0) {
 
 								mnD0[sex] = indTraitsSums.sumD0[sex] / popsize;
 								mnAlpha[sex] = indTraitsSums.sumAlpha[sex] / popsize;
 								mnBeta[sex] = indTraitsSums.sumBeta[sex] / popsize;
 
-								if (popsize > 1) {
+						if (popsize > 1) {
 									sdD0[sex] = indTraitsSums.ssqD0[sex] / popsize - mnD0[sex] * mnD0[sex];
 									if (sdD0[sex] > 0.0) sdD0[sex] = sqrt(sdD0[sex]); else sdD0[sex] = 0.0;
 									sdAlpha[sex] = indTraitsSums.ssqAlpha[sex] / popsize - mnAlpha[sex] * mnAlpha[sex];
 									if (sdAlpha[sex] > 0.0) sdAlpha[sex] = sqrt(sdAlpha[sex]); else sdAlpha[sex] = 0.0;
 									sdBeta[sex] = indTraitsSums.ssqBeta[sex] / popsize - mnBeta[sex] * mnBeta[sex];
 									if (sdBeta[sex] > 0.0) sdBeta[sex] = sqrt(sdBeta[sex]); else sdBeta[sex] = 0.0;
-								}
-								else {
-									sdD0[sex] = sdAlpha[sex] = sdBeta[sex] = 0.0;
-								}
-							}
 						}
+						else {
+									sdD0[sex] = sdAlpha[sex] = sdBeta[sex] = 0.0;
+						}
+					}
+				}
 						outtraits << "\t" << mnD0[0] << "\t" << sdD0[0];
 						outtraits << "\t" << mnD0[1] << "\t" << sdD0[1];
 						if (emig.densDep) {
@@ -1197,7 +1201,7 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 					}
 				}
 
-				if (trfr.indVar) {
+			if (trfr.indVar) {
 
 					if (trfr.usesMovtProc) { // not sex-dependent
 						if (trfr.moveType == 1) { // SMS
@@ -1214,7 +1218,7 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 								sdGB += indTraitsSums.ssqGB[sex];
 								sdAlphaDB += indTraitsSums.ssqAlphaDB[sex];
 								sdBetaDB += indTraitsSums.ssqBetaDB[sex];
-							}
+				}
 							mnDP /= popsize;
 							mnGB /= popsize;
 							mnAlphaDB /= popsize;
@@ -1229,12 +1233,12 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 								sdAlphaDB = sdAlphaDB == 0.0 ? 0.0 : sqrt(sdAlphaDB);
 								sdBetaDB = sdBetaDB == 0.0 ? 0.0 : sqrt(sdBetaDB);
 							}
-							else {
+				else {
 								sdDP = 0.0;
 								sdGB = 0.0;
 								sdAlphaDB = 0.0;
 								sdBetaDB = 0.0;
-							}
+					}
 							outtraits << "\t" << mnDP << "\t" << sdDP;
 							outtraits << "\t" << mnGB << "\t" << sdGB;
 							outtraits << "\t" << mnAlphaDB << "\t" << sdAlphaDB;
@@ -1258,13 +1262,13 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 								sdStepL = sdStepL == 0.0 ? 0.0 : sqrt(sdStepL);
 								sdRho = sdRho == 0.0 ? 0.0 : sqrt(sdRho);
 							}
-							else {
+					else {
 								sdStepL = 0.0;
 								sdRho = 0.0;
-							}
+					}
 							outtraits << "\t" << mnStepL << "\t" << sdStepL;
 							outtraits << "\t" << mnRho << "\t" << sdRho;
-						}
+				}
 					}
 					else { // kernels
 						if (trfr.sexDep) {
@@ -1274,15 +1278,15 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 
 							for (int sex = 0; sex < gMaxNbSexes; sex++) {
 
-								// individuals may have been counted by sex if there was
-								// sex dependency in another dispersal phase
+					// individuals may have been counted by sex if there was
+					// sex dependency in another dispersal phase
 								double popsize = static_cast<double>(indTraitsSums.ninds[sex]);
 
-								if (popsize > 0) {
+					if (popsize > 0) {
 									mnDist1[sex] = indTraitsSums.sumDist1[sex] / popsize;
 									mnDist2[sex] = indTraitsSums.sumDist2[sex] / popsize;
 									mnProp1[sex] = indTraitsSums.sumProp1[sex] / popsize;
-									if (popsize > 1) {
+						if (popsize > 1) {
 										sdDist1[sex] = indTraitsSums.ssqDist1[sex] / popsize - mnDist1[sex] * mnDist1[sex];
 										if (sdDist1[sex] > 0.0) sdDist1[sex] = sqrt(sdDist1[sex]); else sdDist1[sex] = 0.0;
 										sdDist2[sex] = indTraitsSums.ssqDist2[sex] / popsize - mnDist2[sex] * mnDist2[sex];
@@ -1290,9 +1294,9 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 										sdProp1[sex] = indTraitsSums.ssqProp1[sex] / popsize - mnProp1[sex] * mnProp1[sex];
 										if (sdProp1[sex] > 0.0) sdProp1[sex] = sqrt(sdProp1[sex]); else sdProp1[sex] = 0.0;
 										sdStepL[sex] = indTraitsSums.ssqStepL[sex] / popsize - mnStepL[sex] * mnStepL[sex];
-									}
-								}
-							}
+						}
+					}
+				}
 							outtraits << "\t" << mnDist1[0] << "\t" << sdDist1[0];
 							outtraits << "\t" << mnDist1[1] << "\t" << sdDist1[1];
 							if (trfr.twinKern) {
@@ -1324,22 +1328,22 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 								sdDist1 = sdDist1 == 0.0 ? 0.0 : sqrt(sdDist1);
 								sdDist2 = sdDist2 == 0.0 ? 0.0 : sqrt(sdDist2);
 								sdProp1 = sdProp1 == 0.0 ? 0.0 : sqrt(sdProp1);
-							}
+						}
 							else {
 								sdDist1 = 0.0;
 								sdDist2 = 0.0;
 								sdProp1 = 0.0;
-							}
+					}
 							outtraits << "\t" << mnDist1 << "\t" << sdDist1;
 							if (trfr.twinKern) {
 								outtraits << "\t" << mnDist2 << "\t" << sdDist2;
 								outtraits << "\t" << mnProp1 << "\t" << sdProp1;
-							}
-						}
+				}
+			}
 					}
 				}
 
-				if (sett.indVar) {
+			if (sett.indVar) {
 
 					if (sett.sexDep) {
 
@@ -1347,29 +1351,29 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 
 						for (int sex = 0; sex < gMaxNbSexes; sex++) {
 
-							// individuals may have been counted by sex if there was
-							// sex dependency in another dispersal phase
+					// individuals may have been counted by sex if there was
+					// sex dependency in another dispersal phase
 							double popsize = static_cast<double>(indTraitsSums.ninds[sex]);
 
-							if (popsize > 0) {
+					if (popsize > 0) {
 
 								mnS0[sex] = indTraitsSums.sumS0[sex] / popsize;
 								mnAlpha[sex] = indTraitsSums.sumAlphaS[sex] / popsize;
 								mnBeta[sex] = indTraitsSums.sumBetaS[sex] / popsize;
 
-								if (popsize > 1) {
+						if (popsize > 1) {
 									sdS0[sex] = indTraitsSums.ssqS0[sex] / popsize - mnS0[sex] * mnS0[sex];
 									if (sdS0[sex] > 0.0) sdS0[sex] = sqrt(sdS0[sex]); else sdS0[sex] = 0.0;
 									sdAlpha[sex] = indTraitsSums.ssqAlphaS[sex] / popsize - mnAlpha[sex] * mnAlpha[sex];
 									if (sdAlpha[sex] > 0.0) sdAlpha[sex] = sqrt(sdAlpha[sex]); else sdAlpha[sex] = 0.0;
 									sdBeta[sex] = indTraitsSums.ssqBetaS[sex] / popsize - mnBeta[sex] * mnBeta[sex];
 									if (sdBeta[sex] > 0.0) sdBeta[sex] = sqrt(sdBeta[sex]); else sdBeta[sex] = 0.0;
-								}
-								else {
-									sdS0[sex] = sdAlpha[sex] = sdBeta[sex] = 0.0;
-								}
-							}
 						}
+						else {
+									sdS0[sex] = sdAlpha[sex] = sdBeta[sex] = 0.0;
+						}
+					}
+				}
 
 						outtraits << "\t" << mnS0[0] << "\t" << sdS0[0];
 						outtraits << "\t" << mnS0[1] << "\t" << sdS0[1];
@@ -1389,7 +1393,7 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 							sdS0 += indTraitsSums.ssqS0[sex];
 							sdAlpha += indTraitsSums.ssqAlphaS[sex];
 							sdBeta += indTraitsSums.ssqBetaS[sex];
-						}
+					}
 						mnS0 /= popsize;
 						mnAlpha /= popsize;
 						mnBeta /= popsize;
@@ -1400,12 +1404,12 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 							sdS0 = sdS0 == 0.0 ? 0.0 : sqrt(sdS0);
 							sdAlpha = sdAlpha == 0.0 ? 0.0 : sqrt(sdAlpha);
 							sdBeta = sdBeta == 0.0 ? 0.0 : sqrt(sdBeta);
-						}
+				}
 						else {
 							sdS0 = 0.0;
 							sdAlpha = 0.0;
 							sdBeta = 0.0;
-						}
+			}
 						outtraits << "\t" << mnS0 << "\t" << sdS0;
 						outtraits << "\t" << mnAlpha << "\t" << sdAlpha;
 						outtraits << "\t" << mnBeta << "\t" << sdBeta;
@@ -1429,11 +1433,11 @@ traitsums SubCommunity::outTraits(Landscape* pLandscape, int rep, int yr, int ge
 								if (sdGenFitness[sex] > 0.0)
 									sdGenFitness[sex] = sqrt(sdGenFitness[sex]);
 								else sdGenFitness[sex] = 0.0;
-							}
+			}
 							else {
 								sdGenFitness[sex] = 0.0;
-							}
-						}
+		}
+	}
 						outtraits << "\t" << mnGenFitness[0] << "\t" << sdGenFitness[0];
 						outtraits << "\t" << mnGenFitness[1] << "\t" << sdGenFitness[1];
 					}

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2020 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -120,7 +120,7 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 		else { // non-structured - all individuals go into stage 1
 			n = ninds;
 		}
-			// establish initial age distribution
+		// establish initial age distribution
 		minage = maxage = stg;
 		if (dem.stageStruct) {
 			// allow for stage-dependent minimum ages (use whichever sex is greater)
@@ -149,7 +149,7 @@ Population::Population(Species* pSp, Patch* pPch, int ninds, int resol)
 				}
 			}
 		}
-	// create individuals
+		// create individuals
 		int sex;
 		nindivs = (int)inds.size();
 		for (int i = 0; i < n; i++) {
@@ -199,6 +199,11 @@ Population::~Population(void) {
 		if (juvs[i] != NULL) delete juvs[i];
 	}
 	juvs.clear();
+	int nsampledInds = (int)sampledInds.size();
+	for (int i = 0; i < nsampledInds; i++) {
+	    if (sampledInds[i] != NULL) sampledInds[i]=NULL;
+}
+	sampledInds.clear();
 }
 
 traitsums Population::getIndTraitsSums(Species* pSpecies) {
@@ -207,7 +212,7 @@ traitsums Population::getIndTraitsSums(Species* pSpecies) {
 	for (int sex = 0; sex < gMaxNbSexes; sex++) {
 		ts.ninds[sex] = 0;
 		ts.sumD0[sex] = ts.ssqD0[sex] = 0.0;
-		ts.sumAlpha[sex] = ts.ssqAlpha[sex] = 0.0; 
+		ts.sumAlpha[sex] = ts.ssqAlpha[sex] = 0.0;
 		ts.sumBeta[sex] = ts.ssqBeta[sex] = 0.0;
 		ts.sumDist1[sex] = ts.ssqDist1[sex] = 0.0;
 		ts.sumDist2[sex] = ts.ssqDist2[sex] = 0.0;
@@ -216,7 +221,7 @@ traitsums Population::getIndTraitsSums(Species* pSpecies) {
 		ts.sumGB[sex] = ts.ssqGB[sex] = 0.0;
 		ts.sumAlphaDB[sex] = ts.ssqAlphaDB[sex] = 0.0;
 		ts.sumBetaDB[sex] = ts.ssqBetaDB[sex] = 0.0;
-		ts.sumStepL[sex] = ts.ssqStepL[sex] = 0.0; 
+		ts.sumStepL[sex] = ts.ssqStepL[sex] = 0.0;
 		ts.sumRho[sex] = ts.ssqRho[sex] = 0.0;
 		ts.sumS0[sex] = ts.ssqS0[sex] = 0.0;
 		ts.sumAlphaS[sex] = ts.ssqAlphaS[sex] = 0.0;
@@ -296,6 +301,7 @@ traitsums Population::getIndTraitsSums(Species* pSpecies) {
 	}
 	return ts;
 }
+//int Population::getNInds() { return static_cast<int>(inds.size()); }
 
 // ----------------------------------------------------------------------------------------
 // reset allele table
@@ -432,7 +438,7 @@ double Population::computeHs() {
 	return hs;
 }
 
-popStats Population::getStats(void)
+popStats Population::getStats(std::vector <float> localDemoScaling)
 {
 	popStats p = popStats();
 	int ninds;
@@ -451,8 +457,18 @@ popStats Population::getStats(void)
 			p.nNonJuvs += ninds;
 			if (ninds > 0) {
 				if (pSpecies->stageStructured()) {
-					if (dem.repType == 2) fec = pSpecies->getFec(stg, sex);
+					if (dem.repType == 2) {
+						if (pSpecies->getFecSpatial() && pSpecies->getFecLayer(stg,sex)>=0){
+						fec = pSpecies->getFec(stg,sex)*localDemoScaling[pSpecies->getFecLayer(stg,sex)];
+						}
+						else fec = pSpecies->getFec(stg,sex);
+					}
+					else {
+						if (pSpecies->getFecSpatial() && pSpecies->getFecLayer(stg,0)>=0){
+							fec = pSpecies->getFec(stg,0)*localDemoScaling[pSpecies->getFecLayer(stg,0)];
+						}
 					else fec = pSpecies->getFec(stg, 0);
+					}
 					if (fec > 0.0) { breeders[sex] = true; p.nAdults += ninds; }
 				}
 				else breeders[sex] = true;
@@ -511,7 +527,7 @@ void Population::extirpate(void) {
 
 //---------------------------------------------------------------------------
 // Produce juveniles and hold them in the juvs vector
-void Population::reproduction(const float localK, const float envval, const int resol)
+void Population::reproduction(const float localK, const float envval, const int resol, std::vector <float> localDemoScaling)
 {
 
 	// get population size at start of reproduction
@@ -534,21 +550,28 @@ void Population::reproduction(const float localK, const float envval, const int 
 	float fecStdDev = dem.fecSD;
 
 	if (dem.repType == 0)
-		nsexes = 1; 
+		nsexes = 1;
 	else nsexes = 2;
 
 
-// set up local copy of species fecundity table
+	// set up local copy of species fecundity table
 	float fec[gMaxNbStages][gMaxNbSexes];
 	for (int stg = 0; stg < sstruct.nStages; stg++) {
 		for (int sex = 0; sex < nsexes; sex++) {
 			if (dem.stageStruct) {
 				if (dem.repType == 1) { // simple sexual model
 					// both sexes use fecundity recorded for females
-					fec[stg][sex] = pSpecies->getFec(stg, 0);
+					if (pSpecies->getFecSpatial() && pSpecies->getFecLayer(stg,0)>=0){
+						fec[stg][sex] = pSpecies->getFec(stg,0)*localDemoScaling[pSpecies->getFecLayer(stg,0)];
 				}
-				else
-					fec[stg][sex] = pSpecies->getFec(stg, sex);
+					else fec[stg][sex] = pSpecies->getFec(stg,0);
+				}
+				else {
+					if (pSpecies->getFecSpatial() && pSpecies->getFecLayer(stg,sex)>=0){
+						fec[stg][sex] = pSpecies->getFec(stg,sex)*localDemoScaling[pSpecies->getFecLayer(stg,sex)];
+					}
+				else fec[stg][sex] = pSpecies->getFec(stg, sex);
+			}
 			}
 			else { // non-structured population
 				if (stg == 1) fec[stg][sex] = dem.lambda; // adults
@@ -558,8 +581,8 @@ void Population::reproduction(const float localK, const float envval, const int 
 	}
 
 	if (dem.stageStruct) {
-	// apply environmental effects and density dependence
-	// to all non-zero female non-juvenile stages
+		// apply environmental effects and density dependence
+		// to all non-zero female non-juvenile stages
 		for (int stg = 1; stg < nStages; stg++) {
 			if (fec[stg][0] > 0.0) {
 				// apply any effect of environmental gradient and/or stochasticty
@@ -666,7 +689,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 						}
 						else {
 							juvs.push_back(newJuv);
-							nInds[0][0]++;
+						nInds[0][0]++;
 						}
 					}
 				}
@@ -744,7 +767,7 @@ void Population::reproduction(const float localK, const float envval, const int 
 								else {
 									juvs.push_back(newJuv);
 									sex = newJuv->getSex();
-									nInds[0][sex]++;
+								nInds[0][sex]++;
 								}
 							}
 						}
@@ -841,10 +864,11 @@ void Population::emigration(float localK)
 	stageParams sstruct = pSpecies->getStageParams();
 	emigRules emig = pSpecies->getEmigRules();
 	emigTraits eparams;
+	transferRules trfr = pSpecies->getTransferRules();
 	indStats ind;
 
-	// to avoid division by zero, assume carrying capacity is at least one individual
-	// localK can be zero if there is a moving gradient or stochasticity in K
+// to avoid division by zero, assume carrying capacity is at least one individual
+// localK can be zero if there is a moving gradient or stochasticity in K
 	if (localK < 1.0) localK = 1.0;
 	NK = static_cast<float>(getNbInds()) / localK;
 
@@ -853,7 +877,7 @@ void Population::emigration(float localK)
 	// set up local copy of emigration probability table
 	// used when there is no individual variability
 	// NB - IT IS DOUBTFUL THIS CONTRIBUTES ANY SUBSTANTIAL TIME SAVING
-	if (dem.repType == 0) nsexes = 1; 
+	if (dem.repType == 0) nsexes = 1;
 	else nsexes = 2;
 	double pbEmig[gMaxNbStages][gMaxNbSexes];
 
@@ -904,7 +928,8 @@ void Population::emigration(float localK)
 
 	for (int i = 0; i < ninds; i++) {
 		ind = inds[i]->getStats();
-		if (ind.status < 1) {
+		if (ind.status < 1) // ToDo: Maybe allow dispersal after translocation? If so, we need to update the pPrevCell and pCurrCell variables of the translocated individuals!
+		{
 			if (emig.indVar) { // individual variability in emigration
 				if (dem.stageStruct && ind.stage != emig.emigStage) {
 					// emigration may not occur
@@ -965,7 +990,6 @@ void Population::emigration(float localK)
 					}
 				}
 			} // end of no individual variability
-
 			disp = pRandom->Bernoulli(pbDisp);
 
 			if (disp == 1) { // emigrant
@@ -997,7 +1021,7 @@ disperser Population::extractDisperser(int ix) {
 	disperser d = disperser();
 	indStats ind = inds[ix]->getStats();
 	if (ind.status == 1) { // emigrant
-		d.pInd = inds[ix]; 
+		d.pInd = inds[ix];
 		d.yes = true;
 		inds[ix] = nullptr;
 		nInds[ind.stage][ind.sex]--;
@@ -1029,8 +1053,9 @@ disperser Population::extractSettler(int ix) {
 }
 
 // Add a specified individual to the new/current dispersal group
+// Add a specified individual to the population
 void Population::recruit(Individual* pInd) {
-	indStats ind = pInd->getStats();
+	indStats ind = pInd->getStats(); // potentially I need to add localscalings or so?
 	nInds[ind.stage][ind.sex]++;
 #ifdef _OPENMP
 	const std::lock_guard<std::mutex> lock(inds_mutex);
@@ -1058,15 +1083,15 @@ void Population::recruitMany(std::vector<Individual*>& recruits) {
 // FOR MULTIPLE SPECIES, MAY NEED TO SEPARATE OUT THIS IDENTIFICATION STAGE,
 // SO THAT IT CAN BE PERFORMED FOR ALL SPECIES BEFORE ANY UPDATING OF POPULATIONS
 
-void Population::survival0(float localK, short option0, short option1)
+void Population::survival0(float localK, short option0, short option1, std::vector <float> localDemoScaling)
 {
 	// option0:	0 - stage 0 (juveniles) only
-	//			1 - all stages
-	//			2 - stage 1 and above (all non-juveniles)
-	// 
+	//					1 - all stages
+	//					2 - stage 1 and above (all non-juveniles)
+	//
 	// option1:	0 - development only (when survival is annual)
-	//	  	 	1 - development and survival
-	//	  	 	2 - survival only (when survival is annual)
+	//	  	 		1 - development and survival
+	//	  	 		2 - survival only (when survival is annual)
 	densDepParams ddparams = pSpecies->getDensDep();
 	demogrParams dem = pSpecies->getDemogrParams();
 	stageParams sstruct = pSpecies->getStageParams();
@@ -1086,13 +1111,25 @@ void Population::survival0(float localK, short option0, short option1)
 			if (dem.stageStruct) {
 				if (dem.repType == 1) { // simple sexual model
 					// both sexes use development and survival recorded for females
-					dev[stg][sex] = pSpecies->getDev(stg, 0);
-					surv[stg][sex] = pSpecies->getSurv(stg, 0);
+					if (pSpecies->getDevSpatial() && pSpecies->getDevLayer(stg,0)>=0){
+						dev[stg][sex] = pSpecies->getDev(stg,0)*localDemoScaling[pSpecies->getDevLayer(stg,0)];
+					} 
+					else dev[stg][sex] = pSpecies->getDev(stg,0);
+					if (pSpecies->getSurvSpatial() && pSpecies->getSurvLayer(stg,0)>=0){
+						surv[stg][sex] = pSpecies->getSurv(stg,0)*localDemoScaling[pSpecies->getSurvLayer(stg,0)];
+					}
+					else surv[stg][sex] = pSpecies->getSurv(stg,0);
 					minAge[stg][sex] = pSpecies->getMinAge(stg, 0);
 				}
 				else {
-					dev[stg][sex] = pSpecies->getDev(stg, sex);
-					surv[stg][sex] = pSpecies->getSurv(stg, sex);
+					if (pSpecies->getDevSpatial() && pSpecies->getDevLayer(stg,sex)>=0){
+						dev[stg][sex] = pSpecies->getDev(stg,sex)*localDemoScaling[pSpecies->getDevLayer(stg,sex)];
+					}
+					else dev[stg][sex] = pSpecies->getDev(stg,sex);
+					if (pSpecies->getSurvSpatial() && pSpecies->getSurvLayer(stg,sex)>=0){
+										surv[stg][sex] = pSpecies->getSurv(stg,sex)*localDemoScaling[pSpecies->getSurvLayer(stg,sex)];
+					}
+					else surv[stg][sex] = pSpecies->getSurv(stg,sex);
 					minAge[stg][sex] = pSpecies->getMinAge(stg, sex);
 				}
 				if (option1 == 0) surv[stg][sex] = 1.0; // development only - all survive
@@ -1174,7 +1211,7 @@ void Population::survival0(float localK, short option0, short option1)
 
 		if ((ind.stage == 0 && option0 < 2) || (ind.stage > 0 && option0 > 0)) {
 			// condition for processing the stage is met...
-			if (ind.status < 6) { // not already doomed
+			if (ind.status < 6 || ind.status == 10) { // not already doomed
 				double probsurv = surv[ind.stage][ind.sex];
 				// does the individual survive?
 				if (pRandom->Bernoulli(probsurv)) { // survives
@@ -1204,9 +1241,9 @@ void Population::survival1(void)
 	for (int i = 0; i < ninds; i++) {
 		indStats ind = inds[i]->getStats();
 
-		if (ind.status > 5) { // doomed to die
-			if (ind.status != 10) //not going into cold storage
-				delete inds[i];
+		if (ind.status > 5 && ind.status != 10) { // doomed to die; status 10 is translocated?
+			if (ind.status != 10) //not going into cold storage -> is there a new status 10 in this new_genetics version??
+			delete inds[i];
 			inds[i] = nullptr;
 			nInds[ind.stage][ind.sex]--;
 		}
@@ -1236,11 +1273,17 @@ void Population::clean(void)
 	int ninds = (int)inds.size();
 	if (ninds > 0) {
 		inds.erase(std::remove(inds.begin(), inds.end(), (Individual *)NULL), inds.end());
-#ifdef RS_RCPP || NDEBUG
+#if RS_RCPP
+		shuffle(inds.begin(), inds.end(), pRandom->getRNG());
+#else
+
+#ifdef NDEBUG
 		// do not randomise individuals in DEBUG mode, as the function uses rand()
 		// and therefore the randomisation will differ between identical runs of RS
 		shuffle(inds.begin(), inds.end(), pRandom->getRNG());
-#endif
+#endif // NDEBUG
+
+#endif // RS_RCPP
 	}
 }
 
@@ -1264,9 +1307,9 @@ bool Population::outPopStartLandscape(int landNr, bool patchModel) {
 	// ATTRIBUTES OF *ALL* SPECIES AS DETECTED AT MODEL LEVEL
 	demogrParams dem = pSpecies->getDemogrParams();
 	stageParams sstruct = pSpecies->getStageParams();
-	name = paramsSim->getDir(2)
+		name = paramsSim->getDir(2)
 		+ (sim.batchMode ? "Batch" + to_string(sim.batchNum) + "_" : "")
-		+ "Sim" + to_string(sim.simulation) + "_Land" + to_string(landNr) + "_Pop.txt";
+			+ "Sim" + to_string(sim.simulation) + "_Land" + to_string(landNr) + "_Pop.txt";
 
 	if (sim.batchMode) {
 		name = paramsSim->getDir(2)
@@ -1339,7 +1382,7 @@ void Population::outPopulation(int rep, int yr, int gen, float eps,
 	}
 	outPop << "\t" << pSpecies->getSpNum();
 	if (dem.stageStruct) {
-		p = getStats();
+		p = getStats(pPatch->getDemoScaling());
 		outPop << "\t" << p.nNonJuvs;
 		// non-juvenile stage totals from permanent array
 		for (int stg = 1; stg < nStages; stg++) {
@@ -1385,10 +1428,10 @@ void Population::outIndsStartReplicate(int rep, int landNr, bool patchModel)
 	settleType sett = pSpecies->getSettle();
 	simParams sim = paramsSim->getSim();
 
-	name = paramsSim->getDir(2)
+		name = paramsSim->getDir(2)
 		+ (sim.batchMode ? "Batch" + to_string(sim.batchNum) + "_" : "")
-		+ "Sim" + to_string(sim.simulation)
-		+ "_Land" + to_string(landNr) + "_Rep" + to_string(rep) + "_Inds.txt";
+			+ "Sim" + to_string(sim.simulation)
+			+ "_Land" + to_string(landNr) + "_Rep" + to_string(rep) + "_Inds.txt";
 
 	outInds.open(name.c_str());
 	outInds << "Rep\tYear\tRepSeason\tSpecies\tIndID\tStatus";
@@ -1487,7 +1530,7 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 			if (dem.stageStruct) outInds << "\t" << ind.age << "\t" << ind.stage;
 
 			if (pSpecies->getNbGenLoadTraits() > 0) outInds << "\t" << inds[i]->getGeneticFitness();
-		
+
 			if (emig.indVar) {
 				emigTraits e = inds[i]->getIndEmigTraits();
 				if (emig.densDep) {
@@ -1550,7 +1593,7 @@ void Population::outIndividual(Landscape* pLandscape, int rep, int yr, int gen,
 }
 
 void Population::outputGeneValues(ofstream& ofsGenes, const int& yr, const int& gen) const {
-	
+
 	const bool isDiploid = pSpecies->isDiploid();
 	int indID;
 	float alleleOnChromA, alleleOnChromB;
@@ -1562,7 +1605,7 @@ void Population::outputGeneValues(ofstream& ofsGenes, const int& yr, const int& 
 	for (auto trType : traitTypes) {
 		if (pSpecies->getSpTrait(trType)->isOutput())
 			outputTraitTypes.insert(trType);
-	}
+}
 
 	// Fetch map to positions for each trait
 	// Presumably faster than fetching for every individual
@@ -1570,7 +1613,7 @@ void Population::outputGeneValues(ofstream& ofsGenes, const int& yr, const int& 
 	for (auto trType : outputTraitTypes) {
 		set<int> traitPositions = pSpecies->getSpTrait(trType)->getGenePositions();
 		allGenePositions.insert(make_pair(trType, traitPositions));
-	}
+		}
 
 	set<int> positions;
 	for (Individual* ind : sampledInds) {
@@ -1582,27 +1625,195 @@ void Population::outputGeneValues(ofstream& ofsGenes, const int& yr, const int& 
 				alleleOnChromA = indTrait->getAlleleValueAtLocus(0, pos);
 				if (trType == GENETIC_LOAD1 || trType == GENETIC_LOAD2 || trType == GENETIC_LOAD3 || trType == GENETIC_LOAD4 || trType == GENETIC_LOAD5) {
 					domCoefA = indTrait->getDomCoefAtLocus(0, pos);
-				}
-				else {
+	}
+	else {
 					domCoefA = 0.0;
-				}
+	}
 				ofsGenes << yr << '\t' << gen << '\t' << indID << '\t' << to_string(trType) << '\t' << pos << '\t' << alleleOnChromA << '\t' << domCoefA;
 				if (isDiploid) {
 					alleleOnChromB = indTrait->getAlleleValueAtLocus(1, pos);
 					if (trType == GENETIC_LOAD1 || trType == GENETIC_LOAD2 || trType == GENETIC_LOAD3 || trType == GENETIC_LOAD4 || trType == GENETIC_LOAD5) {
 						domCoefB = indTrait->getDomCoefAtLocus(1, pos);
-					}
+}
 					else {
 						domCoefB = 0.0;
-					}
+	}
 					ofsGenes << '\t' << alleleOnChromB << '\t' << domCoefB;
 				}
 				ofsGenes << endl;
-			}
+	}
 		}
 	}
 }
 
+// ---------------------------------------------------------------------------
+// Extract all individuals of a population with certain characteristics based on age, stage and sex
+// returns a set of pointers to the individuals
+// ---------------------------------------------------------------------------
+std::vector <Individual*> Population::getIndsWithCharacteristics( // Select a set of individuals with specified characteristics
+        int min_age,	// min age (0 if not set)
+        int max_age,    // max age (max age if not set)
+        int stage,    // stage
+        int sex     //sex
+){
+    // get all suitable individuals based on settings
+    std::vector <Individual*> filteredInds;
+	int ninds = (int)inds.size();
+#if RS_RCPP
+    Rcpp::Rcout << "Number individuals in cell: " << ninds << endl;
+#endif
+    if (ninds > 0) {
+        // copy ALL individuals to filteredInds
+	for (int i = 0; i < ninds; i++) {
+            filteredInds.push_back(inds[i]);
+		}
+
+        // check status of inividuals
+        for (int i = 0; i < ninds; i++) {
+            if (inds[i] != NULL && inds[i]->getStats().status != 0 && inds[i]->getStats().status != 4 && inds[i]->getStats().status != 5){ // only accept individuals with status 0, 4 or 5 (not in transfer phase + not dead + not already translocated)
+                // Rcpp::Rcout << "Status: " << inds[i]->getStats().status << endl;
+                filteredInds[i] = NULL; // set it to NULL
+	}
+        }
+
+        // Check minimal age
+        if (min_age!=-9){
+            // loop over all number of individuals in cell
+            for (int i = 0; i < ninds; i++) {
+                if (filteredInds[i] != NULL && inds[i]->getStats().age < min_age){ // if not already NULL + age too young
+                    filteredInds[i] = NULL; // set it to NULL
+}
+            }
+        }
+        // check max age
+        if (max_age!=-9){
+            // loop over all number of individuals in cell
+            for (int i = 0; i < ninds; i++) {
+                if (filteredInds[i] != NULL && inds[i]->getStats().age < max_age){// if not already NULL + age too old
+                    if (filteredInds[i] != NULL) filteredInds[i] = NULL; // set it to NULL if not already NULL
+                }
+            }
+        }
+        // check stage
+        if (stage!=-9){
+            // loop over all number of individuals in cell
+            for (int i = 0; i < ninds; i++) {
+                if (filteredInds[i] != NULL && inds[i]->getStats().stage != stage){// if not already NULL + stage not correct
+                    if (filteredInds[i] != NULL) filteredInds[i] = NULL; // set it to NULL if not already NULL
+                }
+            }
+        }
+        // check sex
+        if (sex!=-9){
+            // loop over all number of individuals in cell
+            for (int i = 0; i < ninds; i++) {
+                if (filteredInds[i] != NULL && inds[i]->getStats().sex != sex){// if not already NULL + sex not correct
+                    if (filteredInds[i] != NULL) filteredInds[i] = NULL; // set it to NULL if not already NULL
+                }
+            }
+        }
+    } else {
+#if RS_RCPP
+        Rcpp::Rcout << "No individuals in source patch" << endl;
+#endif
+        return filteredInds;
+        }
+    int nfiltered = 0;
+    for ( auto filtered : filteredInds){
+        if (filtered != NULL) nfiltered++;
+    }
+
+    // loop over iterator of filteredInds and remove NULL values
+    filteredInds.erase(std::remove(filteredInds.begin(), filteredInds.end(), nullptr), filteredInds.end());
+
+    return filteredInds;
+};
 //---------------------------------------------------------------------------
+// Clean the sampled individuals
 //---------------------------------------------------------------------------
+void Population::cleanSampledInds(Individual* pInd // Return a set of individuals with specified characteristics
+){
+    // find inds[j] and remove it from sampledInds
+    sampledInds.erase(std::remove(sampledInds.begin(), sampledInds.end(), pInd), sampledInds.end());
+};
 //---------------------------------------------------------------------------
+// Sample N individuals from the population with a given set of characteristics
+// ---------------------------------------------------------------------------
+int Population::sampleIndividuals( // Select a set of individuals with specified characteristics
+// void Population::sampleIndividuals( // Select a set of individuals with specified characteristics
+        int nb,	// number of individuals to sample
+        int min_age,	// min age (0 if not set)
+        int max_age,    // max age (max age if not set)
+        int stage,    // stage
+        int sex     //sex
+        ){
+    if(sampledInds.size() > 0)  sampledInds.clear(); // clear old vector
+    auto rng = pRandom->getRNG(); // random number for sampling from suitable individuals
+
+    // get individuals with the characteristics
+    std::vector <Individual*> filtered;
+    filtered = getIndsWithCharacteristics(min_age, max_age, stage, sex);
+#if RS_RCPP
+    Rcpp::Rcout << "Number of individuals with fitting characteristics: " << filtered.size() << endl;
+#endif
+    if (filtered.size() <= nb)
+        // Sample all individuals in selected stages
+        sampledInds = filtered;
+    else {
+        vector<Individual*> out;
+        // Sample n individuals across filtered individuals
+        std::sample(filtered.begin(), filtered.end(), std::back_inserter(out), nb, rng);
+        std::copy(out.begin(), out.end(), std::inserter(sampledInds, sampledInds.end()));
+    }
+
+    int nb_sampled = 0;
+    if (sampledInds.size() > 0) {
+        for (int i = 0; i < (int)sampledInds.size(); i++) {
+            if (sampledInds[i] != NULL) nb_sampled++;
+        }
+    }
+    return nb_sampled;
+}
+// ---------------------------------------------------------------------------
+// catch individuals according to catching rate
+// ---------------------------------------------------------------------------
+Individual* Population::catchIndividual( // Translocate a set of individuals with specified characteristics
+        double catching_rate,
+        int j
+){
+    Individual* catched;
+    int id = inds[j]->getId();
+    // If individual is part of the sampledInds vector:
+    if (std::find(sampledInds.begin(), sampledInds.end(), inds[j]) != std::end(sampledInds)){
+        // try to catch individual
+#if RS_RCPP
+        if(catching_rate > 1) Rcpp::Rcout << "Catching rate: " << catching_rate << std::endl;
+#endif
+        if (pRandom->Bernoulli(catching_rate)){
+            indStats indstat = inds[j]->getStats();
+            catched = inds[j];
+            // remove individual from source patch
+            inds[j] = 0;
+            nInds[indstat.stage][indstat.sex]--;
+            cleanSampledInds(catched); // clean vector of sampled individuals after the event
+            return catched;
+        }else {
+            cleanSampledInds(inds[j]); // clean vector of sampled individuals after the event
+            return NULL;
+            }
+    } else {
+        return NULL;
+    }
+}
+
+// ---------------------------------------------------------------------------
+bool Population::getSizeSampledInds(
+){
+    bool size = false;
+    if (sampledInds.size() > 0) size = true;
+    return size;
+};
+
+//---------------------------------------------------------------------------
+
+
