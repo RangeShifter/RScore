@@ -671,8 +671,19 @@ void Population::reproduction(const float localK, const float envval, const int 
 					inds[i]->resetFallow();
 
 					meanFecundity = fec[stage][0];
-					// Draw number offspring, truncated and bounded to positive values
-					njuvs = max(0, static_cast<int>(pRandom->Normal(meanFecundity, fecStdDev)));
+					// Draw number of offspring:
+					// - if fecSD is not specified (< 0), preserve the
+					//   previous Poisson model
+					// - otherwise use a normal distribution with the
+					//   user-specified standard deviation
+					if (fecStdDev < 0.0) {
+						njuvs = pRandom->Poisson(meanFecundity);
+					}
+					else {
+						njuvs = max(0, static_cast<int>(
+							pRandom->Normal(meanFecundity, fecStdDev)
+						));
+					}
 
 					pCell = pPatch->getRandomCell();
 					for (int j = 0; j < njuvs; j++) {
@@ -740,8 +751,19 @@ void Population::reproduction(const float localK, const float envval, const int 
 						// NECESSARILY EQUAL THE EXPECTED NO. FROM EQN. 7 IN THE MANUAL...
 						if (pRandom->Bernoulli(propBreed)) {
 							meanFecundity = fec[stage][0]; // breeds
-							// Draw the nb of offspring, truncated and bounded to positive values
-							njuvs = max(0, static_cast<int>(pRandom->Normal(meanFecundity, fecStdDev)));
+							// Draw number of offspring:
+							// - if fecSD is not specified (< 0), preserve the
+							//   previous Poisson model
+							// - otherwise use a normal distribution with the
+							//   user-specified standard deviation
+							if (fecStdDev < 0.0) {
+								njuvs = pRandom->Poisson(meanFecundity);
+							}
+							else {
+								njuvs = max(0, static_cast<int>(
+									pRandom->Normal(meanFecundity, fecStdDev)
+								));
+							}
 						}
 						else njuvs = 0;
 
