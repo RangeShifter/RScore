@@ -909,7 +909,7 @@ demogrParams createDefaultHaploidDemogrParams() {
 	d.harem = 1.0;
 	d.bc = 1.0;
 	d.lambda = 2.0;
-	d.fecSD = sqrt(2.0); // variance same as mean
+	d.fecSD = -1.0; // variance same as mean
 	return d;
 }
 
@@ -922,7 +922,7 @@ demogrParams createDefaultDiploidDemogrParams() {
 	d.harem = 1.0;
 	d.bc = 1.0;
 	d.lambda = 2.0;
-	d.fecSD = sqrt(d.lambda); // var = mean
+	d.fecSD = -1.0; // var = mean
 	return d;
 }
 
