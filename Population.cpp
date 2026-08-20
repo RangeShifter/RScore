@@ -676,13 +676,17 @@ void Population::reproduction(const float localK, const float envval, const int 
 					//   previous Poisson model
 					// - otherwise use a normal distribution with the
 					//   user-specified standard deviation
-					if (fecStdDev < 0.0) {
-						njuvs = pRandom->Poisson(meanFecundity);
-					}
-					else {
-						njuvs = max(0, static_cast<int>(
-							pRandom->Normal(meanFecundity, fecStdDev)
-						));
+					if(meanFecundity <= 0.0) {
+						njuvs = 0;
+					} else{
+						if (fecStdDev < 0.0) {
+							njuvs = pRandom->Poisson(meanFecundity);
+						}
+						else {
+							njuvs = max(0, static_cast<int>(
+								pRandom->Normal(meanFecundity, fecStdDev)
+							));
+						}
 					}
 
 					pCell = pPatch->getRandomCell();
@@ -756,13 +760,17 @@ void Population::reproduction(const float localK, const float envval, const int 
 							//   previous Poisson model
 							// - otherwise use a normal distribution with the
 							//   user-specified standard deviation
-							if (fecStdDev < 0.0) {
-								njuvs = pRandom->Poisson(meanFecundity);
-							}
-							else {
-								njuvs = max(0, static_cast<int>(
-									pRandom->Normal(meanFecundity, fecStdDev)
-								));
+							if(meanFecundity <= 0.0) {
+								njuvs = 0;
+							} else{
+								if (fecStdDev < 0.0) {
+									njuvs = pRandom->Poisson(meanFecundity);
+								}
+								else {
+									njuvs = max(0, static_cast<int>(
+										pRandom->Normal(meanFecundity, fecStdDev)
+									));
+								}
 							}
 						}
 						else njuvs = 0;
