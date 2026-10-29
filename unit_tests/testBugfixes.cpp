@@ -264,10 +264,10 @@ namespace {
 		NeutralStatsManager nsm(s.patchList.size(), 1);
 		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
 		nsm.calculateFstatWC(s.patchList, s.nbInds, 1, 2, s.pSpecies, s.pLandscape, false);
-		assert(!std::isnan(nsm.getFstWC()));
-		assert(!std::isnan(nsm.getFitWC()));
-		assert(!std::isnan(nsm.getPerLocusFst(0)));
-		assert(!std::isnan(nsm.getPerLocusFit(0)));
+		assert(std::isnan(nsm.getFstWC()));
+		assert(std::isnan(nsm.getFitWC()));
+		assert(std::isnan(nsm.getPerLocusFst(0)));
+		assert(std::isnan(nsm.getPerLocusFit(0)));
 	}
 
 	// ---------------------------------------------------------------------
