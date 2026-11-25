@@ -342,7 +342,7 @@ void testPopulation()
 			if (c.maxOffspring >= 0 && c.fecSD == 0.0) {
 				assert(nOffspring == initialNbInds * min(c.maxOffspring, static_cast<int>(c.lambda)));
 			}
-			else if (c.maxOffspring >= 0) { // Poisson(5) capped at 3: mean ~2.73 per female
+			else if (c.maxOffspring >= 0) { // Poisson(5) capped at 3: mean ~2.83 per female
 				assert(nOffspring <= initialNbInds * c.maxOffspring);
 				assert(nOffspring > initialNbInds * (c.maxOffspring - 1));
 			}
