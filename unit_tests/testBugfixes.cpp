@@ -472,11 +472,11 @@ namespace {
 			if (pInd->getCurrCell() == nullptr) break;
 		}
 		assert(pInd->getCurrCell() == nullptr);
-		assert(pInd->getStatus() == 6);
+		assert(pInd->getStatus() == 12); // absorbed
 
 		std::map<Species*, vector<Individual*>> pool{ { &sp, { pInd } } };
 		SubCommunity::resolveSettlement(pool, &ls); // must not crash
-		assert(pInd->getStatus() == 6);
+		assert(pInd->getStatus() == 12); // stays absorbed, no neighbouring cell search
 		delete pInd;
 	}
 

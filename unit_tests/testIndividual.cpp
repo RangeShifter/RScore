@@ -185,7 +185,7 @@ void testTransferKernels() {
 	Individual ind10(&sp, init_cell, init_patch, 1, 0, 0, 0.0, false, 0); // reset individual
 	isDispersing = ind10.moveKernel(&ls, &sp, absorbing_boundaries);
 	curr_cell = ind10.getCurrCell();
-	assert(ind10.getStatus() == 6);
+	assert(ind10.getStatus() == 12); // absorbed
 	assert(curr_cell == 0); // out of the landscape
 
 	// Dispersal-related mortality
@@ -401,7 +401,7 @@ void testTransferCRW() {
 	ind5.setStatus(1); // dispersing
 	bool absorbing_boundaries = true;
 	isDispersing = ind5.moveStep(&ls, &sp, hab_index, absorbing_boundaries);
-	assert(ind5.getStatus() == 6);
+	assert(ind5.getStatus() == 12); // absorbed
 	assert(ind5.getCurrCell() == 0); // deref apparently
 
 	// Correlation parameter
