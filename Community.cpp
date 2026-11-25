@@ -1894,13 +1894,10 @@ bool Community::openPerLocusFstFile(Species* pSpecies, Landscape* pLandscape, co
 {
 	set<int> patchList;
 	string samplingOpt = paramsSim->getSim().patchSamplingOption;
-	if (samplingOpt == "list" 
-		|| samplingOpt == "random"
-		|| (samplingOpt == "all" && !pLandscape->getLandParams().dynamic)
-		) // list of patches always the same
+	if (samplingOpt == "list" || samplingOpt == "random") // list of patches always the same
 		patchList = pSpecies->getSamplePatches();
-	else { // random_occupied or all with dynamic landscape
-		// then sampled patches may change every year, 
+	else { // random_occupied or all: only occupied patches are sampled, which may change
+		// every year (and are not known yet when the file is opened),
 		// so produce an entry for all patches
 		patchList = pLandscape->getPatchNbs();
 		}
@@ -2039,9 +2036,8 @@ void Community::writeNeutralOutputFile(int rep, int yr, int gen) {
 void Community::writePerLocusFstatFile(Species* pSpecies, const int yr, const int gen, const int nLoci, set<int> const& patchList)
 {
 	string samplingOpt = paramsSim->getSim().patchSamplingOption;
-	bool samplingFixed = samplingOpt == "list"
-		|| samplingOpt == "random"
-		|| (samplingOpt == "all" && !pLandscape->getLandParams().dynamic);
+	// "all" samples only occupied patches, so the sampled patches may change between years
+	bool samplingFixed = samplingOpt == "list" || samplingOpt == "random";
 
 	const set<int>& positions = pSpecies->getSpTrait(NEUTRAL)->getGenePositions();
 	// all patch numbers, built once instead of once per locus
