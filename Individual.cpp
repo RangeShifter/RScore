@@ -829,6 +829,7 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool 
 	trfrKernelParams kern;
 	Cell* pCell;
 	Patch* pPatch;
+	nbKernelJumps++;
 	locn loc = pCurrCell->getLocn();
 
 	landData land = pLandscape->getLandData();
@@ -983,8 +984,9 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool 
 				dispersing = 0;
 				// can wait in matrix if population is stage structured ...
 				if (pSpecies->stageStructured()) {
-					// ... and wait option is applied ...
-					if (sett.wait) { // ... it is
+					// ... and wait option is applied, and the maximum number of jumps
+					// (MaxSteps) has not been reached ...
+					if (sett.wait && nbKernelJumps < pSpecies->getSteps(stage, sex).maxSteps) { // ... it is
 						status = 3; // waiting
 					}
 					else // ... it is not

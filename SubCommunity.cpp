@@ -590,7 +590,9 @@ int SubCommunity::resolveSettlement(std::map<Species*, vector<Individual*>>& dis
 							}
 						}
 						else { // dispersal kernel
-							if (sett.wait) {
+							// wait until the next dispersal event, unless the maximum number
+							// of jumps (MaxSteps) has been reached
+							if (sett.wait && pInd->getNbKernelJumps() < pSpecies->getSteps(ind.stage, ind.sex).maxSteps) {
 								ind.status = 3; // wait until next dispersal event
 							}
 							else {

@@ -305,6 +305,7 @@ public:
 	int getId(void);
 	sex_t getSex(void);
 	int getStatus(void);
+	int getNbKernelJumps(void) const { return nbKernelJumps; }
 	float getGeneticFitness(void);
 	bool isViable() const;
 	indStats getStats(void);
@@ -416,6 +417,7 @@ private:
 		// 10 = translocated to a different patch (e.g. for assisted colonisation)
 		// 11 = harvested (e.g. to regulate population size or for hunting)
 	short fallow; // reproductive seasons since last reproduction
+	int nbKernelJumps = 0; // number of dispersal-kernel jumps made so far (limited by MaxSteps)
 	bool isDeveloping;
 	Cell* pPrevCell;	// pointer to previous Cell
 	Cell* pCurrCell;	// pointer to current Cell

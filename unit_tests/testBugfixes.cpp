@@ -42,7 +42,7 @@ namespace {
 		trfr.usesMovtProc = false;
 		trfr.indVar = trfr.sexDep = trfr.stgDep = false;
 		trfr.twinKern = trfr.distMort = trfr.habMort = trfr.costMap = false;
-		trfr.moveType = 1;
+		trfr.moveType = 0; // not used for kernels (1 = SMS, 2 = CRW)
 		sp.setTrfrRules(trfr);
 		sp.setFullKernel(false);
 		trfrMortParams mort;
@@ -389,6 +389,46 @@ namespace {
 		assert(nearNatal == 0);
 	}
 
+	// Waiting kernel dispersers may jump at most MaxSteps times: after the last
+	// allowed jump an individual that has not found suitable habitat dies (status 6)
+	// instead of waiting again; without MaxSteps (default) it keeps waiting
+	void test_kernel_waiting_limited_by_max_steps() {
+		const int dimX = 31;
+		landParams lp = makeLandParams(dimX, 1);
+		Landscape ls;
+		ls.setLandParams(lp, true);
+		ls.setCellArray();
+		Cell* natal = new Cell(0, 0, (Patch*)nullptr, 0); // suitable
+		ls.addCellToLand(natal);
+		for (int x = 1; x < dimX; x++) ls.addCellToLand(new Cell(x, 0, (Patch*)nullptr, 1)); // matrix
+		Species sp;
+		setUpKernelSpecies(sp, 3.0f, true, false);
+		demogrParams d = sp.getDemogrParams(); d.stageStruct = true; sp.setDemogr(d);
+		stageParams stg = sp.getStageParams(); stg.nStages = 2; sp.setStage(stg);
+		sp.setSettRules(1, 0, sp.getSettRules(0, 0)); // same rules (wait) for stage 1
+		ls.allocatePatches(&sp);
+		ls.updateCarryingCapacity(&sp, 0, 0);
+
+		for (int maxSteps : { 0, 2 }) { // 0 = not applied
+			settleSteps steps; steps.minSteps = 0; steps.maxSteps = maxSteps; steps.maxStepsYr = 0;
+			sp.setSteps(1, 0, steps);
+			for (int r = 0; r < 20; r++) {
+				Individual ind(&sp, natal, natal->getPatch(), 1, 1, 0, 0.0, false, 0);
+				ind.setStatus(1);
+				ind.moveKernel(&ls, &sp, false); // jump 1: lands in the matrix
+				if (ind.getCurrCell() == nullptr) continue; // left the landscape
+				assert(ind.getNbKernelJumps() == 1);
+				assert(ind.getStatus() == 3); // waits
+				ind.ageIncrement(1000);         // released for the next dispersal event
+				ind.moveKernel(&ls, &sp, false); // jump 2
+				if (ind.getCurrCell() == nullptr || ind.getCurrCell() == natal) continue;
+				assert(ind.getNbKernelJumps() == 2);
+				if (maxSteps == 2) assert(ind.getStatus() == 6); // limit reached: dies
+				else assert(ind.getStatus() == 3);               // no limit: waits again
+			}
+		}
+	}
+
 	// An individual that crossed an absorbing boundary has no current cell;
 	// the "go to neighbouring cell" settlement rule must not dereference it
 	void test_settlement_neighbour_rule_absorbed_individual() {
@@ -607,6 +647,7 @@ namespace {
 			{ "neutral_trait_missing_max_throws", test_neutral_trait_missing_max_throws },
 			{ "trait_without_positions_throws", test_trait_without_positions_throws },
 			{ "kernel_waiting_individual_restarts_from_current_cell", test_kernel_waiting_individual_restarts_from_current_cell },
+			{ "kernel_waiting_limited_by_max_steps", test_kernel_waiting_limited_by_max_steps },
 			{ "settlement_neighbour_rule_absorbed_individual", test_settlement_neighbour_rule_absorbed_individual },
 			{ "fractal_non_square", test_fractal_non_square },
 			{ "connect_matrix_delete", test_connect_matrix_delete },
