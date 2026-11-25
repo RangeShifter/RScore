@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Individual
+ RangeShifter v3.1 Individual
 
  Implements the Individual class
 

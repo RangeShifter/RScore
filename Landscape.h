@@ -22,7 +22,7 @@
 
 /*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Landscape
+RangeShifter v3.1 Landscape
 
 Implements the following classes:
 

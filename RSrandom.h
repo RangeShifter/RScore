@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 RSrandom
+ RangeShifter v3.1 RSrandom
 
  Implements the RSrandom class
 

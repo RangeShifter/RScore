@@ -22,7 +22,7 @@
  
 /*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Population
+RangeShifter v3.1 Population
 
 Implements the Population class
 

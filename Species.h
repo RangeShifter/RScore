@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Species
+ RangeShifter v3.1 Species
 
  Implements the Species class
 

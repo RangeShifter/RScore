@@ -22,7 +22,7 @@
 
 /*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Community
+RangeShifter v3.1 Community
 
 Implements the Community class
 

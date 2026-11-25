@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Patch
+ RangeShifter v3.1 Patch
 
  Implements the class: Patch
 

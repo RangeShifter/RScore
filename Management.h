@@ -23,7 +23,7 @@
 
 /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Parameters
+ RangeShifter v3.1 Management
 
  Implements the following classes:
 

@@ -930,7 +930,7 @@ void OutParameters(Landscape* pLandscape)
 		name = paramsSim->getDir(2) + "Sim" + to_string(sim.simulation) + "_Parameters.txt";
 	outPar.open(name.c_str());
 
-	outPar << "RangeShifter 3.0 ";
+	outPar << "RangeShifter 3.1 ";
 
 	outPar << endl;
 

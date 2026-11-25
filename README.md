@@ -1,6 +1,6 @@
 # RangeShifter core code 
 
-This repo contains the core simulation code for RangeShifter v3.0 and is not meant to be compiled or run on its own. It is used as a shared codebase for multiple interfaces.
+This repo contains the core simulation code for RangeShifter v3.1 and is not meant to be compiled or run on its own. It is used as a shared codebase for multiple interfaces.
 
 <img src="https://github.com/RangeShifter/RScore/blob/main/RScore_logo.png" align="right" height="200/"/>
 

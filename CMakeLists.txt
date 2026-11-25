@@ -3,7 +3,7 @@
 if(NOT batchmode) # that is, RScore as a standalone
 	cmake_minimum_required(VERSION 3.10)
 	# set the project name and version
-	project(RScore VERSION 3.0.0)
+	project(RScore VERSION 3.1.0)
 	# specify the C++ standard
 	set(CMAKE_CXX_STANDARD 20)
 	set(CMAKE_CXX_STANDARD_REQUIRED True)
