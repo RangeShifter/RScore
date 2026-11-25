@@ -67,6 +67,92 @@ vector<PatchFisStats> computePerPatchFis(PerPatchFisSetup& s) {
 	return nsm.getPerPatchFis();
 }
 
+// ----------------------------------------------------------------------------------------
+// F-statistics that cannot be computed are NaN (written as NA); computed zeros stay 0
+// ----------------------------------------------------------------------------------------
+void testFstatNotComputable() {
+
+	const double tol = 1e-9;
+	const int nbAlleles = 4;
+
+	// All loci monomorphic: Fst, Fis and Fit are 0/0, globally and per locus
+	{
+		auto s = makePerPatchFisSetup({
+			{ {{0,0}}, {{0,0}} },
+			{ {{0,0}}, {{0,0}} } }, 1, true);
+		NeutralStatsManager nsm(s.patchList.size(), s.nbLoci);
+		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
+		nsm.calculateFstatWC(s.patchList, s.nbInds, s.nbLoci, nbAlleles, s.pSpecies, s.pLandscape, false);
+		assert(std::isnan(nsm.getFstWC()) && std::isnan(nsm.getFisWC()) && std::isnan(nsm.getFitWC()));
+		assert(std::isnan(nsm.getPerLocusFst(0)) && std::isnan(nsm.getPerLocusFis(0)) && std::isnan(nsm.getPerLocusFit(0)));
+	}
+
+	// Identical allele frequencies in Hardy-Weinberg proportions: computed Fst = 0 stays 0, not NA
+	{
+		auto s = makePerPatchFisSetup({
+			{ {{0,1}}, {{0,0}}, {{1,1}}, {{0,1}} },
+			{ {{0,1}}, {{0,0}}, {{1,1}}, {{0,1}} } }, 1, true);
+		NeutralStatsManager nsm(s.patchList.size(), s.nbLoci);
+		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
+		nsm.calculateFstatWC(s.patchList, s.nbInds, s.nbLoci, nbAlleles, s.pSpecies, s.pLandscape, false);
+		assert(!std::isnan(nsm.getFstWC()) && !std::isnan(nsm.getFisWC()) && !std::isnan(nsm.getFitWC()));
+		assert(nsm.getFstWC() <= 0.0); // no differentiation (WC theta can be slightly negative)
+	}
+
+	// One sampled patch: Fst and Fit need r > 1 and are NA, but Fis can be computed
+	// and equals the per-patch Fis (both are the single-sample WC estimator f-hat)
+	{
+		auto s = makePerPatchFisSetup({ { {{0,1}}, {{0,0}}, {{0,1}}, {{1,1}}, {{0,0}} } }, 1, true);
+		NeutralStatsManager nsm(s.patchList.size(), s.nbLoci);
+		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
+		nsm.calculateFstatWC(s.patchList, s.nbInds, s.nbLoci, nbAlleles, s.pSpecies, s.pLandscape, false);
+		assert(std::isnan(nsm.getFstWC()) && std::isnan(nsm.getFitWC()));
+		assert(std::isnan(nsm.getPerLocusFst(0)) && std::isnan(nsm.getPerLocusFit(0)));
+		assert(!std::isnan(nsm.getFisWC()));
+		nsm.calculatePerPatchFis(s.patchList, s.pSpecies, s.pLandscape);
+		assert(fabs(nsm.getFisWC() - nsm.getPerPatchFis()[0].fis) < tol);
+		assert(fabs(nsm.getPerLocusFis(0) - nsm.getFisWC()) < tol);
+	}
+
+	// Haploid species: no heterozygotes, so Fis and Fit are NA (were 1 before); Fst is computed
+	{
+		auto s = makePerPatchFisSetup({
+			{ {{0,0}}, {{0,0}}, {{1,0}} },
+			{ {{1,0}}, {{1,0}}, {{0,0}} } }, 1, false);
+		NeutralStatsManager nsm(s.patchList.size(), s.nbLoci);
+		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
+		nsm.calculateFstatWC(s.patchList, s.nbInds, s.nbLoci, nbAlleles, s.pSpecies, s.pLandscape, false);
+		assert(std::isnan(nsm.getFisWC()) && std::isnan(nsm.getFitWC()));
+		assert(std::isnan(nsm.getPerLocusFis(0)) && std::isnan(nsm.getPerLocusFit(0)));
+		assert(!std::isnan(nsm.getFstWC()));
+		assert(fabs(nsm.getPerLocusFst(0) - nsm.getFstWC()) < tol);
+	}
+
+	// Pairwise Fst: pairs with an empty patch are NA; a sampled patch with itself is 0
+	{
+		auto s = makePerPatchFisSetup({
+			{ {{0,1}}, {{0,0}}, {{1,1}} },
+			{ {{1,1}}, {{0,1}}, {{1,1}} },
+			{ } }, 1, true);
+		NeutralStatsManager nsm(s.patchList.size(), s.nbLoci);
+		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
+		nsm.calculatePairwiseFst(s.patchList, s.nbLoci, nbAlleles, s.pSpecies, s.pLandscape);
+		assert(nsm.getPairwiseFst(0, 0) == 0.0 && nsm.getPairwiseFst(1, 1) == 0.0);
+		assert(std::isnan(nsm.getPairwiseFst(2, 2)));
+		assert(!std::isnan(nsm.getPairwiseFst(0, 1)));
+		assert(std::isnan(nsm.getPairwiseFst(0, 2)) && std::isnan(nsm.getPairwiseFst(1, 2)));
+	}
+
+	// One sampled individual per patch (n_bar = 1): the estimators divide by n_bar - 1, all NA
+	{
+		auto s = makePerPatchFisSetup({ { {{0,1}} }, { {{1,1}} } }, 1, true);
+		NeutralStatsManager nsm(s.patchList.size(), s.nbLoci);
+		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
+		nsm.calculateFstatWC(s.patchList, s.nbInds, s.nbLoci, nbAlleles, s.pSpecies, s.pLandscape, false);
+		assert(std::isnan(nsm.getFstWC()) && std::isnan(nsm.getFisWC()) && std::isnan(nsm.getFitWC()));
+	}
+}
+
 void testPerPatchFis() {
 
 	const double tol = 1e-9;
@@ -139,7 +225,7 @@ void testPerPatchFis() {
 
 void testNeutralStats() {
 
-	// In haploid settings, Ho is always zero
+	// In haploid settings, Ho cannot be computed (no heterozygotes possible): NaN, written as NA
 	{
 		// Create empty 1-patch, 1-cell landscape
 		Landscape* pLandscape = new Landscape;
@@ -183,7 +269,7 @@ void testNeutralStats() {
 			pSpecies,
 			pLandscape
 		);
-		assert(pNeutralStatistics->getHo() == 0.0);
+		assert(std::isnan(pNeutralStatistics->getHo()));
 	}
 
 	// If every individual in a sample is homozygote, Ho is zero
@@ -334,7 +420,7 @@ void testNeutralStats() {
 		assert(pPopB->sampleSize() == nbIndsPopB); // too small; all individuals have been sampled
 	}
 
-	// If the sample is too small, Fst evaluates to zero
+	// If the sample is too small, Fst cannot be computed: NaN (written as NA)
 	// More importantly, the neutral stats module still runs without error 
 	{
 		// 1 - if there is zero population in the sample
@@ -381,7 +467,7 @@ void testNeutralStats() {
 				pLandscape,
 				false
 			);
-			assert(pNeutralStatistics->getFstWC() == 0.0);
+			assert(std::isnan(pNeutralStatistics->getFstWC()));
 		} // end case 1 - zero pop in sample
 
 		// 2 - If there is only one population in the sample
@@ -456,7 +542,8 @@ void testNeutralStats() {
 				pLandscape,
 				false
 			);
-			assert(pNeutralStatistics->getFstWC() == 0.0);
+			assert(std::isnan(pNeutralStatistics->getFstWC()));
+			assert(std::isnan(pNeutralStatistics->getFitWC())); // Fst and Fit need two or more populations
 		} // end case 2, only one population in sample
 		
 		// 3 - Two empty populations
@@ -526,7 +613,7 @@ void testNeutralStats() {
 				pLandscape,
 				false
 			);
-			assert(pNeutralStatistics->getFstWC() == 0.0);
+			assert(std::isnan(pNeutralStatistics->getFstWC()));
 		}
 	}
 
@@ -1204,6 +1291,7 @@ void testNeutralStats() {
 	}
 
 	testPerPatchFis();
+	testFstatNotComputable();
 }
 
 #endif // UNIT_TESTS

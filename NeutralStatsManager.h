@@ -1,6 +1,8 @@
 #ifndef NEUTRALSTATSH
 #define NEUTRALSTATSH
 
+#include <cmath>
+#include <limits>
 #include "Species.h"
 #include "Landscape.h"
 /*----------------------------------------------------------------------------

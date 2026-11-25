@@ -259,15 +259,17 @@ namespace {
 		assert(fabs(het - 1.0f) < 1e-6);
 	}
 
-	// All loci monomorphic: F-statistics are undefined and must not be NaN
-	void test_fstat_monomorphic_no_nan() {
+	// All loci monomorphic: F-statistics cannot be computed and are NaN (written as NA), Fis included
+	void test_fstat_monomorphic_is_nan() {
 		auto s = makeNeutralSetup({ { {0,0}, {0,0} }, { {0,0}, {0,0} } });
 		NeutralStatsManager nsm(s.patchList.size(), 1);
 		nsm.updateAllNeutralTables(s.pSpecies, s.pLandscape, s.patchList);
 		nsm.calculateFstatWC(s.patchList, s.nbInds, 1, 2, s.pSpecies, s.pLandscape, false);
 		assert(std::isnan(nsm.getFstWC()));
 		assert(std::isnan(nsm.getFitWC()));
+		assert(std::isnan(nsm.getFisWC())); // was 0 before
 		assert(std::isnan(nsm.getPerLocusFst(0)));
+		assert(std::isnan(nsm.getPerLocusFis(0)));
 		assert(std::isnan(nsm.getPerLocusFit(0)));
 	}
 
@@ -599,7 +601,7 @@ namespace {
 			{ "asexual_offspring_are_female", test_asexual_offspring_are_female },
 			{ "perLocusFit_equals_global_for_one_locus", test_perLocusFit_equals_global_for_one_locus },
 			{ "patch_heterozygosity_not_doubled", test_patch_heterozygosity_not_doubled },
-			{ "fstat_monomorphic_no_nan", test_fstat_monomorphic_no_nan },
+			{ "fstat_monomorphic_is_nan", test_fstat_monomorphic_is_nan },
 			{ "genetic_load_heterozygote_with_wildtype", test_genetic_load_heterozygote_with_wildtype },
 			{ "settlement_alpha_can_be_negative", test_settlement_alpha_can_be_negative },
 			{ "neutral_trait_missing_max_throws", test_neutral_trait_missing_max_throws },

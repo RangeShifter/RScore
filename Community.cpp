@@ -2007,6 +2007,13 @@ bool Community::openPerPatchFisFile(const int landNr, const int rep) {
 // Write population level FST results file
 // ----------------------------------------------------------------------------------------
 
+// Neutral genetics outputs: values that cannot be computed are NaN internally
+// and written as NA (otherwise the stream writes nan or -nan, depending on the platform)
+static void writeValueOrNA(ofstream& ofs, const double val) {
+	if (std::isnan(val)) ofs << "NA";
+	else ofs << val;
+}
+
 void Community::writeNeutralOutputFile(int rep, int yr, int gen) {
 
 	outwcfstat << rep << "\t" << yr << "\t" << gen << "\t";
@@ -2014,17 +2021,13 @@ void Community::writeNeutralOutputFile(int rep, int yr, int gen) {
 		<< "\t" << pNeutralStatistics->getTotalNbSampledInds() << "\t";
 
 	
-	outwcfstat << pNeutralStatistics->getFstWC() << "\t"
-			<< pNeutralStatistics->getFisWC() << "\t"
-			<< pNeutralStatistics->getFitWC() << "\t";
-
-
-	
-	outwcfstat << pNeutralStatistics->getMeanNbAllPerLocus() << "\t"
-		<< pNeutralStatistics->getMeanNbAllPerLocusPerPatch() << "\t"
-		<< pNeutralStatistics->getTotalFixdAlleles() << "\t" 
-		<< pNeutralStatistics->getMeanFixdAllelesPerPatch()  << "\t" 
-		<< pNeutralStatistics->getHo();
+	for (double val : { pNeutralStatistics->getFstWC(), pNeutralStatistics->getFisWC(), pNeutralStatistics->getFitWC(),
+		pNeutralStatistics->getMeanNbAllPerLocus(), pNeutralStatistics->getMeanNbAllPerLocusPerPatch(),
+		pNeutralStatistics->getTotalFixdAlleles(), pNeutralStatistics->getMeanFixdAllelesPerPatch() }) {
+		writeValueOrNA(outwcfstat, val);
+		outwcfstat << "	";
+	}
+	writeValueOrNA(outwcfstat, pNeutralStatistics->getHo());
 
 	outwcfstat << '\n';
 }
@@ -2050,10 +2053,13 @@ void Community::writePerLocusFstatFile(Species* pSpecies, const int yr, const in
 		outperlocusfstat << yr << "\t" 
 			<< gen << "\t" 
 			<< position << "\t";
-		outperlocusfstat << pNeutralStatistics->getPerLocusFst(thisLocus) << "\t"
-			<< pNeutralStatistics->getPerLocusFis(thisLocus) << "\t" 
-			<< pNeutralStatistics->getPerLocusFit(thisLocus) << "\t" 
-			<< pNeutralStatistics->getPerLocusHo(thisLocus);
+		writeValueOrNA(outperlocusfstat, pNeutralStatistics->getPerLocusFst(thisLocus));
+		outperlocusfstat << "\t";
+		writeValueOrNA(outperlocusfstat, pNeutralStatistics->getPerLocusFis(thisLocus));
+		outperlocusfstat << "\t";
+		writeValueOrNA(outperlocusfstat, pNeutralStatistics->getPerLocusFit(thisLocus));
+		outperlocusfstat << "\t";
+		writeValueOrNA(outperlocusfstat, pNeutralStatistics->getPerLocusHo(thisLocus));
 
 		if (samplingFixed) { // then safe to output sampled patches in order
 		for (int patchId : patchList) {
@@ -2131,9 +2137,9 @@ void Community::writePairwiseFstFile(Species* pSpecies, const int yr, const int 
 				<< patchA->getSubComm()->getLocn().y << "\t"
 				<< patchVect[j] << "\t"
 				<< patchB->getSubComm()->getLocn().x << "\t"
-				<< patchB->getSubComm()->getLocn().y << "\t"
-				<< pNeutralStatistics->getPairwiseFst(i, j)
-				<< "\n";
+				<< patchB->getSubComm()->getLocn().y << "\t";
+			writeValueOrNA(outpairwisefst, pNeutralStatistics->getPairwiseFst(i, j));
+			outpairwisefst << "\n";
 		}
 	}
 
@@ -2147,19 +2153,14 @@ void Community::writePairwiseFstFile(Species* pSpecies, const int yr, const int 
 // ----------------------------------------------------------------------------------------
 void Community::writePerPatchFisFile(const int rep, const int yr, const int gen) {
 
-	auto writeValue = [](ofstream& ofs, const double val) {
-		if (std::isnan(val)) ofs << "NA";
-		else ofs << val;
-	};
-
 	for (const PatchFisStats& st : pNeutralStatistics->getPerPatchFis()) {
 		outperpatchfis << rep << "\t" << yr << "\t" << gen << "\t"
 			<< st.patchId << "\t" << st.nbSampledInds << "\t";
-		writeValue(outperpatchfis, st.ho);
+		writeValueOrNA(outperpatchfis, st.ho);
 		outperpatchfis << "\t";
-		writeValue(outperpatchfis, st.hs);
+		writeValueOrNA(outperpatchfis, st.hs);
 		outperpatchfis << "\t";
-		writeValue(outperpatchfis, st.fis);
+		writeValueOrNA(outperpatchfis, st.fis);
 		outperpatchfis << "\n";
 	}
 }
