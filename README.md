@@ -1,6 +1,6 @@
 # RangeShifter core code 
 
-This repo contains the core simulation code for RangeShifter v3.0 and is not meant to be compiled or run on its own. It is used as a shared codebase for multiple interfaces.
+This repo contains the core simulation code for RangeShifter v3.1 and is not meant to be compiled or run on its own. It is used as a shared codebase for multiple interfaces.
 
 <img src="https://github.com/RangeShifter/RScore/blob/main/RScore_logo.png" align="right" height="200/"/>
 
@@ -11,6 +11,10 @@ If you are only interested in using RangeShifter, you can ignore this and head t
 - [RangeShiftR](https://github.com/RangeShifter/RangeShiftR-pkg)
 
 - [RangeShifter-batch](https://github.com/RangeShifter/RangeShifter_batch)
+
+## Contributing to RangeShifter core code
+
+See [CONTRIBUTING](https://github.com/RangeShifter/RScore/blob/main/CONTRIBUTING.md).
 
 ## Usage: git subtree
 
@@ -91,10 +95,6 @@ git rm src/RScore -r
 git commit -m "switching subtree branch"
 git subtree add --prefix src/RScore RScore <the new branch>
 ```
-
-## Contributing to RangeShifter core code
-
-See [CONTRIBUTING](https://github.com/RangeShifter/RScore/blob/main/CONTRIBUTING.md).
 
 ## Maintainers
 

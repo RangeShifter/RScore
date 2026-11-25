@@ -136,7 +136,9 @@ void NeutralStatsManager::calcAllelicDiversityMetrics(set<int> const& patchList,
 			}
 		}
 	}
-	meanNbAllelesPerLocusPerPatch = nbPops > 0 ? meanAllelicDivInPatch / nbPops : 0;
+	// not computable without a sampled population: NaN (written as NA)
+	const double notDefined = numeric_limits<double>::quiet_NaN();
+	meanNbAllelesPerLocusPerPatch = nbPops > 0 ? meanAllelicDivInPatch / nbPops : notDefined;
 
 	// Compute mean nb alleles per locus
 	meanNbAllelesPerLocus = 0;
@@ -144,15 +146,17 @@ void NeutralStatsManager::calcAllelicDiversityMetrics(set<int> const& patchList,
 		for (j = 0; j < nAlleles; ++j)
 			meanNbAllelesPerLocus += alleleExistsInCommTable[i][j];
 	meanNbAllelesPerLocus /= nLoci;
+	if (nInds == 0) meanNbAllelesPerLocus = notDefined;
 	
 	// Compute number of fixed loci per patch
 	// mean number of loci that are fixed at pop level per pop
-	meanNbFixedLociPerPatch = 0;
+	meanNbFixedLociPerPatch = notDefined;
 	if (nbPops > 0) {
+		meanNbFixedLociPerPatch = 0;
 		for (int patchId : patchList) {
 			const auto patch = pLandscape->findPatch(patchId);
 			const auto pPop = patch->getPopn(pSpecies);
-			if (pPop != 0) {
+			if (pPop != 0 && pPop->sampleSize() > 0) {
 				for (i = 0; i < nLoci; ++i)
 					for (j = 0; j < nAlleles; ++j)
 						meanNbFixedLociPerPatch += pPop->getAlleleFrequency(i, j) == 1;
@@ -166,6 +170,7 @@ void NeutralStatsManager::calcAllelicDiversityMetrics(set<int> const& patchList,
 	for (i = 0; i < nLoci; ++i)
 		for (j = 0; j < nAlleles; ++j)
 			meanFixedLoci += commNeutralCountTables[i].getFrequency(j) == 1;
+	if (nInds == 0) meanFixedLoci = notDefined;
 }
 
 // ----------------------------------------------------------------------------------------
@@ -185,7 +190,7 @@ void NeutralStatsManager::calculateHo(set<int> const& patchList, const int nbInd
 		}
 		ho = static_cast<double>(nbHetero) / (nbInds * nbrLoci);
 	}
-	else ho = 0.0;
+	else ho = numeric_limits<double>::quiet_NaN(); // haploid or no sampled individuals: not computable
 }
 
 // ----------------------------------------------------------------------------------------
@@ -257,8 +262,9 @@ void NeutralStatsManager::calculatePerLocusHo(set<int> const& patchList, const i
 		}
 	}
 
-	perLocusHo = vector<double>(nbrLoci, 0);
-	if (nbInds != 0) {
+	// haploid or no sampled individuals: not computable (NaN, written as NA)
+	perLocusHo = vector<double>(nbrLoci, numeric_limits<double>::quiet_NaN());
+	if (nbInds != 0 && pSpecies->isDiploid()) {
 		for (int i = 0; i < nbHeterosInComm.size(); i++) {
 			perLocusHo[i] = static_cast<double>(nbHeterosInComm[i]) / nbInds;
 		}
@@ -276,11 +282,20 @@ void NeutralStatsManager::calculateFstatWC(set<int> const& patchList, const int 
 	double nBar, nC, inverseNbar;
 	unsigned int nbPops = 0;
 	const int totalSampleSize = nbSampledIndsInComm; // r * n_bar
-	const double ploidy = pSpecies->isDiploid() ? 2.0 : 1.0;
+	const bool isDiploid = pSpecies->isDiploid();
+	const double ploidy = isDiploid ? 2.0 : 1.0;
 
+	// Values that cannot be computed are NaN (written as NA in the output files):
+	//   - no sampled population, or on average one sampled individual per population (n_bar = 1): all
+	//   - one sampled population: Fst and Fit (they need r > 1); Fis is computed
+	//   - haploid species: Fis and Fit (no heterozygotes, Fis = Fit = 1 would be an artefact); Fst is computed
+	//   - zero denominator (e.g. monomorphic locus): the affected estimator
+	// A computed value of 0 stays 0.
+	const double notDefined = numeric_limits<double>::quiet_NaN();
+	fst = fis = fit = notDefined;
 
 	// Reset per-locus vectors between generations
-	perLocusFst = perLocusFis = perLocusFit = vector<double>(nLoci, 0.0);
+	perLocusFst = perLocusFis = perLocusFit = vector<double>(nLoci, notDefined);
 
 	for (int patchId : patchList) {
 		const auto patch = pLandscape->findPatch(patchId);
@@ -297,12 +312,15 @@ void NeutralStatsManager::calculateFstatWC(set<int> const& patchList, const int 
 	nbExtantPops = nbPops; // r
 	totalNbSampledInds = nbSampledIndsInComm;
 
-	if (nbPops > 1) {
+	if (nbPops == 0) return;
+	nBar = static_cast<double>(totalSampleSize) / nbPops; // average sample size, cannot be less than 1
+	if (nBar <= 1.0) return; // estimators divide by n_bar - 1
 
+	const bool severalPops = nbPops > 1;
+	{
 		// Calculate F stats
-		nBar = static_cast<double>(totalSampleSize) / nbPops; // average sample size, cannot be less than 1
-		nC = (totalSampleSize - sumWeights) / (nbPops - 1);
-		double nBarMinusOne = (nBar == 1.0) ? 1.0 : nBar - 1.0; // avoid / 0 if exactly 1 ind per pop
+		nC = severalPops ? (totalSampleSize - sumWeights) / (nbPops - 1) : 1.0; // not used if r = 1
+		double nBarMinusOne = nBar - 1.0;
 		inverseNbar = 1.0 / nBarMinusOne;
 		inverseNtotal = 1.0 / totalSampleSize;
 
@@ -355,7 +373,8 @@ void NeutralStatsManager::calculateFstatWC(set<int> const& patchList, const int 
 					}
 				} //end for pop
 
-				s2 /= s2Denom;
+				// with one population, p_i = p_bar and s2 = 0 (s2Denom would be 0)
+				s2 = severalPops ? s2 / s2Denom : 0.0;
 				hBar /= static_cast<float>(totalSampleSize); // / (r * n_bar)
 
 				intermediateTerm = pBar * (1 - pBar) - rTerm * s2;
@@ -369,9 +388,14 @@ void NeutralStatsManager::calculateFstatWC(set<int> const& patchList, const int 
 			b_l *= nBar / nBarMinusOne;
 			c_l *= 0.5;
 
-			perLocusFst[l] = a_l / (a_l + b_l + c_l);
-			perLocusFis[l] = (b_l + c_l) == 0.0 ? 0.0 : b_l / (b_l + c_l);
-			perLocusFit[l] = a_l + b_l / (a_l + b_l + c_l);
+			const double denomLocus = a_l + b_l + c_l;
+			// zero denominator (e.g. monomorphic locus): not computable, stays NaN
+			if (severalPops && denomLocus != 0.0) {
+				perLocusFst[l] = a_l / denomLocus;
+				if (isDiploid) perLocusFit[l] = (a_l + b_l) / denomLocus;
+			}
+			if (isDiploid && (b_l + c_l) != 0.0)
+				perLocusFis[l] = b_l / (b_l + c_l);
 
 			numFst += a_l;
 			numFis += b_l;
@@ -383,14 +407,12 @@ void NeutralStatsManager::calculateFstatWC(set<int> const& patchList, const int 
 
 		denomFit = denomFst; // same quantity
 
-		fst = numFst / denomFst; // theta hat in eq. 1 in WC 1984
-		fis = (denomFis == 0.0) ? 0.0 : numFis / denomFis; // f hat
-		fit = numFit / denomFit; // F hat
-	}
-	else { // zero or one sampled pops, cannot compute F-stats
-		fst = 0.0;
-		fis = 0.0;
-		fit = 0.0;
+		if (severalPops && denomFst != 0.0) {
+			fst = numFst / denomFst; // theta hat in eq. 1 in WC 1984
+			if (isDiploid) fit = numFit / denomFit; // F hat
+		}
+		if (isDiploid && denomFis != 0.0)
+			fis = numFis / denomFis; // f hat
 	}
 }
 
@@ -408,8 +430,13 @@ void NeutralStatsManager::calculatePairwiseFst(set<int> const& patchList, const 
 	// Initialise 
 	pairwiseFstMatrix = PatchMatrix(nPatches, nPatches);
 
-	// Reset table
-	pairwiseFstMatrix.setAll(0.0); // or nanf("NULL")?
+	// Reset table: pairs that cannot be computed (e.g. an empty patch) stay NaN (written as NA);
+	// a sampled patch compared with itself has Fst = 0
+	pairwiseFstMatrix.setAll(numeric_limits<double>::quiet_NaN());
+	for (int i = 0; i < nPatches; ++i) {
+		const auto pPop = pLandscape->findPatch(patchVect[i])->getPopn(pSpecies);
+		if (pPop != 0 && pPop->sampleSize() > 0) pairwiseFstMatrix.set(i, i, 0.0);
+	}
 
 
 	for (int i = 0; i < nPatches - 1; ++i)
@@ -450,10 +477,81 @@ void NeutralStatsManager::calculatePairwiseFst(set<int> const& patchList, const 
 				 nLoci, nAlleles,pSpecies, pLandscape, true);
 
 			pairwiseFstMatrix.set(i, j, fst);
-			// else remain 0
 		}
 	}
 	
+}
+
+// ----------------------------------------------------------------------------------------
+// Per-patch Fis
+//
+// For each sampled patch i with n_i sampled individuals and each neutral locus l:
+//   Ho_il = (nb of individuals heterozygous at l) / n_i
+//   Hs_il = n_i / (n_i - 1) * (1 - sum_u p_ilu^2 - Ho_il / (2 n_i))   (Nei 1987, eq. 7.39)
+//   Fis_i = 1 - sum_l Ho_il / sum_l Hs_il                              (ratio of sums over loci)
+//
+// For a single sample this is algebraically identical to the Weir & Cockerham (1984)
+// estimator f-hat = b / (b + c) used for the global Fis (with r = 1: sum_u c_u = Ho,
+// sum_u (b_u + c_u) = Hs), so per-patch and global values are directly comparable.
+// It is also identical to the population-specific Fis of Weir & Goudet (2017, Genetics 206:2085),
+// (M_W - M_S) / (1 - M_S), with M_W the allele matching within individuals and M_S the matching
+// between different individuals of the patch (averaged over loci), since 1 - M_S = Hs.
+// Per locus it equals the per-population Fis of hierfstat::basic.stats() (Nei 1987); over loci,
+// hierfstat averages the per-locus values (unweighted), whereas the ratio of sums is used here,
+// so multi-locus values can differ slightly.
+//
+// Undefined values are stored as NaN:
+//   - haploid species: Ho and Fis
+//   - n_i < 2: Hs and Fis
+//   - all loci monomorphic in the patch (sum Hs = 0): Fis
+// Patches without a population or without sampled individuals are skipped.
+// ----------------------------------------------------------------------------------------
+void NeutralStatsManager::calculatePerPatchFis(set<int> const& patchList, Species* pSpecies, Landscape* pLandscape) {
+
+	perPatchFis.clear();
+
+	const int nLoci = pSpecies->getNPositionsForTrait(NEUTRAL);
+	const int nAlleles = pSpecies->getSpTrait(NEUTRAL)->getNbNeutralAlleles();
+	const bool isDiploid = pSpecies->isDiploid();
+	const double notDefined = numeric_limits<double>::quiet_NaN();
+
+	for (int patchId : patchList) {
+		const auto patch = pLandscape->findPatch(patchId);
+		if (patch == 0) continue;
+		const auto pPop = patch->getPopn(pSpecies);
+		if (pPop == 0) continue;
+		const int n = pPop->sampleSize();
+		if (n == 0) continue;
+
+		PatchFisStats stats;
+		stats.patchId = patchId;
+		stats.nbSampledInds = n;
+		stats.ho = stats.hs = stats.fis = notDefined;
+
+		const vector<int> nbHeteroPerLocus = isDiploid ?
+			pPop->countNbHeterozygotesEachLocus() : vector<int>(nLoci, 0);
+
+		double sumHo = 0.0, sumHs = 0.0;
+		for (int l = 0; l < nLoci; ++l) {
+			double sumSqFreq = 0.0;
+			for (int u = 0; u < nAlleles; ++u) {
+				const double p = pPop->getAlleleFrequency(l, u);
+				sumSqFreq += p * p;
+			}
+			const double hoLocus = static_cast<double>(nbHeteroPerLocus[l]) / n;
+			sumHo += hoLocus;
+			if (n > 1)
+				sumHs += n / (n - 1.0) * (1.0 - sumSqFreq - hoLocus / (2.0 * n));
+		}
+
+		if (isDiploid) stats.ho = sumHo / nLoci;
+		if (n > 1) {
+			stats.hs = sumHs / nLoci;
+			if (isDiploid && fabs(sumHs) > 1e-12)
+				stats.fis = 1.0 - sumHo / sumHs;
+		}
+		perPatchFis.push_back(stats);
+	}
 }
 
 

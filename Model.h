@@ -22,7 +22,7 @@
 
 /*------------------------------------------------------------------------------
 
-RangeShifter v2.0 Model
+RangeShifter v3.1 Model
 
 Implements three functions which run the model and produce output common to both
 GUI and batch version.

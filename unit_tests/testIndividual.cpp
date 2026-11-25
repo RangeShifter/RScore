@@ -185,7 +185,7 @@ void testTransferKernels() {
 	Individual ind10(&sp, init_cell, init_patch, 1, 0, 0, 0.0, false, 0); // reset individual
 	isDispersing = ind10.moveKernel(&ls, &sp, absorbing_boundaries);
 	curr_cell = ind10.getCurrCell();
-	assert(ind10.getStatus() == 6);
+	assert(ind10.getStatus() == 12); // absorbed
 	assert(curr_cell == 0); // out of the landscape
 
 	// Dispersal-related mortality
@@ -401,7 +401,7 @@ void testTransferCRW() {
 	ind5.setStatus(1); // dispersing
 	bool absorbing_boundaries = true;
 	isDispersing = ind5.moveStep(&ls, &sp, hab_index, absorbing_boundaries);
-	assert(ind5.getStatus() == 6);
+	assert(ind5.getStatus() == 12); // absorbed
 	assert(ind5.getCurrCell() == 0); // deref apparently
 
 	// Correlation parameter
@@ -1186,9 +1186,20 @@ void testIndividual() {
 
 			settleTraits settTr = ind.getIndSettTraits();
 			assert(settTr.s0 <= 1.0);
-			assert(settTr.alpha > 0.0);
+			// Review 2026-10: the settlement slope alpha may be positive or negative and is
+			// no longer clamped (a negative alpha gives settlement that decreases with density,
+			// eqn. 16). The alleles -1.5 and -0.5 (AVERAGE) must give alpha = -1.0.
+			// previously: assert(settTr.alpha > 0.0);
+			assert(abs(settTr.alpha - (-1.0)) < 1e-6);
 			kernelData trfrTr = *(static_cast<kernelData*>(ind.getTrfrData()));
 			assert(trfrTr.meanDist1 >= 0.0);
+
+			// positive slopes are expressed unchanged as well: alleles 0.5 and 1.5 give alpha = +1.0
+			Individual indPos = Individual(pSpecies, pCell, pPatch, 0, 0, 0, 0.0, false, 0);
+			indPos.setUpGenes(pSpecies, 1.0);
+			indPos.overrideGenotype(S_ALPHA, createTestGenotype(genomeSz, true, 0.5, 1.5));
+			indPos.triggerMutations(pSpecies); // no mutations, but trigger expression
+			assert(abs(indPos.getIndSettTraits().alpha - 1.0) < 1e-6);
 		}
 
 		// Case 2 - Correlated random walk transfer

@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 FractalGenerator
+ RangeShifter v3.1 FractalGenerator
 
  Implements the midpoint displacement algorithm for generating a fractal Landscape,
  following:

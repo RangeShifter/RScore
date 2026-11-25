@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------
  *
- *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Théo Pannetier, Jette Wolff, Damaris Zurell
+ *	Copyright (C) 2026 Greta Bocedi, Stephen C.F. Palmer, Justin M.J. Travis, Anne-Kathleen Malchow, Roslyn Henry, Thï¿½o Pannetier, Jette Wolff, Damaris Zurell
  *
  *	This file is part of RangeShifter.
  *
@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Individual
+ RangeShifter v3.1 Individual
 
  Implements the Individual class
 
@@ -30,9 +30,9 @@
  allocated dynamically and accessed by pointers if required.
 
  For full details of RangeShifter, please see:
- Bocedi G., Palmer S.C.F., Pe’er G., Heikkinen R.K., Matsinos Y.G., Watts K.
+ Bocedi G., Palmer S.C.F., Peï¿½er G., Heikkinen R.K., Matsinos Y.G., Watts K.
  and Travis J.M.J. (2014). RangeShifter: a platform for modelling spatial
- eco-evolutionary dynamics and species’ responses to environmental changes.
+ eco-evolutionary dynamics and speciesï¿½ responses to environmental changes.
  Methods in Ecology and Evolution, 5, 388-396. doi: 10.1111/2041-210X.12162
 
  Authors: Greta Bocedi & Steve Palmer, University of Aberdeen
@@ -242,6 +242,12 @@ public:
 		short		// movement type: 1 = SMS, 2 = CRW
 	);
 	~Individual(void);
+	// Individuals are allocated from a pool of large blocks instead of one malloc per
+	// individual: less allocator time, no per-object malloc overhead, better locality.
+	static void* operator new(std::size_t size);
+	static void operator delete(void* p) noexcept;
+	// Return the pool's memory to the system; only has an effect when no individual is alive.
+	static void releaseMemoryPool(void);
 	void setUpGenes( // Set genes for individual variation from species initialisation parameters
 		Species*,			// pointer to Species
 		int						// Landscape resolution
@@ -299,6 +305,7 @@ public:
 	int getId(void);
 	sex_t getSex(void);
 	int getStatus(void);
+	int getNbKernelJumps(void) const { return nbKernelJumps; }
 	float getGeneticFitness(void);
 	bool isViable() const;
 	indStats getStats(void);
@@ -401,13 +408,17 @@ private:
 		// 4 = completed settlement
 		// 5 = completed settlement in a suitable neighbouring cell
 		// 6 = died during transfer by failing to find a suitable patch
-		//	(includes exceeding maximum number of steps or crossing
-		//	absorbing boundary)
+		//	(includes exceeding maximum number of steps)
 		// 7 = died during transfer by constant, step-dependent,
 		//	habitat-dependent or distance-dependent mortality
 		// 8 = failed to survive annual (demographic) mortality
 		// 9 = exceeded maximum age
+		// 10 = translocated to a different patch (e.g. for assisted colonisation)
+		// 11 = harvested (e.g. to regulate population size or for hunting)
+		// 12 = absorbed: left the landscape across an absorbing boundary (or into a
+		//	no-data cell when boundaries are absorbing) during transfer
 	short fallow; // reproductive seasons since last reproduction
+	int nbKernelJumps = 0; // number of dispersal-kernel jumps made so far (limited by MaxSteps)
 	bool isDeveloping;
 	Cell* pPrevCell;	// pointer to previous Cell
 	Cell* pCurrCell;	// pointer to current Cell

@@ -22,7 +22,7 @@
 
  /*------------------------------------------------------------------------------
 
- RangeShifter v2.0 Cell
+ RangeShifter v3.1 Cell
 
  Implements the following classes:
 

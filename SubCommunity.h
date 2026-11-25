@@ -22,7 +22,7 @@
  
 /*------------------------------------------------------------------------------
 
-RangeShifter v2.0 SubCommunity
+RangeShifter v3.1 SubCommunity
 
 Implements the SubCommunity class
 
