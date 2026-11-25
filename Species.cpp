@@ -778,11 +778,12 @@ void Species::setHabCost(short hab, int cost) {
 
 void Species::setHabMort(short hab, double mort) {
 	if (hab < 0 || hab >= habDimTrfr) return;
-	// a value outside [0, 1) used to be ignored silently, leaving the default 0
-	// (e.g. 1.0 for a lethal habitat became harmless); RangeShiftR validates this beforehand
-	if (mort < 0.0 || mort >= 1.0)
+	// a value outside the allowed range used to be ignored silently, leaving the default 0
+	// (e.g. 1.0 for a lethal habitat became harmless); RangeShiftR validates this beforehand.
+	// 1.0 is allowed: a lethal habitat (e.g. a barrier) that kills every individual stepping into it
+	if (mort < 0.0 || mort > 1.0)
 		throw invalid_argument("Per-step mortality for habitat " + to_string(hab)
-			+ " (" + to_string(mort) + ") must be within [0, 1).");
+			+ " (" + to_string(mort) + ") must be within [0, 1].");
 	habStepMort[hab] = mort;
 }
 

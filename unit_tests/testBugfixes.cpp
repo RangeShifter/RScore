@@ -429,6 +429,25 @@ namespace {
 		}
 	}
 
+	// Habitat-dependent per-step mortality: 1.0 (lethal habitat, e.g. a barrier) is
+	// allowed, values outside [0, 1] are rejected instead of being ignored
+	void test_habitat_step_mortality_range() {
+		Species sp;
+		sp.createHabCostMort(2);
+		sp.setHabMort(0, 1.0);
+		assert(sp.getHabMort(0) == 1.0);
+		sp.setHabMort(1, 0.0);
+		assert(sp.getHabMort(1) == 0.0);
+		bool thrown = false;
+		try { sp.setHabMort(1, 1.2); }
+		catch (const invalid_argument&) { thrown = true; }
+		assert(thrown);
+		thrown = false;
+		try { sp.setHabMort(1, -0.1); }
+		catch (const invalid_argument&) { thrown = true; }
+		assert(thrown);
+	}
+
 	// An individual that crossed an absorbing boundary has no current cell;
 	// the "go to neighbouring cell" settlement rule must not dereference it
 	void test_settlement_neighbour_rule_absorbed_individual() {
@@ -648,6 +667,7 @@ namespace {
 			{ "trait_without_positions_throws", test_trait_without_positions_throws },
 			{ "kernel_waiting_individual_restarts_from_current_cell", test_kernel_waiting_individual_restarts_from_current_cell },
 			{ "kernel_waiting_limited_by_max_steps", test_kernel_waiting_limited_by_max_steps },
+			{ "habitat_step_mortality_range", test_habitat_step_mortality_range },
 			{ "settlement_neighbour_rule_absorbed_individual", test_settlement_neighbour_rule_absorbed_individual },
 			{ "fractal_non_square", test_fractal_non_square },
 			{ "connect_matrix_delete", test_connect_matrix_delete },
