@@ -179,6 +179,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 	for (int rep = 0; rep < sim.reps; rep++) {
 
 		cout << "Running replicate " << rep + 1 << " / " << sim.reps << endl;
+		pSpecies->resetKernelFallbacks(); // weighted kernel: count fallbacks per replicate
 
 		if (sim.saveVisits && !ppLand.generated) {
 			pLandscape->resetVisits();
@@ -773,6 +774,18 @@ int RunModel(Landscape* pLandscape, int seqsim)
 		if (sim.outPaths)
 			pLandscape->outPathsFinishReplicate();
 #endif
+
+		// weighted kernel: report jumps that reached the attempt cap without acceptance
+		if (pSpecies->getKernelFallbacks() > 0) {
+#if RS_RCPP && !R_CMD
+			Rcpp::Rcout
+#else
+			cout
+#endif
+				<< "Warning: weighted dispersal kernel reached the attempt cap in "
+				<< pSpecies->getKernelFallbacks() << " jumps in replicate " << rep
+				<< "; the last proposal was used (consider a larger MaxRejections)." << endl;
+		}
 
 	} // end of the replicates loop
 
@@ -1583,6 +1596,32 @@ void OutParameters(Landscape* pLandscape)
 					}
 				}
 			}
+
+		if (pSpecies->usesPerception()) { // weighted kernel, printed only when active
+			trfrPerceptionRules prules = pSpecies->getPerceptionRules();
+			outPar << "WEIGHTED KERNEL - PERCEPTION ACCURACY (distance-independent):" << endl;
+			const int nstg = trfr.stgDep ? sstruct.nStages : 1;
+			for (int i = 0; i < nstg; i++) {
+				if (trfr.stgDep) outPar << "stage " << i << ":";
+				if (trfr.sexDep)
+					outPar << " \tfemales " << pSpecies->getSpPerception(i, 0).perceptionAcc
+					<< " \tmales " << pSpecies->getSpPerception(i, 1).perceptionAcc;
+				else
+					outPar << " \t" << pSpecies->getSpPerception(i, 0).perceptionAcc;
+				outPar << endl;
+			}
+			outPar << "TRANSFER VALUES: ";
+			if (prules.transferFile) outPar << "transfer map" << endl;
+			else {
+				switch (ppLand.rasterType) {
+				case 0: outPar << "habitat codes (K_h / max K)" << endl; break;
+				case 1: outPar << "% cover (cover-weighted K / max K)" << endl; break;
+				case 2: outPar << "habitat quality (q / 100)" << endl; break;
+				default: outPar << "unknown" << endl; break;
+				}
+			}
+			outPar << "MAX. REJECTIONS: " << prules.maxRejections << endl;
+		}
 
 		outPar << "DISPERSAL MORTALITY:   ";
 		trfrMortParams mort = pSpecies->getMortParams();
