@@ -379,7 +379,7 @@ int SubCommunity::resolveTransfer(std::map<Species*,vector<Individual*>>& disper
 				disperser = pInd->moveStep(pLandscape, pSpecies, landIx, sim.absorbing);
 			}
 			else {
-				disperser = pInd->moveKernel(pLandscape, pSpecies, sim.absorbing);
+				disperser = pInd->moveKernel(pLandscape, pSpecies, sim.absorbing, landIx);
 			}
 			nbStillDispersing += disperser;
 			if (disperser) {

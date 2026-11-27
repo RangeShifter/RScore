@@ -819,7 +819,8 @@ void Individual::moveto(Cell* newCell) {
 // Move to a new cell by sampling a dispersal distance from a single or double
 // negative exponential kernel
 // Returns 1 if still dispersing (including having found a potential patch), otherwise 0
-int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool absorbing)
+int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool absorbing,
+	const short landIx)
 {
 	int patchNum = 0;
 	int newX = 0, newY = 0;
@@ -841,6 +842,10 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool 
 	pCell = NULL;
 	pPatch = NULL;
 
+	// stage/sex indices of the transfer parameters (0 if not stage-/sex-dependent)
+	const short stg = trfr.stgDep ? stage : 0;
+	const short sx = trfr.sexDep ? sex : 0;
+
 	if (trfr.indVar) { // get individual's kernel parameters
 		kern.meanDist1 = kern.meanDist2 = kern.probKern1 = 0.0;
 
@@ -854,23 +859,12 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool 
 			}
 		}
 	else { // get kernel parameters for the species
-		if (trfr.sexDep) {
-			if (trfr.stgDep) {
-				kern = pSpecies->getSpKernTraits(stage, sex);
-			}
-			else {
-				kern = pSpecies->getSpKernTraits(0, sex);
-			}
-		}
-		else {
-			if (trfr.stgDep) {
-				kern = pSpecies->getSpKernTraits(stage, 0);
-			}
-			else {
-				kern = pSpecies->getSpKernTraits(0, 0);
-			}
-		}
+		kern = pSpecies->getSpKernTraits(stg, sx);
 	}
+
+	// weighted kernel: perception accuracy uses the same stage/sex indices as the kernel
+	const float aS = pSpecies->getSpPerception(stg, sx).perceptionAcc;
+	const bool weighted = aS > 0.0f; // a_s = 0: unweighted kernel, no extra random numbers
 
 	// scale the appropriate kernel mean to the cell size
 	if (trfr.twinKern)
@@ -889,83 +883,135 @@ int Individual::moveKernel(Landscape* pLandscape, Species* pSpecies, const bool 
 	if (!usefullkernel && meandist < 1.0) meandist = 1.0;
 # endif
 
+	// weighted kernel (rejection sampling): proposals are drawn from the kernel as before and
+	// accepted with probability w / w_max, w = 1 - a_s (1 - T); the kernel component (double
+	// kernel) stays fixed for all attempts of this jump
+	short rasterType = 0;
+	int nHab = 0;
+	float wMax = 1.0f;
+	int nEff = 1; // effective attempt cap N_eff
+	if (weighted) {
+		landParams ppLand = pLandscape->getLandParams();
+		rasterType = ppLand.rasterType;
+		nHab = ppLand.nHab;
+		wMax = 1.0f - aS * (1.0f - pSpecies->getTransferMax());
+		nEff = pSpecies->kernelAttemptCap(meandist);
+	}
+	int nAttempts = 0;
+	bool accepted = !weighted;
+	bool hasValid = false; // a valid proposal (in the landscape, not natal) has been made
+	bool fallback = false; // no acceptance: the last valid proposal is used
+	Cell* lastCell = nullptr;
+	Patch* lastPatch = nullptr;
+	int lastPatchNum = 0;
+	double lastDist = 0.0;
+
 	int loopsteps = 0; // new counter to prevent infinite loop added 14/8/15
-	do {
+	do { // attempts of the weighted kernel (a single pass if unweighted)
 		do {
 			do {
-				// randomise the cell within the patch, provided that the individual is still in
-				// its natal cell (i.e. not waiting in the matrix)
-				// this is because, if the patch is very large, the individual is near the centre
-				// and the (single) kernel mean is (not much more than) the cell size, an infinite
-				// loop could otherwise result, as the individual never reaches the patch edge
-				// (in a cell-based model, this has no effect, other than as a processing overhead)
-				// NB: only for individuals that are still in their natal patch; individuals
-				// that waited in the matrix (status 3 -> 1 in ageIncrement()) must resume
-				// dispersal from their current location
-				if (status == 1 && pCurrCell != nullptr && pCurrCell->getPatch() == pNatalPatch) {
-					pCell = pNatalPatch->getRandomCell();
-					if (pCell != 0) {
-						loc = pCell->getLocn();
+				do {
+					// randomise the cell within the patch, provided that the individual is still in
+					// its natal cell (i.e. not waiting in the matrix)
+					// this is because, if the patch is very large, the individual is near the centre
+					// and the (single) kernel mean is (not much more than) the cell size, an infinite
+					// loop could otherwise result, as the individual never reaches the patch edge
+					// (in a cell-based model, this has no effect, other than as a processing overhead)
+					// NB: only for individuals that are still in their natal patch; individuals
+					// that waited in the matrix (status 3 -> 1 in ageIncrement()) must resume
+					// dispersal from their current location
+					if (status == 1 && pCurrCell != nullptr && pCurrCell->getPatch() == pNatalPatch) {
+						pCell = pNatalPatch->getRandomCell();
+						if (pCell != 0) {
+							loc = pCell->getLocn();
+						}
 					}
-				}
-				// randomise the position of the individual inside the cell
-				// so x and y are a corner of the cell?
-				xrand = (double)loc.x + pRandom->Random() * 0.999;
-				yrand = (double)loc.y + pRandom->Random() * 0.999;
+					// randomise the position of the individual inside the cell
+					// so x and y are a corner of the cell?
+					xrand = (double)loc.x + pRandom->Random() * 0.999;
+					yrand = (double)loc.y + pRandom->Random() * 0.999;
 
-				// draw factor r1 0 < r1 <= 1
-				r1 = 0.0000001 + pRandom->Random() * (1.0 - 0.0000001);
-				dist = (-1.0 * meandist) * log(r1);
+					// draw factor r1 0 < r1 <= 1
+					r1 = 0.0000001 + pRandom->Random() * (1.0 - 0.0000001);
+					dist = (-1.0 * meandist) * log(r1);
 
-				rndangle = pRandom->Random() * 2.0 * PI;
-				nx = xrand + dist * sin(rndangle);
-				ny = yrand + dist * cos(rndangle);
-				if (nx < 0.0) newX = -1; else newX = (int)nx;
-				if (ny < 0.0) newY = -1; else newY = (int)ny;
-#ifndef NDEBUG
-				if (path != 0) (path->year)++;
-#endif
-				loopsteps++;
-			} while (loopsteps < 1000 &&
-				// keep drawing if out of bounds of landscape or same cell
-				((!absorbing 
-					&& (newX < land.minX || newX > land.maxX || newY < land.minY || newY > land.maxY))
-					|| (!usefullkernel && newX == loc.x && newY == loc.y))
-				);
+					rndangle = pRandom->Random() * 2.0 * PI;
+					nx = xrand + dist * sin(rndangle);
+					ny = yrand + dist * cos(rndangle);
+					if (nx < 0.0) newX = -1; else newX = (int)nx;
+					if (ny < 0.0) newY = -1; else newY = (int)ny;
+	#ifndef NDEBUG
+					if (path != 0) (path->year)++;
+	#endif
+					loopsteps++;
+				} while (loopsteps < 1000 &&
+					// keep drawing if out of bounds of landscape or same cell
+					((!absorbing 
+						&& (newX < land.minX || newX > land.maxX || newY < land.minY || newY > land.maxY))
+						|| (!usefullkernel && newX == loc.x && newY == loc.y))
+					);
 
-			if (loopsteps < 1000) {
-				if (newX < land.minX || newX > land.maxX
-					|| newY < land.minY || newY > land.maxY) { // beyond absorbing boundary
-					// this cannot be reached if not absorbing?
-					pCell = 0;
-					pPatch = nullptr;
-					patchNum = -1;
-				}
-				else {
-					pCell = pLandscape->findCell(newX, newY);
-					if (pCell == 0) { // no-data cell
+				if (loopsteps < 1000) {
+					if (newX < land.minX || newX > land.maxX
+						|| newY < land.minY || newY > land.maxY) { // beyond absorbing boundary
+						// this cannot be reached if not absorbing?
+						pCell = 0;
 						pPatch = nullptr;
 						patchNum = -1;
 					}
 					else {
-						pPatch = pCell->getPatch();
-						if (pPatch == nullptr) { // matrix
-							patchNum = 0;
+						pCell = pLandscape->findCell(newX, newY);
+						if (pCell == 0) { // no-data cell
+							pPatch = nullptr;
+							patchNum = -1;
 						}
 						else {
-							patchNum = pPatch->getPatchNum();
+							pPatch = pCell->getPatch();
+							if (pPatch == nullptr) { // matrix
+								patchNum = 0;
+							}
+							else {
+								patchNum = pPatch->getPatchNum();
+							}
 						}
 					}
 				}
-			}
-			else { // exceeded 1000 attempts
-				pPatch = nullptr;
-				patchNum = -1;
-			}
-		} while (!absorbing && patchNum < 0 && loopsteps < 1000); 			 // in a no-data region
-	} while (!usefullkernel && pPatch == pNatalPatch && loopsteps < 1000); 	// still in the original (natal) patch
+				else { // exceeded 1000 attempts
+					pPatch = nullptr;
+					patchNum = -1;
+				}
+			} while (!absorbing && patchNum < 0 && loopsteps < 1000); 			 // in a no-data region
+		} while (!usefullkernel && pPatch == pNatalPatch && loopsteps < 1000); 	// still in the original (natal) patch
+		if (!weighted) break;
+		if (loopsteps >= 1000) { // safety cap reached
+			if (hasValid) { // fall back to the last valid proposal
+				pCell = lastCell;
+				pPatch = lastPatch;
+				patchNum = lastPatchNum;
+				dist = lastDist;
+				fallback = true;
+			} // else: no valid proposal at all, status 6 as without weighting
+			break;
+		}
+		if (pCell == 0) { // beyond absorbing boundary or no-data cell: an outcome, not weighted
+			accepted = true;
+			break;
+		}
+		lastCell = pCell;
+		lastPatch = pPatch;
+		lastPatchNum = patchNum;
+		lastDist = dist;
+		hasValid = true;
+		nAttempts++;
+		// the natal cell is weighted like any other cell (relevant with the full kernel)
+		const float w = 1.0f - aS * (1.0f - pSpecies->getTransferValue(pCell, landIx, rasterType, nHab));
+		if (wMax > 0.0f && pRandom->Random() < w / wMax) accepted = true;
+	} while (!accepted && nAttempts < nEff);
+	if (weighted && !accepted && !fallback && hasValid) fallback = true; // N_eff reached
+	if (fallback) pSpecies->incrKernelFallback();
 
-	if (loopsteps < 1000) {
+
+	if (loopsteps < 1000 || fallback) {
 		if (pCell == 0) { // beyond absorbing boundary or in no-data cell
 			// only if absorbing=true and out of bounddaries
 			pCurrCell = 0;

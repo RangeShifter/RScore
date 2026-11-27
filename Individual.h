@@ -333,7 +333,8 @@ public:
 	int moveKernel(
 		Landscape*,		// pointer to Landscape
 		Species*,			// pointer to Species
-		const bool    // absorbing boundaries?
+		const bool,   // absorbing boundaries?
+		const short = 0	// landscape change index (used by the weighted kernel)
 	);
 	// Make a single movement step according to a mechanistic movement model
 	// Returns 1 if still dispersing (including having found a potential patch), otherwise 0
