@@ -24,6 +24,7 @@
 
 #include "Species.h"
 #include "Cell.h"
+#include "Landscape.h"
 //---------------------------------------------------------------------------
 
 Species::Species(const short& repro, const short& nbRepSeasons, const bool& hasStgStruct, const short& nStg, const bool& usesMovtProc, const short& movementType) :
@@ -786,6 +787,38 @@ bool Species::usesPerception(void) {
 			if (perceptionAcc[i][j] > 0.0f) return true;
 	return false;
 }
+
+// Maximum transfer value T in the current landscape, used for w_max = 1 - a_s (1 - T_max).
+// Any value >= the true maximum gives exact sampling; the true maximum gives the fewest
+// rejections (and fallbacks). Habitat codes / % cover: T is normalised by max K, so T_max = 1
+// (0 if no habitat has K > 0); habitat quality: highest quality in the landscape / 100.
+// Called once after the landscape is set up and after each landscape change.
+void Species::updateTransferMax(Landscape* pLandscape, const short landIx) {
+	landParams ppLand = pLandscape->getLandParams();
+	if (ppLand.rasterType == 2)
+		transferMax = pLandscape->getMaxHabitatQuality(landIx) / 100.0f;
+	else
+		transferMax = (getMaxK() > 0.0f) ? 1.0f : 0.0f;
+	if (transferMax < 0.0f) transferMax = 0.0f;
+	if (transferMax > 1.0f) transferMax = 1.0f;
+}
+
+float Species::getTransferMax(void) { return transferMax; }
+
+// Effective cap on attempts per jump of the weighted kernel: the number of cells within the
+// 75 % quantile of the (negative exponential) kernel, n75 = ceil(pi * r75^2) with
+// r75 = meandist * ln(4) in cells, limited by MaxRejections; at least 1
+int Species::kernelAttemptCap(const double meanDistCells) {
+	const double r75 = meanDistCells * log(4.0);
+	const double n75 = ceil(PI * r75 * r75);
+	int cap = perceptRules.maxRejections;
+	if (n75 < (double)cap) cap = (int)n75;
+	return (cap < 1) ? 1 : cap;
+}
+
+void Species::incrKernelFallback(void) { kernelFallbacks++; }
+long Species::getKernelFallbacks(void) { return kernelFallbacks.load(); }
+void Species::resetKernelFallbacks(void) { kernelFallbacks = 0; }
 
 float Species::getPerceptionDist(void) { return perceptionDist; }
 float Species::getTransferRef(void) { return transferRef; }

@@ -316,6 +316,9 @@ public:
 		int,			// year
 		short			// landscape change index (always zero if not dynamic)
 	);
+	float getMaxHabitatQuality( // highest habitat quality (0-100) of all cells (rasterType 2)
+		const short	// landscape change index
+	);
 	Cell* findCell(
 		int,		// x co-ordinate
 		int			// y co-ordinate

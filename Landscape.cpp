@@ -952,6 +952,23 @@ void Landscape::updateCarryingCapacity(Species* pSpecies, int yr, short landIx) 
 
 }
 
+// Highest habitat quality (0-100) of all data cells for the given landscape change;
+// used for the upper bound of the transfer value of the weighted kernel (rasterType 2)
+float Landscape::getMaxHabitatQuality(const short landIx) {
+	float qmax = 0.0f;
+	if (cells == 0) return qmax;
+	for (int y = 0; y < dimY; y++) {
+		for (int x = 0; x < dimX; x++) {
+			Cell* pCell = cells[y][x];
+			if (pCell != 0) {
+				const float q = pCell->getHabitat(landIx);
+				if (q > qmax) qmax = q;
+			}
+		}
+	}
+	return qmax;
+}
+
 void Landscape::updateDemoScalings(short landIx) {
 
 	patchLimits landlimits;

@@ -49,6 +49,7 @@
 #include <map>
 #include <set>
 #include <memory>
+#include <atomic>
 
 #include "Parameters.h"
 #include "SpeciesTrait.h"
@@ -56,6 +57,7 @@
 
 class SpeciesTrait;
 class Cell;
+class Landscape;
 
  // structures for demographic parameters
 
@@ -486,6 +488,17 @@ public:
 	bool usesPerception(void); // true if a_s > 0 for any stage/sex (weighted kernel active)
 	float getPerceptionDist(void); // perceptual distance PR (inactive in version 1: infinite)
 	float getTransferRef(void);    // transfer reference T_ref (inactive in version 1: 1)
+	void updateTransferMax( // determine T_max for the current landscape (call after each change)
+		Landscape*,	// pointer to Landscape
+		const short	// landscape change index
+	);
+	float getTransferMax(void); // maximum transfer value T (0-1) in the landscape, for w_max
+	int kernelAttemptCap( // effective attempt cap N_eff = min(n75, MaxRejections), >= 1
+		const double	// kernel mean of the current jump, in cells
+	);
+	void incrKernelFallback(void);  // count a jump that reached N_eff without acceptance
+	long getKernelFallbacks(void);  // no. of such jumps since the last reset
+	void resetKernelFallbacks(void);
 	void setMortParams( // Set transfer mortality parameters
 		const trfrMortParams	// structure holding transfer mortality parameters
 	);
@@ -670,6 +683,8 @@ private:
 	// inactive extension of the weighted kernel (not settable from batch or RangeShiftR)
 	float	perceptionDist = INFINITY; // perceptual distance PR (m)
 	float	transferRef = 1.0f;        // transfer reference T_ref
+	float	transferMax = 1.0f; // maximum transfer value T in the current landscape (1 = safe bound)
+	std::atomic<long> kernelFallbacks{ 0 }; // jumps that reached N_eff (dispersal may run in parallel)
 	// NB INITIAL limits are made double to avoid conversion errors (reason unclear)
 	// on traits maps using FloatToStr()
 	// As evolving traits are are not stage-dependent, no. of rows can be 1

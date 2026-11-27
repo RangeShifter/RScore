@@ -330,6 +330,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 
 		if (ppLand.rasterType == 2 && ppLand.spatialdemog)
 			pLandscape->updateDemoScalings(0);
+		pSpecies->updateTransferMax(pLandscape, 0); // weighted kernel: T_max of the initial landscape
 
 //	if (init.seedType != 2) {
 		pComm->initialise(pSpecies, -1);
@@ -489,6 +490,7 @@ int RunModel(Landscape* pLandscape, int seqsim)
 				pLandscape->resetConnectMatrix();
 
 			if (ppLand.dynamic && updateland) {
+				pSpecies->updateTransferMax(pLandscape, (short)landIx); // weighted kernel: T_max after change
 				if (trfr.usesMovtProc && trfr.moveType == 1) { // SMS
 					if (!trfr.costMap) pLandscape->resetCosts(); // in case habitats have changed
 				}
