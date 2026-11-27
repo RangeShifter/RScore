@@ -1617,6 +1617,10 @@ void OutParameters(Landscape* pLandscape)
 				case 0: outPar << "habitat codes (K_h / max K)" << endl; break;
 				case 1: outPar << "% cover (cover-weighted K / max K)" << endl; break;
 				case 2: outPar << "habitat quality (q / 100)" << endl; break;
+				case 9: // artificial landscape, generated later: binary habitat codes or continuous quality
+					if (ppGenLand.continuous) outPar << "artificial landscape, habitat quality (q / 100)" << endl;
+					else outPar << "artificial landscape, habitat codes (K_h / max K)" << endl;
+					break;
 				default: outPar << "unknown" << endl; break;
 				}
 			}
