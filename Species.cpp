@@ -100,8 +100,10 @@ Species::Species(const short& repro, const short& nbRepSeasons, const bool& hasS
 			meanDist1[i][j] = 100.0f;
 			meanDist2[i][j] = 1000.0f;
 			probKern1[i][j] = 0.99f;
+			perceptionAcc[i][j] = 0.0f;
 		}
 	}
+	perceptRules = trfrPerceptionRules{}; // defaults: 100 rejections, no transfer map
 	pr = 1;
 	prMethod = 1;
 	memSize = 1;
@@ -705,6 +707,43 @@ trfrKernelParams Species::getSpKernTraits(short stg, short sex) {
 	return k;
 }
 
+void Species::setSpPerception(const short stg, const short sex,
+	const trfrPerceptionParams p)
+{
+	if (stg < 0 || stg >= gMaxNbStages || sex < 0 || sex >= gMaxNbSexes) return;
+	// 0 <= perceptionAcc <= 1; written this way so that NaN fails too
+	if (!(p.perceptionAcc >= 0.0f && p.perceptionAcc <= 1.0f))
+		throw invalid_argument("Perception accuracy (" + to_string(p.perceptionAcc)
+			+ ") must be between 0 and 1.");
+	perceptionAcc[stg][sex] = p.perceptionAcc;
+}
+
+trfrPerceptionParams Species::getSpPerception(const short stg, const short sex) {
+	trfrPerceptionParams p; // default 0.0
+	if (stg >= 0 && stg < gMaxNbStages && sex >= 0 && sex < gMaxNbSexes)
+		p.perceptionAcc = perceptionAcc[stg][sex];
+	return p;
+}
+
+void Species::setPerceptionRules(const trfrPerceptionRules r) {
+	if (r.maxRejections < 1)
+		throw invalid_argument("MaxRejections (" + to_string(r.maxRejections)
+			+ ") must be >= 1.");
+	perceptRules = r;
+}
+
+trfrPerceptionRules Species::getPerceptionRules(void) { return perceptRules; }
+
+bool Species::usesPerception(void) {
+	for (int i = 0; i < gMaxNbStages; i++)
+		for (int j = 0; j < gMaxNbSexes; j++)
+			if (perceptionAcc[i][j] > 0.0f) return true;
+	return false;
+}
+
+float Species::getPerceptionDist(void) { return perceptionDist; }
+float Species::getTransferRef(void) { return transferRef; }
+
 void Species::setMortParams(const trfrMortParams m) {
 	if (m.fixedMort >= 0.0 && m.fixedMort <= 1.0) fixedMort = m.fixedMort;
 	mortAlpha = m.mortAlpha;
@@ -927,6 +966,13 @@ void Species::overrideKernels(const short stg, const short sex,
 	meanDist1[stg][sex] = k.meanDist1;
 	meanDist2[stg][sex] = k.meanDist2;
 	probKern1[stg][sex] = k.probKern1;
+}
+
+// Set the inactive perception extension (perceptual distance PR, transfer reference T_ref);
+// not reachable from batch or RangeShiftR
+void Species::overridePerceptionExtension(const float pr, const float tRef) {
+	perceptionDist = pr;
+	transferRef = tRef;
 }
 
 demogrParams createDefaultHaploidDemogrParams() {

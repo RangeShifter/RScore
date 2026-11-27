@@ -141,6 +141,13 @@ struct trfrMortParams {
 	float mortAlpha;
 	float mortBeta;
 };
+struct trfrPerceptionParams { // weighted dispersal kernel: perception parameters per stage/sex
+	float perceptionAcc = 0.0f; // perception accuracy a_s (0 = unweighted kernel)
+};
+struct trfrPerceptionRules { // weighted dispersal kernel: species-wide settings
+	int maxRejections = 100;    // user cap on attempts per jump (effective cap N_eff <= this)
+	bool transferFile = false;  // true if transfer values come from a user transfer map
+};
 struct trfrMovtParams {
 	short pr;
 	short prMethod; 
@@ -445,12 +452,30 @@ public:
 	// Testing: set dispersal but ignore resolution
 	void overrideKernels(const short stg, const short sex,
 		const trfrKernelParams k);
+	// Testing: set the inactive perception extension (perceptual distance, transfer reference)
+	void overridePerceptionExtension(const float pr, const float tRef);
 # endif // UNIT_TESTS
 
 	trfrKernelParams getSpKernTraits( // Get transfer by kernel parameters
 		short,	// stage
 		short		// sex
 	);
+	void setSpPerception( // Set perception parameters of the weighted kernel
+		const short,	// stage
+		const short,	// sex
+		const trfrPerceptionParams	// structure holding perception parameters
+	);
+	trfrPerceptionParams getSpPerception( // Get perception parameters of the weighted kernel
+		const short,	// stage
+		const short		// sex
+	);
+	void setPerceptionRules( // Set species-wide settings of the weighted kernel
+		const trfrPerceptionRules	// structure holding perception rules
+	);
+	trfrPerceptionRules getPerceptionRules(void);
+	bool usesPerception(void); // true if a_s > 0 for any stage/sex (weighted kernel active)
+	float getPerceptionDist(void); // perceptual distance PR (inactive in version 1: infinite)
+	float getTransferRef(void);    // transfer reference T_ref (inactive in version 1: 1)
 	void setMortParams( // Set transfer mortality parameters
 		const trfrMortParams	// structure holding transfer mortality parameters
 	);
@@ -630,6 +655,11 @@ private:
 	float	meanDist1[gMaxNbStages][gMaxNbSexes];	// mean of 1st dispersal kernel (m)
 	float	meanDist2[gMaxNbStages][gMaxNbSexes]; // mean of 2nd dispersal kernel (m)
 	float	probKern1[gMaxNbStages][gMaxNbSexes]; // probability of dispersing with the 1st kernel
+	float	perceptionAcc[gMaxNbStages][gMaxNbSexes]; // perception accuracy of the weighted kernel
+	trfrPerceptionRules perceptRules; // species-wide settings of the weighted kernel
+	// inactive extension of the weighted kernel (not settable from batch or RangeShiftR)
+	float	perceptionDist = INFINITY; // perceptual distance PR (m)
+	float	transferRef = 1.0f;        // transfer reference T_ref
 	// NB INITIAL limits are made double to avoid conversion errors (reason unclear)
 	// on traits maps using FloatToStr()
 	// As evolving traits are are not stage-dependent, no. of rows can be 1
