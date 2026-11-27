@@ -23,6 +23,7 @@
  //---------------------------------------------------------------------------
 
 #include "Species.h"
+#include "Cell.h"
 //---------------------------------------------------------------------------
 
 Species::Species(const short& repro, const short& nbRepSeasons, const bool& hasStgStruct, const short& nStg, const bool& usesMovtProc, const short& movementType) :
@@ -221,6 +222,49 @@ float Species::getMaxK(void) {
 		if (habK[i] > k) k = habK[i];
 	}
 	return k;
+}
+
+// Transfer value of a habitat for the weighted kernel: K_h / max K (0 if no habitat has K > 0)
+float Species::getHabTransfer(short hx) {
+	if (hx < 0 || hx >= habDimK) return 0.0f;
+	const float maxK = getMaxK();
+	return (maxK > 0.0f) ? habK[hx] / maxK : 0.0f;
+}
+
+// Transfer value T (0-1) of a cell for the weighted kernel, derived from the landscape
+// in the same way as carrying capacity (cf. Patch::setCarryingCapacity()):
+// habitat codes: K_h / max K; % cover: cover-weighted K / max K; habitat quality: q / 100
+// (user transfer maps are not implemented yet, see setPerceptionRules())
+float Species::getTransferValue(const Cell* pCell, const short landIx,
+	const short rasterType, const int nHab)
+{
+	Cell* c = const_cast<Cell*>(pCell); // Cell getters are not const
+	float t = 0.0f;
+	switch (rasterType) {
+	case 0: // habitat codes
+		t = getHabTransfer((short)c->getHabIndex(landIx));
+		break;
+	case 1: { // % cover
+		const float maxK = getMaxK();
+		if (maxK > 0.0f) {
+			float k = 0.0f;
+			for (int j = 0; j < nHab; j++) {
+				const float q = c->getHabitat(j);
+				if (q > 0.0f) k += q * getHabK((short)j) / 100.0f;
+			}
+			t = k / maxK;
+		}
+		break;
+	}
+	case 2: // habitat quality (0-100)
+		t = c->getHabitat(landIx) / 100.0f;
+		break;
+	default:
+		break;
+	}
+	if (t < 0.0f) t = 0.0f; // e.g. -1 returned for missing values
+	if (t > 1.0f) t = 1.0f;
+	return t;
 }
 
 void Species::deleteHabK(void) {
@@ -729,6 +773,8 @@ void Species::setPerceptionRules(const trfrPerceptionRules r) {
 	if (r.maxRejections < 1)
 		throw invalid_argument("MaxRejections (" + to_string(r.maxRejections)
 			+ ") must be >= 1.");
+	if (r.transferFile) // to be removed when transfer maps are implemented
+		throw invalid_argument("Transfer maps are not implemented yet.");
 	perceptRules = r;
 }
 

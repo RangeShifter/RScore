@@ -55,6 +55,7 @@
 #include "QuantitativeTrait.h"
 
 class SpeciesTrait;
+class Cell;
 
  // structures for demographic parameters
 
@@ -246,6 +247,15 @@ public:
 		short		// habitat index no. (NB may differ from habitat no. supplied by user)
 	);
 	float getMaxK(void); // return highest carrying capacity over all habitats
+	float getHabTransfer( // transfer value of a habitat for the weighted kernel: K_h / max K
+		short		// habitat index no. (NB may differ from habitat no. supplied by user)
+	);
+	float getTransferValue( // transfer value T (0-1) of a cell for the weighted kernel
+		const Cell*,	// cell (must not be nullptr)
+		const short,	// landscape change index
+		const short,	// raster type: 0 = habitat codes, 1 = % cover, 2 = habitat quality
+		const int		// no. of habitats (cover layers), used for raster type 1
+	);
 	void deleteHabK(void); // Delete habitat carrying capacity table
 	void setStage( // Set stage structure parameters
 		const stageParams	// structure holding stage structure parameters
