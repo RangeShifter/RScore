@@ -47,6 +47,7 @@ void testIndividual();
 void testNeutralStats();
 void testPopulation();
 void testBugfixes();
+void testWeightedKernel();
 
 void run_unit_tests() {
 	cout << "******* Unit test output *******" << endl;
@@ -56,6 +57,7 @@ void run_unit_tests() {
 	testPopulation();
 	testNeutralStats();
 	testBugfixes();
+	testWeightedKernel();
 	cout << endl << "************************" << endl;
 }
 #endif // UNIT_TESTS
